@@ -1,4 +1,3 @@
-// src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React, { useRef, useState } from 'react';
 import {
   Animated,
@@ -10,18 +9,19 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
+
 import AppText from '../AppText';
-import AppIcon from '../AppIcon'; // ✅ 공용 아이콘 컴포넌트로 교체
+import AppIcon from '../AppIcon';
 
 type Props = {
-  title?: string; // 직접 문자열
-  titleKey?: string; // i18n key
+  title?: string;
+  titleKey?: string;
   headerHeight?: number;
   backgroundColor?: string;
   children: React.ReactNode;
-  showBack?: boolean; // ← 뒤로가기 버튼 표시 여부
-  onBackPress?: () => void;
-  right?: React.ReactNode; // → 우측 슬롯 (버튼, 아이콘 등)
+  onBackPress?: () => void; // 필요하면 override
+  right?: React.ReactNode; // 오른쪽 슬롯
 };
 
 const AppCollapsibleHeader: React.FC<Props> = ({
@@ -30,11 +30,13 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   headerHeight = 56,
   backgroundColor = '#fff',
   children,
-  showBack = false,
   onBackPress,
   right,
 }) => {
   const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
+  const canGoBack = navigation.canGoBack(); // ✅ 자동 감지
+
   const HEADER_TOTAL = headerHeight + insets.top;
 
   const translateY = useRef(new Animated.Value(0)).current;
@@ -92,19 +94,14 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         ]}
       >
         <View style={styles.bar}>
-          {/* 좌측: 뒤로가기 버튼 */}
+          {/* 좌측: 자동 뒤로가기 */}
           <View style={styles.side}>
-            {showBack && (
+            {canGoBack && (
               <TouchableOpacity
-                onPress={onBackPress}
+                onPress={onBackPress || (() => navigation.goBack())}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <AppIcon
-                  type="ion"
-                  name="arrow-back-sharp"
-                  size={24}
-                  color="#333"
-                />
+                <AppIcon type="ion" name="arrow-back" size={24} color="#333" />
               </TouchableOpacity>
             )}
           </View>
