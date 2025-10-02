@@ -18,5 +18,14 @@ module.exports = {
         allowUndefined: false,
       },
     ],
+    [
+      'module-resolver',
+      {
+        root: ['./src'],
+        alias: {
+          '@': './src', // ✅ "@/..." → src/... 매핑
+        },
+      },
+    ],
   ],
 };

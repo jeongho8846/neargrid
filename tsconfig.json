@@ -4,6 +4,10 @@
     "skipLibCheck": true,
     "allowJs": true,
     "esModuleInterop": true,
-    "jsx": "react-native"
+    "jsx": "react-native",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
   }
 }
