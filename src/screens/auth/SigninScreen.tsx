@@ -1,14 +1,22 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { View, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiMember } from '../../services/apiService';
+import AppText from '../../common/components/AppText';
+import AppInput from '../../common/components/Input';
+import AppButton from '../../common/components/AppButton';
+import { TextInput } from 'react-native';
 
 const SigninScreen = ({ setIsAuth }: { setIsAuth: (val: boolean) => void }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const emailRef = useRef<TextInput | null>(null);
+  const passwordRef = useRef<TextInput | null>(null);
 
   const handleSignin = async () => {
     try {
+      setLoading(true);
       console.log('🔄 로그인 API 호출:', { email, password });
 
       const res = await apiMember.post('/member/signIn', { email, password });
@@ -29,8 +37,6 @@ const SigninScreen = ({ setIsAuth }: { setIsAuth: (val: boolean) => void }) => {
       );
 
       console.log('✅ 로그인 성공, Root → Main 이동');
-
-      // RootNavigator 상태 변경 → MainTabNavigator로 전환
       setIsAuth(true);
     } catch (err: any) {
       if (err?.response) {
@@ -38,51 +44,49 @@ const SigninScreen = ({ setIsAuth }: { setIsAuth: (val: boolean) => void }) => {
       } else {
         console.log('❌ 네트워크 오류:', err?.message ?? err);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🔑 로그인</Text>
+      {/* ✅ 공용 AppText */}
+      <AppText i18nKey="STR_LOGIN" variant="title" style={styles.title} />
 
-      <TextInput
-        style={styles.input}
-        placeholder="아이디(이메일)"
-        value={email}
+      {/* ✅ 공용 AppInput */}
+      <AppInput
+        ref={emailRef}
+        labelKey="STR_EMAIL"
+        placeholderKey="STR_EMAIL"
         onChangeText={setEmail}
-        autoCapitalize="none"
+        nextInputRef={passwordRef} // ✅ 정상 동작
       />
 
-      <TextInput
-        style={styles.input}
-        placeholder="비밀번호"
-        value={password}
-        onChangeText={setPassword}
+      <AppInput
+        ref={passwordRef}
+        labelKey="STR_PASSWORD"
+        placeholderKey="STR_PASSWORD"
         secureTextEntry
+        onChangeText={setPassword}
+        returnKeyType="done" // 마지막 인풋은 "완료"
       />
 
-      <Button title="로그인" onPress={handleSignin} />
+      {/* ✅ 공용 AppButton */}
+      <AppButton
+        labelKey="STR_LOGIN"
+        onPress={handleSignin}
+        loading={loading}
+        style={{ width: '100%' }}
+      />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: 'center', padding: 16 },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  input: {
-    width: '100%',
-    height: 48,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
+  title: { marginBottom: 24, textAlign: 'center' },
+  input: { marginBottom: 12 }, // 높이/룩앤필은 AppInput이 보장
 });
 
 export default SigninScreen;
