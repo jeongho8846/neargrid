@@ -1,3 +1,22 @@
+const dotenvFiles = {
+  dev: '.env.dev',
+  release: '.env.release',
+  prod: '.env.prod',
+};
+
+const APP_ENV = process.env.APP_ENV || 'release';
+
 module.exports = {
-  presets: ['module:@react-native/babel-preset'],
+  presets: ['@react-native/babel-preset'],
+  plugins: [
+    [
+      'module:react-native-dotenv',
+      {
+        moduleName: '@env',
+        path: dotenvFiles[APP_ENV], // ✅ APP_ENV에 맞게 env 파일 선택
+        safe: false,
+        allowUndefined: false,
+      },
+    ],
+  ],
 };
