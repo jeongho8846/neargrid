@@ -3,5 +3,6 @@
   "STR_LOGIN": "로그인",
   "STR_SIGNUP": "회원가입",
   "STR_EMAIL": "이메일",
-  "STR_PASSWORD": "비밀번호"
+  "STR_PASSWORD": "비밀번호",
+  "STR_MAP": "지도"
 }

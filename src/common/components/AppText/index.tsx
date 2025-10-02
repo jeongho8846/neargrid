@@ -9,6 +9,7 @@ type Props = TextProps & {
   variant?: keyof typeof FONT; // typography.ts에 정의된 스타일 선택
   color?: keyof typeof COLORS; // colors.ts에 정의된 색상 선택
   style?: StyleProp<TextStyle>;
+  values?: Record<string, any>; // i18n interpolation 지원
 };
 
 export default function AppText({
@@ -17,13 +18,16 @@ export default function AppText({
   color = 'text',
   style,
   children,
+  values,
   ...rest
 }: Props) {
   const { t } = useTranslation();
 
+  const content = i18nKey ? t(i18nKey, values) : children;
+
   return (
     <Text style={[FONT[variant], { color: COLORS[color] }, style]} {...rest}>
-      {i18nKey ? t(i18nKey) : children}
+      {content}
     </Text>
   );
 }
