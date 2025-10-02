@@ -1,11 +1,12 @@
-import { SignInResponseDto, Member } from './types';
+import { AuthResponseDto, Member } from './types';
 
-// DTO → Domain 변환
-export const toMember = (dto: SignInResponseDto): Member => ({
-  id: dto.memberId ?? dto.member_id, // 서버가 두 가지 필드 내려주므로 fallback 처리
-  nickname: dto.nickName,
+export const toMember = (dto: AuthResponseDto): Member => ({
+  id: dto.memberId ?? dto.member_id,
   realName: dto.realName,
+  nickname: dto.nickName,
   role: dto.roleType,
-  lastUsedDistance: parseInt(dto.lastUsedDistanceForThreadFeed, 10),
+  lastUsedDistance: dto.lastUsedDistanceForThreadFeed
+    ? parseInt(dto.lastUsedDistanceForThreadFeed, 10)
+    : undefined,
   profileImageUrl: dto.profileImageUrl ?? undefined,
 });

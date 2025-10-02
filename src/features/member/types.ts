@@ -1,22 +1,22 @@
-// ✅ 서버에서 내려주는 원본 DTO (signIn 응답)
-export type SignInResponseDto = {
+// ✅ 로그인 & 리프레시 공통 응답 DTO
+export type AuthResponseDto = {
   member_id: string; // snake_case
-  memberId: string; // camelCase (중복 필드 주의!)
-  realName: string;
+  memberId: string; // camelCase (중복으로 오는 경우 있음)
+  realName?: string;
   nickName: string;
-  roleType: 'USER' | 'ADMIN' | string; // 역할
-  lastUsedDistanceForThreadFeed: string; // 숫자지만 문자열로 옴
-  profileImageUrl: string | null;
+  profileImageUrl?: string | null;
+  roleType?: string; // 로그인에는 있지만 refresh에서는 없을 수도 있음
+  lastUsedDistanceForThreadFeed?: string;
   accessToken: string;
   refreshToken: string;
 };
 
-// ✅ 클라이언트에서 사용할 도메인 모델
+// ✅ 앱에서 사용하는 정규화된 Member 모델
 export type Member = {
   id: string;
+  realName?: string;
   nickname: string;
-  realName: string;
-  role: string;
-  lastUsedDistance: number; // 숫자로 변환
+  role?: string;
+  lastUsedDistance?: number;
   profileImageUrl?: string;
 };

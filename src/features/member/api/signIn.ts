@@ -1,8 +1,8 @@
 import { apiMember } from '../../../services/apiService';
-import { SignInResponseDto } from '../types';
+import { AuthResponseDto } from '../types';
 
 export const signIn = async (email: string, password: string) => {
-  const res = await apiMember.post<SignInResponseDto>('/member/signIn', {
+  const res = await apiMember.post<AuthResponseDto>('/member/signIn', {
     email,
     password,
   });

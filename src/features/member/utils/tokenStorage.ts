@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { SignInResponseDto, Member } from '../types';
+import { AuthResponseDto, Member } from '../types';
 import { toMember } from '../mappers';
 
 const ACCESS = 'accessToken';
@@ -24,8 +24,8 @@ export const tokenStorage = {
     return { accessToken, refreshToken };
   },
 
-  // ✅ 유저 정보 저장 (SignInResponseDto → Member 변환 후 저장)
-  saveUserInfo: async (dto: SignInResponseDto) => {
+  // ✅ 유저 정보 저장 (AuthResponseDto → Member 변환 후 저장)
+  saveUserInfo: async (dto: AuthResponseDto) => {
     const member: Member = toMember(dto); // 변환
     await AsyncStorage.setItem(USER_INFO, JSON.stringify(member));
   },

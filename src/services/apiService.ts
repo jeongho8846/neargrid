@@ -1,42 +1,15 @@
 // services/apiService.ts
 import axios, { AxiosInstance } from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Alert } from 'react-native';
 import {
   MEMBER_API_BASE_URL,
   CONTENTS_API_BASE_URL,
   CHAT_API_BASE_URL,
 } from '@env';
-import { refreshAccessToken } from '../Root/fetch/authApi';
-import { apiWithToken } from './apiWithToken'; // ✅ 분리된 목록 import
+import { tokenStorage } from '@/features/member/utils/tokenStorage';
+import { refreshTokenApi } from '@/features/member/api/refreshToken';
+import { apiWithToken } from './apiWithToken';
 
-/**
- * Access Token 가져오기
- */
-const getAccessToken = async (): Promise<string | null> => {
-  try {
-    return await AsyncStorage.getItem('accessToken');
-  } catch (e) {
-    console.error('❌ Failed to get access token', e);
-    return null;
-  }
-};
-
-/**
- * Refresh Token 가져오기
- */
-const getRefreshToken = async (): Promise<string | null> => {
-  try {
-    return await AsyncStorage.getItem('refreshToken');
-  } catch (e) {
-    console.error('❌ Failed to get refresh token', e);
-    return null;
-  }
-};
-
-/**
- * Axios 인스턴스 생성
- */
 const createApiClient = (baseURL: string): AxiosInstance => {
   const api = axios.create({
     baseURL,
@@ -44,15 +17,15 @@ const createApiClient = (baseURL: string): AxiosInstance => {
     headers: { 'Content-Type': 'application/json' },
   });
 
-  // ✅ request 인터셉터: 토큰 주입
+  // ✅ request 인터셉터: accessToken 주입
   api.interceptors.request.use(async config => {
-    const token = await getAccessToken();
+    const { accessToken } = await tokenStorage.getTokens();
     if (
-      token &&
+      accessToken &&
       config.url &&
       apiWithToken.some(path => config.url?.startsWith(path))
     ) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${accessToken}`;
       console.log(`🔐 Token attached → ${config.url}`);
     } else {
       console.log(`🌐 Public request → ${config.url}`);
@@ -86,30 +59,31 @@ const createApiClient = (baseURL: string): AxiosInstance => {
           })
             .then(token => {
               originalRequest.headers.Authorization = `Bearer ${token}`;
-              return axios(originalRequest);
+              return api(originalRequest);
             })
             .catch(queueErr => Promise.reject(queueErr));
         }
 
         isRefreshing = true;
         try {
-          const refreshToken = await getRefreshToken();
+          const { refreshToken } = await tokenStorage.getTokens();
           if (!refreshToken) throw new Error('No refresh token found');
 
-          const newTokens = await refreshAccessToken(refreshToken);
-          const newAccessToken = newTokens?.accessToken;
+          // ✅ 서버에 refresh 요청
+          const dto = await refreshTokenApi(refreshToken);
 
-          if (!newAccessToken) throw new Error('Refresh failed');
+          // ✅ 토큰/유저정보 갱신
+          await tokenStorage.saveTokens(dto.accessToken, dto.refreshToken);
+          await tokenStorage.saveUserInfo(dto);
 
-          await AsyncStorage.setItem('accessToken', newAccessToken);
+          api.defaults.headers.common.Authorization = `Bearer ${dto.accessToken}`;
+          processQueue(null, dto.accessToken);
 
-          api.defaults.headers.common.Authorization = `Bearer ${newAccessToken}`;
-          processQueue(null, newAccessToken);
-
-          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return axios(originalRequest);
+          originalRequest.headers.Authorization = `Bearer ${dto.accessToken}`;
+          return api(originalRequest);
         } catch (refreshErr) {
           processQueue(refreshErr, null);
+          await tokenStorage.clear(); // ✅ 안전하게 전부 삭제
           Alert.alert('세션 만료', '다시 로그인해주세요.');
           return Promise.reject(refreshErr);
         } finally {
@@ -123,9 +97,7 @@ const createApiClient = (baseURL: string): AxiosInstance => {
   return api;
 };
 
-/**
- * Export API Clients
- */
+// ✅ Export API Clients
 export const apiMember = createApiClient(MEMBER_API_BASE_URL);
 export const apiContents = createApiClient(CONTENTS_API_BASE_URL);
 export const apiChat = createApiClient(CHAT_API_BASE_URL);

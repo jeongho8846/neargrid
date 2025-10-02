@@ -1,11 +1,11 @@
 import { apiMember } from '@/services/apiService';
-import { SignInResponseDto } from '../types';
+import { AuthResponseDto } from '../types';
 
 let isRefreshing = false;
 
 export const refreshTokenApi = async (
   refreshToken: string,
-): Promise<SignInResponseDto> => {
+): Promise<AuthResponseDto> => {
   if (isRefreshing) {
     console.log('⚠️ refreshTokenApi 중복 실행 방지됨');
     throw new Error('중복 호출 방지');
@@ -17,7 +17,7 @@ export const refreshTokenApi = async (
   console.log('📦 보낼 refreshToken 값:', refreshToken);
 
   try {
-    const res = await apiMember.post<SignInResponseDto>(
+    const res = await apiMember.post<AuthResponseDto>(
       '/member/refreshToken',
       { refreshToken },
       { headers: { 'Content-Type': 'application/json' } },
