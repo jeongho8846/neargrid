@@ -16,7 +16,8 @@ import { COLORS } from '@/common/styles/colors';
 
 const MapScreen = () => {
   const navigation = useNavigation();
-  const { headerOffset, handleScroll, HEADER_TOTAL } = useCollapsibleHeader(56);
+  const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
+    useCollapsibleHeader(56);
 
   const data = Array.from({ length: 50 }).map((_, i) => `아이템 ${i + 1}`);
 
@@ -26,6 +27,7 @@ const MapScreen = () => {
       <AppCollapsibleHeader
         titleKey="STR_MAP"
         headerOffset={headerOffset}
+        isAtTop={isAtTop}
         onBackPress={() => navigation.goBack()}
         right={
           <TouchableOpacity onPress={() => console.log('검색')}>

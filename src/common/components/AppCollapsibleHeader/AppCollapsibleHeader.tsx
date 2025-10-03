@@ -16,6 +16,7 @@ type Props = {
   onBackPress?: () => void;
   right?: React.ReactNode;
   headerOffset: Animated.Value; // ✅ 스크롤 delta 기반 오프셋 전달
+  isAtTop: boolean; // ✅ 최상단 여부
   showBorder?: boolean;
 };
 
@@ -27,6 +28,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   onBackPress,
   right,
   headerOffset,
+  isAtTop,
   showBorder = true,
 }) => {
   const insets = useSafeAreaInsets();
@@ -44,7 +46,8 @@ const AppCollapsibleHeader: React.FC<Props> = ({
           paddingTop: insets.top,
           backgroundColor,
           transform: [{ translateY: headerOffset }],
-          borderBottomWidth: showBorder ? 1 : 0,
+          // ✅ 최상단일 때는 보더 숨김
+          borderBottomWidth: !isAtTop && showBorder ? 0.5 : 0,
         },
       ]}
     >
@@ -80,7 +83,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 
 export default AppCollapsibleHeader;
 
-// ✅ 스타일은 컴포넌트 맨 아래 배치
+// ✅ 스타일은 맨 아래
 const styles = StyleSheet.create({
   header: {
     position: 'absolute',
