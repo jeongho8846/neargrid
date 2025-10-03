@@ -3,10 +3,10 @@ import {
   Animated,
   StyleSheet,
   View,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
   Platform,
   TouchableOpacity,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -20,8 +20,8 @@ type Props = {
   headerHeight?: number;
   backgroundColor?: string;
   children: React.ReactNode;
-  onBackPress?: () => void; // 필요하면 override
-  right?: React.ReactNode; // 오른쪽 슬롯
+  onBackPress?: () => void;
+  right?: React.ReactNode;
 };
 
 const AppCollapsibleHeader: React.FC<Props> = ({
@@ -35,35 +35,39 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-  const canGoBack = navigation.canGoBack(); // ✅ 자동 감지
+  const canGoBack = navigation.canGoBack();
 
   const HEADER_TOTAL = headerHeight + insets.top;
 
-  const translateY = useRef(new Animated.Value(0)).current;
-  const lastScrollY = useRef(0);
-  const [visible, setVisible] = useState(true);
+  // 스크롤 값
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const lastY = useRef(0);
+  const [forceShow, setForceShow] = useState(false);
 
+  // ⬇️ 기본 동작: 스크롤 위치에 따라 위로 사라짐
+  const autoTranslateY = scrollY.interpolate({
+    inputRange: [0, HEADER_TOTAL],
+    outputRange: [0, -HEADER_TOTAL],
+    extrapolate: 'clamp',
+  });
+
+  // 최종 헤더 위치 = 강제 보임 or 자동
+  const translateY = forceShow ? 0 : autoTranslateY;
+
+  // 스크롤 방향 감지
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const currentY = e.nativeEvent.contentOffset.y;
-    const diff = currentY - lastScrollY.current;
+    const diff = currentY - lastY.current;
 
-    if (diff > 5 && visible) {
-      setVisible(false);
-      Animated.timing(translateY, {
-        toValue: -HEADER_TOTAL,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
-    } else if (diff < -5 && !visible) {
-      setVisible(true);
-      Animated.timing(translateY, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+    if (diff < -5) {
+      // ⬆️ 위로 조금만 올려도 → 헤더 강제 보이기
+      if (!forceShow) setForceShow(true);
+    } else if (diff > 5) {
+      // ⬇️ 내릴 때 → 자동 interpolate 모드
+      if (forceShow) setForceShow(false);
     }
 
-    lastScrollY.current = currentY;
+    lastY.current = currentY;
   };
 
   return (
@@ -71,8 +75,11 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       <Animated.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingTop: HEADER_TOTAL }}
-        onScroll={handleScroll}
         scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true, listener: handleScroll },
+        )}
       >
         {children}
       </Animated.ScrollView>
@@ -94,7 +101,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         ]}
       >
         <View style={styles.bar}>
-          {/* 좌측: 자동 뒤로가기 */}
+          {/* 좌측: 뒤로가기 */}
           <View style={styles.side}>
             {canGoBack && (
               <TouchableOpacity
@@ -111,7 +118,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
             {title}
           </AppText>
 
-          {/* 우측: 커스텀 버튼 */}
+          {/* 우측: 액션 */}
           <View style={styles.side}>{right}</View>
         </View>
       </Animated.View>
