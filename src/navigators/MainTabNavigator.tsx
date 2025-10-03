@@ -12,12 +12,26 @@ const Tab = createBottomTabNavigator();
 
 // ✅ 아이콘 렌더러
 function renderTabIcon(routeName: string, color: string, size: number) {
-  let iconName = 'ellipse';
-  if (routeName === 'Map1') iconName = 'map';
-  else if (routeName === 'Map2') iconName = 'chatbubble';
-  else if (routeName === 'Map3') iconName = 'person';
-  else if (routeName === 'Map4') iconName = 'notifications';
-  else if (routeName === 'Map5') iconName = 'settings';
+  let iconName: string = 'ellipse';
+
+  switch (routeName) {
+    case 'Map':
+      iconName = 'map';
+      break;
+    case 'Ranking':
+      iconName = 'trophy';
+      break;
+    case 'Add':
+      iconName = 'add-circle';
+      break;
+    case 'Notification':
+      iconName = 'notifications';
+      break;
+    case 'Profile':
+      iconName = 'person';
+      break;
+  }
+
   return <Ionicons name={iconName} size={size} color={color} />;
 }
 
@@ -39,29 +53,29 @@ const MainTabNavigator = () => {
       })}
     >
       <Tab.Screen
-        name="Map1"
+        name="Map"
         component={MapStack}
         options={{ tabBarLabel: '지도' }}
       />
       <Tab.Screen
-        name="Map2"
+        name="Ranking"
         component={MapStack}
-        options={{ tabBarLabel: '채팅' }}
+        options={{ tabBarLabel: '랭킹' }}
       />
       <Tab.Screen
-        name="Map3"
+        name="Add"
         component={MapStack}
-        options={{ tabBarLabel: '프로필' }}
+        options={{ tabBarLabel: '추가' }}
       />
       <Tab.Screen
-        name="Map4"
+        name="Notification"
         component={MapStack}
         options={{ tabBarLabel: '알림' }}
       />
       <Tab.Screen
-        name="Map5"
+        name="Profile"
         component={MapStack}
-        options={{ tabBarLabel: '설정' }}
+        options={{ tabBarLabel: '프로필' }}
       />
     </Tab.Navigator>
   );
