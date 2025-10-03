@@ -3,7 +3,6 @@ import {
   Animated,
   StyleSheet,
   View,
-  Platform,
   TouchableOpacity,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -13,6 +12,8 @@ import { useNavigation } from '@react-navigation/native';
 
 import AppText from '../AppText';
 import AppIcon from '../AppIcon';
+import { COLORS } from '@/common/styles/colors';
+import { FONT } from '@/common/styles/typography';
 
 type Props = {
   title?: string;
@@ -28,7 +29,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   title,
   titleKey,
   headerHeight = 56,
-  backgroundColor = '#fff',
+  backgroundColor = COLORS.background, // ✅ 공용 색상
   children,
   onBackPress,
   right,
@@ -44,14 +45,14 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const lastY = useRef(0);
   const [forceShow, setForceShow] = useState(false);
 
-  // ⬇️ 기본 동작: 스크롤 위치에 따라 위로 사라짐
+  // 기본 동작: 스크롤 위치에 따라 위로 사라짐
   const autoTranslateY = scrollY.interpolate({
     inputRange: [0, HEADER_TOTAL],
     outputRange: [0, -HEADER_TOTAL],
     extrapolate: 'clamp',
   });
 
-  // 최종 헤더 위치 = 강제 보임 or 자동
+  // 최종 헤더 위치
   const translateY = forceShow ? 0 : autoTranslateY;
 
   // 스크롤 방향 감지
@@ -60,10 +61,8 @@ const AppCollapsibleHeader: React.FC<Props> = ({
     const diff = currentY - lastY.current;
 
     if (diff < -5) {
-      // ⬆️ 위로 조금만 올려도 → 헤더 강제 보이기
       if (!forceShow) setForceShow(true);
     } else if (diff > 5) {
-      // ⬇️ 내릴 때 → 자동 interpolate 모드
       if (forceShow) setForceShow(false);
     }
 
@@ -94,10 +93,6 @@ const AppCollapsibleHeader: React.FC<Props> = ({
             backgroundColor,
             transform: [{ translateY }],
           },
-          Platform.select({
-            ios: styles.headerShadowIOS,
-            android: styles.headerShadowAndroid,
-          }),
         ]}
       >
         <View style={styles.bar}>
@@ -108,7 +103,12 @@ const AppCollapsibleHeader: React.FC<Props> = ({
                 onPress={onBackPress || (() => navigation.goBack())}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <AppIcon type="ion" name="arrow-back" size={24} color="#333" />
+                <AppIcon
+                  type="ion"
+                  name="arrow-back"
+                  size={24}
+                  color={COLORS.text}
+                />
               </TouchableOpacity>
             )}
           </View>
@@ -127,13 +127,18 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
   header: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     zIndex: 10,
+    borderBottomWidth: 1, // ✅ 보더라인 추가
+    borderBottomColor: COLORS.border,
   },
   bar: {
     height: 56,
@@ -148,17 +153,9 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: '700',
     textAlign: 'center',
+    ...FONT.title, // ✅ 공용 폰트 스타일
   },
-  headerShadowIOS: {
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-  headerShadowAndroid: { elevation: 4 },
 });
 
 export default AppCollapsibleHeader;

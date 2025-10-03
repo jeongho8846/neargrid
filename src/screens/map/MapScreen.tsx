@@ -6,7 +6,9 @@ import AppCollapsibleHeader from '../../common/components/AppCollapsibleHeader/A
 import AppText from '../../common/components/AppText';
 import AppIcon from '../../common/components/AppIcon';
 import { tokenStorage } from '@/features/member/utils/tokenStorage';
-import { decodeJwt } from '@/utils/jwt'; // 방금 만든 유틸
+import { decodeJwt } from '@/utils/jwt';
+import { COLORS } from '@/common/styles/colors';
+import { FONT } from '@/common/styles/typography';
 
 const MapScreen = () => {
   const navigation = useNavigation();
@@ -50,13 +52,13 @@ const MapScreen = () => {
       onBackPress={() => navigation.goBack()}
       right={
         <TouchableOpacity onPress={() => console.log('검색')}>
-          <AppIcon type="ion" name="search" size={22} color="#333" />
+          <AppIcon type="ion" name="search" size={22} color={COLORS.text} />
         </TouchableOpacity>
       }
     >
       <View style={styles.content}>
         <AppText i18nKey="STR_MAP_CONTENT" style={styles.text} />
-        <AppText>{expiryText}</AppText> {/* ✅ 만료시간 표시 */}
+        <AppText>{expiryText}</AppText>
         <View style={styles.mockBlock}>
           <AppText i18nKey="STR_TEST_SCROLL_CONTENT" />
         </View>
@@ -66,11 +68,16 @@ const MapScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  content: { padding: 16 },
-  text: { fontSize: 20, fontWeight: '600' },
+  content: {
+    padding: 16,
+    backgroundColor: COLORS.background,
+  },
+  text: {
+    ...FONT.title, // ✅ 제목 스타일 적용
+  },
   mockBlock: {
     height: 10000,
-    backgroundColor: '#eee',
+    backgroundColor: COLORS.background, // ✅ 임시 블록 배경
     marginTop: 16,
     justifyContent: 'center',
     alignItems: 'center',

@@ -1,17 +1,21 @@
 // src/common/styles/colors.ts
 export const COLORS = {
   // Button
-  button_active: '#9e138cff', // 활성화 (기본 파랑)
-  button_disabled: '#A0CFFF', // 비활성화 (연한 파랑/회색 계열)
-  button_pressed: '#005BBB', // 터치 중 (진한 파랑)
+  button_active: '#9e138cff',
+  button_disabled: '#A0CFFF',
+  button_pressed: '#005BBB',
 
   // Text
-  text: '#222',
+  text: '#ffffffff',
 
   // Layout
-  background: '#fff',
-  border: '#ddd',
+  background: '#110e03',
+  border: '#46464665',
 
   // System
   error: '#FF3B30',
+
+  // Navigation
+  nav_active: '#ffffff', // ✅ 활성화된 아이콘/텍스트
+  nav_inactive: '#888888', // ✅ 비활성화된 아이콘/텍스트
 };
