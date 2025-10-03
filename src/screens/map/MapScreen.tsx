@@ -1,22 +1,46 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Button } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  Button,
+  Animated,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
-import AppCollapsibleHeader from '../../common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import AppText from '../../common/components/AppText';
-import AppIcon from '../../common/components/AppIcon';
+import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
+import AppText from '@/common/components/AppText';
+import AppIcon from '@/common/components/AppIcon';
 import { tokenStorage } from '@/features/member/utils/tokenStorage';
 import { decodeJwt } from '@/utils/jwt';
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
-
-// ✅ 전역 바텀시트 스토어
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 
 const MapScreen = () => {
   const navigation = useNavigation();
   const [expiryText, setExpiryText] = useState<string>('');
   const { open, close } = useBottomSheetStore();
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const lastY = useRef(0);
+  const [forceShow, setForceShow] = useState(true);
+
+  // ✅ 스크롤 방향 감지
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentY = e.nativeEvent.contentOffset.y;
+    const diff = currentY - lastY.current;
+
+    if (diff < -5) {
+      setForceShow(true); // 스크롤 위로 → 헤더 보이기
+    } else if (diff > 5) {
+      setForceShow(false); // 스크롤 아래로 → 헤더 숨기기
+    }
+
+    lastY.current = currentY;
+  };
 
   useEffect(() => {
     const checkExpiry = async () => {
@@ -50,64 +74,79 @@ const MapScreen = () => {
   }, []);
 
   return (
-    <AppCollapsibleHeader
-      titleKey="STR_MAP"
-      showBack
-      onBackPress={() => navigation.goBack()}
-      right={
-        <TouchableOpacity onPress={() => console.log('검색')}>
-          <AppIcon type="ion" name="search" size={22} color={COLORS.text} />
-        </TouchableOpacity>
-      }
-    >
-      <View style={styles.content}>
-        <AppText i18nKey="STR_MAP_CONTENT" style={styles.text} />
-        <AppText>{expiryText}</AppText>
+    <View style={styles.container}>
+      <AppCollapsibleHeader
+        titleKey="STR_MAP"
+        scrollY={scrollY}
+        forceShow={forceShow}
+        onBackPress={() => navigation.goBack()}
+        right={
+          <TouchableOpacity onPress={() => console.log('검색')}>
+            <AppIcon type="ion" name="search" size={22} color={COLORS.text} />
+          </TouchableOpacity>
+        }
+      />
 
-        <View style={styles.mockBlock}>
-          <AppText i18nKey="STR_TEST_SCROLL_CONTENT" />
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: 100 }}
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true, listener: handleScroll },
+        )}
+      >
+        <View style={styles.content}>
+          <AppText i18nKey="STR_MAP_CONTENT" style={styles.text} />
+          <AppText>{expiryText}</AppText>
+
+          <View style={styles.mockBlock}>
+            <AppText i18nKey="STR_TEST_SCROLL_CONTENT" />
+          </View>
+
+          <Button
+            title="전역 바텀시트 열기"
+            onPress={() =>
+              open(
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    backgroundColor: 'white',
+                  }}
+                >
+                  <AppText>📝 전역 바텀시트 내용</AppText>
+                  <Button title="닫기" onPress={close} />
+                </View>,
+                ['25%', '50%'],
+              )
+            }
+          />
         </View>
-
-        {/* ✅ 전역 바텀시트 열기 버튼 */}
-        <Button
-          title="전역 바텀시트 열기"
-          onPress={() =>
-            open(
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: 'white',
-                }}
-              >
-                <AppText>📝 전역 바텀시트 내용</AppText>
-                <Button title="닫기" onPress={close} />
-              </View>,
-              ['25%', '50%'], // snapPoints
-            )
-          }
-        />
-      </View>
-    </AppCollapsibleHeader>
+      </Animated.ScrollView>
+    </View>
   );
 };
 
+export default MapScreen;
+
 const styles = StyleSheet.create({
-  content: {
-    padding: 16,
+  container: {
+    flex: 1,
     backgroundColor: COLORS.background,
   },
+  content: {
+    padding: 16,
+  },
   text: {
-    ...FONT.title, // ✅ 제목 스타일 적용
+    ...FONT.title,
   },
   mockBlock: {
     height: 3000,
-    backgroundColor: COLORS.background, // ✅ 임시 블록 배경
+    backgroundColor: COLORS.background,
     marginTop: 16,
     justifyContent: 'center',
     alignItems: 'center',
   },
 });
-
-export default MapScreen;
