@@ -3,10 +3,13 @@ import { StyleSheet, StatusBar, Platform } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+
 import RootNavigator from './src/navigators/RootNavigator';
 import { COLORS } from '@/common/styles/colors';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import './src/i18n';
+import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
 
 const MyTheme = {
   ...DefaultTheme,
@@ -40,21 +43,25 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider style={{ flex: 1, backgroundColor: COLORS.background }}>
-        <StatusBar
-          translucent={false}
-          backgroundColor={COLORS.background}
-          barStyle="light-content"
-        />
-        <NavigationContainer theme={MyTheme}>
-          <RootNavigator />
-        </NavigationContainer>
+        <BottomSheetModalProvider>
+          <StatusBar
+            translucent={false}
+            backgroundColor={COLORS.background}
+            barStyle="light-content"
+          />
+          <NavigationContainer theme={MyTheme}>
+            <RootNavigator />
+          </NavigationContainer>
+          {/* ✅ NavigationContainer 바깥에 두기 */}
+          <GlobalBottomSheet />
+        </BottomSheetModalProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
+  container: { flex: 1, width: '100%' },
 });
 
 export default App;
