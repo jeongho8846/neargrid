@@ -1,4 +1,3 @@
-// src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React from 'react';
 import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -16,8 +15,8 @@ type Props = {
   backgroundColor?: string;
   onBackPress?: () => void;
   right?: React.ReactNode;
-  scrollY: Animated.Value;
-  forceShow: boolean; // ✅ 스크롤 방향에 따라 상태 전달
+  headerOffset: Animated.Value; // ✅ 스크롤 delta 기반 오프셋 전달
+  showBorder?: boolean;
 };
 
 const AppCollapsibleHeader: React.FC<Props> = ({
@@ -27,23 +26,14 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   backgroundColor = COLORS.background,
   onBackPress,
   right,
-  scrollY,
-  forceShow,
+  headerOffset,
+  showBorder = true,
 }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const canGoBack = navigation.canGoBack();
 
   const HEADER_TOTAL = headerHeight + insets.top;
-
-  // 자동 이동값
-  const autoTranslateY = scrollY.interpolate({
-    inputRange: [0, HEADER_TOTAL],
-    outputRange: [0, -HEADER_TOTAL],
-    extrapolate: 'clamp',
-  });
-
-  const translateY = forceShow ? 0 : autoTranslateY;
 
   return (
     <Animated.View
@@ -53,7 +43,8 @@ const AppCollapsibleHeader: React.FC<Props> = ({
           height: HEADER_TOTAL,
           paddingTop: insets.top,
           backgroundColor,
-          transform: [{ translateY }],
+          transform: [{ translateY: headerOffset }],
+          borderBottomWidth: showBorder ? 1 : 0,
         },
       ]}
     >
@@ -89,6 +80,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 
 export default AppCollapsibleHeader;
 
+// ✅ 스타일은 컴포넌트 맨 아래 배치
 const styles = StyleSheet.create({
   header: {
     position: 'absolute',
@@ -96,7 +88,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-    borderBottomWidth: 1,
     borderBottomColor: COLORS.border,
   },
   bar: {
