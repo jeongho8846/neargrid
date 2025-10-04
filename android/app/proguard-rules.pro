@@ -12,3 +12,5 @@
 
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
+-keep class com.dylanvann.fastimage.** { *; }
+-keep class com.facebook.imagepipeline.** { *; }

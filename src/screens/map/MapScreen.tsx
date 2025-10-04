@@ -8,6 +8,7 @@ import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList'; // ✅ 공용 FlatList
 import { COLORS } from '@/common/styles/colors';
+import AppZoomableImage from '@/common/components/AppZoomableImage';
 
 const MapScreen = () => {
   const navigation = useNavigation();
@@ -57,7 +58,12 @@ const MapScreen = () => {
         renderItem={({ item }) => (
           <View style={styles.item}>
             <AppText style={styles.text}>{item.title}</AppText>
-            <Image source={{ uri: item.image }} style={styles.image} />
+            <AppZoomableImage
+              source={{
+                uri: 'https://picsum.photos/300/300',
+              }}
+              style={{ width: 400, height: 400, backgroundColor: 'red' }}
+            />
           </View>
         )}
         contentContainerStyle={{ paddingTop: HEADER_TOTAL }}
