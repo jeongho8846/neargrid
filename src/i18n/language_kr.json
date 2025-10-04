@@ -5,5 +5,7 @@
   "STR_EMAIL": "이메일",
   "STR_PASSWORD": "비밀번호",
   "STR_MAP": "지도",
-  "STR_NO_DATA": "데이터가 없습니다"
+  "STR_NO_DATA": "데이터가 없습니다",
+  "STR_MORE": "더 보기",
+  "STR_COLLAPSE": "간단히 보기"
 }

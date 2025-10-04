@@ -143,10 +143,10 @@ function AppFlatList<T>({
         onScrollEndDrag={onScrollEndDrag}
         scrollEventThrottle={16}
         // ✅ 성능 옵션 (인스타그램 스타일)
-        initialNumToRender={12}
-        windowSize={5}
-        maxToRenderPerBatch={5}
-        removeClippedSubviews
+        initialNumToRender={10}
+        windowSize={10}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews={false}
         ListEmptyComponent={resolvedEmpty}
         ListFooterComponent={
           loadingMore ? (
