@@ -103,7 +103,7 @@ function AppFlatList<T>({
     if (!isHorizontal) {
       if (offsetY >= screenHeight) {
         if (dy < 0 && !showButton) setShowButton(true);
-        if (dy > 0 && showButton) setShowButton(false);
+        if (dy > 10 && showButton) setShowButton(false);
       } else {
         if (showButton) setShowButton(false);
       }

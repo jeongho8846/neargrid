@@ -17,6 +17,7 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
+import { COLORS } from '@/common/styles';
 
 type Props = {
   source: Source;
@@ -154,7 +155,8 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 200,
+    flex: 1,
+    backgroundColor: COLORS.emty_imageBox,
   },
 });
 

@@ -18,4 +18,7 @@ export const COLORS = {
   // Navigation
   nav_active: '#ffffff', // ✅ 활성화된 아이콘/텍스트
   nav_inactive: '#888888', // ✅ 비활성화된 아이콘/텍스트
+
+  // Image
+  emty_imageBox: '#888888', // ✅ 비활성화된 아이콘/텍스트
 };

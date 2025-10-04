@@ -62,7 +62,7 @@ const MapScreen = () => {
               source={{
                 uri: 'https://picsum.photos/300/300',
               }}
-              style={{ width: 400, height: 400, backgroundColor: 'red' }}
+              style={{ width: 400, height: 400 }}
             />
           </View>
         )}
