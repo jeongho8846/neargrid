@@ -16,7 +16,6 @@
     "ios:prod": "cross-env APP_ENV=prod npx react-native run-ios"
   },
   "dependencies": {
-    "@d11/react-native-fast-image": "^8.12.0",
     "@gorhom/bottom-sheet": "^5.2.6",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native/new-app-screen": "0.80.2",
