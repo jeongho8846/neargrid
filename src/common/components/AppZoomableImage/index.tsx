@@ -4,7 +4,6 @@ import {
   StyleProp,
   ImageStyle,
   LayoutChangeEvent,
-  Image, // ✅ 기본 RN Image로 변경
 } from 'react-native';
 import {
   Gesture,
@@ -17,12 +16,13 @@ import Animated, {
   withTiming,
   withSpring,
 } from 'react-native-reanimated';
+import FastImage, { Source, ResizeMode } from '@d11/react-native-fast-image';
 import { COLORS } from '@/common/styles';
 
 type Props = {
-  source: any; // ✅ FastImage.Source → any (Image도 호환)
+  source: Source; // ✅ FastImage 전용 타입
   style?: StyleProp<ImageStyle>;
-  resizeMode?: 'cover' | 'contain' | 'stretch' | 'center';
+  resizeMode?: ResizeMode; // ✅ FastImage의 enum 타입
   revertOnEnd?: boolean;
   maxScale?: number;
 };
@@ -30,7 +30,7 @@ type Props = {
 const AppZoomableImage: React.FC<Props> = ({
   source,
   style,
-  resizeMode = 'cover',
+  resizeMode = FastImage.resizeMode.cover,
   revertOnEnd = true,
   maxScale = 3,
 }) => {
@@ -134,7 +134,7 @@ const AppZoomableImage: React.FC<Props> = ({
       <GestureDetector gesture={composed}>
         <Animated.View style={styles.wrapper} onLayout={onLayout}>
           <Animated.View style={animatedStyle}>
-            <Image
+            <FastImage
               source={source}
               style={[styles.image, style]}
               resizeMode={resizeMode}
