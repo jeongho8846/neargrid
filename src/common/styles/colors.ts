@@ -26,4 +26,13 @@ export const COLORS = {
   // ✅ dot 전용 컬러 추가
   dot_active: '#721bfdff', // 인스타그램 스타일 활성 dot
   dot_inactive: '#ccccccd8', // 비활성 dot
+
+  // src/common/styles/colors.ts
+
+  // ✅ Skeleton 전용
+
+  skeleton_bone_light: '#181408ff',
+  skeleton_bone_dark: 'rgba(80,80,80,0.35)', // 다크모드용 회색
+  skeleton_highlight_light: 'rgba(24, 20, 8, 0.11)',
+  skeleton_highlight_dark: 'rgba(150,150,150,0.5)', // 다크모드용 하이라이트
 };

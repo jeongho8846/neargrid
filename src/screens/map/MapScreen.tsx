@@ -96,7 +96,11 @@ const MapScreen = () => {
 
             {/* ✅ 이미지 하단 텍스트 */}
             <View style={styles.textBox}>
-              <AppTextField text={item.text} numberOfLines={3} />
+              <AppTextField
+                text={item.text}
+                numberOfLines={3}
+                isLoading={false}
+              />
             </View>
           </View>
         )}
