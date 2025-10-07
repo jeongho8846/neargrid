@@ -9,9 +9,6 @@ import AppIcon from '@/common/components/AppIcon';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import AppTextField from '@/common/components/AppTextField';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
-import AppToast from '@/common/components/AppToast';
-import AppDialog from '@/common/components/AppDialog';
-import AppBadge from '@/common/components/AppBadge'; // ✅ 배지 추가
 import { COLORS } from '@/common/styles/colors';
 
 // ✅ 더미 텍스트 생성 함수
@@ -44,7 +41,7 @@ const fetchThreadList = async (page = 0, size = 10) => {
         };
       });
       resolve(data);
-    }, 1000);
+    }, 500); // 로딩 시뮬레이션 (1.2초)
   });
 };
 
@@ -58,12 +55,6 @@ const MapScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(0);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  // ✅ Toast & Dialog & Badge 상태
-  const [toastVisible, setToastVisible] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [dialogVisible, setDialogVisible] = useState(false);
-  const [showBadge, setShowBadge] = useState(false);
 
   // ✅ 최초 로드
   useEffect(() => {
@@ -85,11 +76,6 @@ const MapScreen = () => {
     setData(prev => [...prev, ...more]);
     setPage(nextPage);
     setIsLoadingMore(false);
-
-    // ✅ 토스트 & 배지 표시
-    setToastMessage(`새 게시물 ${more.length}개 불러왔어요`);
-    setToastVisible(true);
-    setShowBadge(true); // ✅ 새 데이터가 들어오면 배지 표시
   };
 
   // ✅ 스켈레톤용 placeholder 데이터
@@ -106,28 +92,9 @@ const MapScreen = () => {
         isAtTop={isAtTop}
         onBackPress={() => navigation.goBack()}
         right={
-          <View style={{ width: 28, height: 28 }}>
-            <TouchableOpacity
-              onPress={() => {
-                setDialogVisible(true);
-                setShowBadge(false); // ✅ 다이얼로그 열면 배지 초기화
-              }}
-            >
-              <AppIcon
-                type="ion"
-                name="ellipsis-vertical"
-                size={22}
-                color={COLORS.text}
-              />
-            </TouchableOpacity>
-
-            {/* ✅ 아이콘 오른쪽 상단에 배지 표시 */}
-            {showBadge && (
-              <View style={{ position: 'absolute', top: -2, right: -2 }}>
-                <AppBadge count={100} /> {/* ✅ 숫자 전달 */}
-              </View>
-            )}
-          </View>
+          <TouchableOpacity onPress={() => console.log('검색')}>
+            <AppIcon type="ion" name="search" size={22} color={COLORS.text} />
+          </TouchableOpacity>
         }
       />
 
@@ -137,16 +104,19 @@ const MapScreen = () => {
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
+            {/* ✅ 제목 */}
             <AppText style={styles.title}>
               {isLoading ? ' ' : item.title}
             </AppText>
 
+            {/* ✅ 이미지 캐러셀 (스켈레톤 포함) */}
             <AppImageCarousel
               images={isLoading ? [] : item.images}
               height={300}
               isLoading={isLoading}
             />
 
+            {/* ✅ 본문 텍스트 (스켈레톤 포함) */}
             <View style={styles.textBox}>
               <AppTextField
                 text={isLoading ? '' : item.text}
@@ -162,30 +132,7 @@ const MapScreen = () => {
         onEndReached={loadMore}
         onEndReachedThreshold={0.2}
         useTopButton
-        loadingMore={isLoadingMore}
-      />
-
-      {/* ✅ AppDialog */}
-      <AppDialog
-        visible={dialogVisible}
-        title="새 알림 확인"
-        message="새 게시물이 추가되었습니다. 확인하시겠습니까?"
-        confirmText="확인"
-        cancelText="닫기"
-        onCancel={() => setDialogVisible(false)}
-        onConfirm={() => {
-          setDialogVisible(false);
-          setToastMessage('확인되었습니다 ✅');
-          setToastVisible(true);
-        }}
-      />
-
-      {/* ✅ AppToast */}
-      <AppToast
-        visible={toastVisible}
-        message={toastMessage}
-        onHide={() => setToastVisible(false)}
-        position="bottom"
+        loadingMore={isLoadingMore} // ✅ 이것만 추가하면 Footer 인디케이터 자동 표시
       />
     </View>
   );
@@ -211,5 +158,10 @@ const styles = StyleSheet.create({
   textBox: {
     width: '100%',
     marginTop: 8,
+  },
+  footerLoader: {
+    width: '100%',
+    paddingVertical: 24,
+    alignItems: 'center',
   },
 });
