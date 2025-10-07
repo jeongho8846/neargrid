@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
 
@@ -14,31 +19,34 @@ import { COLORS } from '@/common/styles/colors';
 // ✅ 더미 텍스트 생성 함수
 const generateText = (length: number) => '가'.repeat(length);
 
-// ✅ 임시 API 시뮬레이터
-const fetchThreadList = async () => {
+// ✅ 임시 API 시뮬레이터 (페이지 단위로)
+const fetchThreadList = async (page = 0, size = 10) => {
   return new Promise(resolve => {
     setTimeout(() => {
-      const data = Array.from({ length: 10 }).map((_, i) => {
+      const startIndex = page * size;
+      const data = Array.from({ length: size }).map((_, i) => {
+        const index = startIndex + i;
         const lengths = [50, 100, 200, 300];
-        const textLength = lengths[i % lengths.length];
+        const textLength = lengths[index % lengths.length];
         return {
-          id: i.toString(),
-          title: `아이템 ${i + 1}`,
+          id: index.toString(),
+          title: `아이템 ${index + 1}`,
           images:
-            i === 0
+            index % 3 === 0
               ? Array.from({ length: 13 }).map(
-                  (_, idx) => `https://picsum.photos/seed/${i}-${idx}/600/600`,
+                  (_, idx) =>
+                    `https://picsum.photos/seed/${index}-${idx}/600/600`,
                 )
               : [
-                  `https://picsum.photos/seed/${i}-1/600/600`,
-                  `https://picsum.photos/seed/${i}-2/600/600`,
-                  `https://picsum.photos/seed/${i}-3/600/600`,
+                  `https://picsum.photos/seed/${index}-1/600/600`,
+                  `https://picsum.photos/seed/${index}-2/600/600`,
+                  `https://picsum.photos/seed/${index}-3/600/600`,
                 ],
           text: generateText(textLength),
         };
       });
       resolve(data);
-    }, 2000); // 2초 뒤 데이터 반환
+    }, 1200); // 로딩 시뮬레이션 (1.2초)
   });
 };
 
@@ -50,23 +58,35 @@ const MapScreen = () => {
   // ✅ 상태
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // ✅ 데이터 로드
+  // ✅ 최초 로드
   useEffect(() => {
     const load = async () => {
-      const result: any = await fetchThreadList();
+      setIsLoading(true);
+      const result = await fetchThreadList(0);
       setData(result);
       setIsLoading(false);
     };
     load();
   }, []);
 
-  // ✅ 무한 스크롤 예시
+  // ✅ 무한 스크롤
   const loadMore = async () => {
-    console.log('📌 리스트 끝 도달! 더 불러오기 실행');
-    const more = await fetchThreadList(); // 여기선 동일 함수 재사용 (API면 page param)
+    if (isLoading || isLoadingMore) return;
+    setIsLoadingMore(true);
+    const nextPage = page + 1;
+    const more = await fetchThreadList(nextPage);
     setData(prev => [...prev, ...more]);
+    setPage(nextPage);
+    setIsLoadingMore(false);
   };
+
+  // ✅ 스켈레톤용 placeholder 데이터
+  const skeletonData = Array.from({ length: 5 }).map((_, i) => ({
+    id: `skeleton-${i}`,
+  }));
 
   return (
     <View style={{ flex: 1 }}>
@@ -85,15 +105,11 @@ const MapScreen = () => {
 
       {/* ✅ 공용 FlatList */}
       <AppFlatList
-        data={
-          isLoading
-            ? Array.from({ length: 5 }).map((_, i) => ({ id: `skeleton-${i}` }))
-            : data
-        }
+        data={isLoading ? skeletonData : data}
         keyExtractor={item => item.id}
         renderItem={({ item }) => (
           <View style={styles.item}>
-            {/* 제목 */}
+            {/* ✅ 제목 */}
             <AppText style={styles.title}>
               {isLoading ? ' ' : item.title}
             </AppText>
@@ -102,7 +118,7 @@ const MapScreen = () => {
             <AppImageCarousel
               images={isLoading ? [] : item.images}
               height={300}
-              isLoading={isLoading} // ✅ 전달
+              isLoading={isLoading}
             />
 
             {/* ✅ 본문 텍스트 (스켈레톤 포함) */}
@@ -110,7 +126,7 @@ const MapScreen = () => {
               <AppTextField
                 text={isLoading ? '' : item.text}
                 numberOfLines={3}
-                isLoading={isLoading} // ✅ 전달
+                isLoading={isLoading}
               />
             </View>
           </View>
@@ -121,6 +137,7 @@ const MapScreen = () => {
         onEndReached={loadMore}
         onEndReachedThreshold={0.2}
         useTopButton
+        loadingMore={isLoadingMore} // ✅ 이것만 추가하면 Footer 인디케이터 자동 표시
       />
     </View>
   );
@@ -146,5 +163,10 @@ const styles = StyleSheet.create({
   textBox: {
     width: '100%',
     marginTop: 8,
+  },
+  footerLoader: {
+    width: '100%',
+    paddingVertical: 24,
+    alignItems: 'center',
   },
 });

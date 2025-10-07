@@ -151,7 +151,7 @@ function AppFlatList<T>({
         ListFooterComponent={
           loadingMore ? (
             <View style={styles.footerWrap}>
-              <ActivityIndicator color={COLORS.button_active} />
+              <ActivityIndicator color={COLORS.text} />
             </View>
           ) : null
         }
