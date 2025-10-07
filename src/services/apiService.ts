@@ -34,65 +34,65 @@ const createApiClient = (baseURL: string): AxiosInstance => {
   });
 
   // ✅ response 인터셉터: 401 → refresh 처리
-  let isRefreshing = false;
-  let failedQueue: any[] = [];
+  // let isRefreshing = false;
+  // let failedQueue: any[] = [];
 
-  const processQueue = (error: any, token: string | null = null) => {
-    failedQueue.forEach(prom => {
-      if (error) prom.reject(error);
-      else prom.resolve(token);
-    });
-    failedQueue = [];
-  };
+  // const processQueue = (error: any, token: string | null = null) => {
+  //   failedQueue.forEach(prom => {
+  //     if (error) prom.reject(error);
+  //     else prom.resolve(token);
+  //   });
+  //   failedQueue = [];
+  // };
 
-  api.interceptors.response.use(
-    res => res,
-    async err => {
-      const originalRequest = err.config;
+  // api.interceptors.response.use(
+  //   res => res,
+  //   async err => {
+  //     const originalRequest = err.config;
 
-      if (err.response?.status === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
+  //     if (err.response?.status === 401 && !originalRequest._retry) {
+  //       originalRequest._retry = true;
 
-        if (isRefreshing) {
-          return new Promise((resolve, reject) => {
-            failedQueue.push({ resolve, reject });
-          })
-            .then(token => {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return api(originalRequest);
-            })
-            .catch(queueErr => Promise.reject(queueErr));
-        }
+  //       if (isRefreshing) {
+  //         return new Promise((resolve, reject) => {
+  //           failedQueue.push({ resolve, reject });
+  //         })
+  //           .then(token => {
+  //             originalRequest.headers.Authorization = `Bearer ${token}`;
+  //             return api(originalRequest);
+  //           })
+  //           .catch(queueErr => Promise.reject(queueErr));
+  //       }
 
-        isRefreshing = true;
-        try {
-          const { refreshToken } = await tokenStorage.getTokens();
-          if (!refreshToken) throw new Error('No refresh token found');
+  //       isRefreshing = true;
+  //       try {
+  //         const { refreshToken } = await tokenStorage.getTokens();
+  //         if (!refreshToken) throw new Error('No refresh token found');
 
-          // ✅ 서버에 refresh 요청
-          const dto = await refreshTokenApi(refreshToken);
+  //         // ✅ 서버에 refresh 요청
+  //         const dto = await refreshTokenApi(refreshToken);
 
-          // ✅ 토큰/유저정보 갱신
-          await tokenStorage.saveTokens(dto.accessToken, dto.refreshToken);
-          await tokenStorage.saveUserInfo(dto);
+  //         // ✅ 토큰/유저정보 갱신
+  //         await tokenStorage.saveTokens(dto.accessToken, dto.refreshToken);
+  //         await tokenStorage.saveUserInfo(dto);
 
-          api.defaults.headers.common.Authorization = `Bearer ${dto.accessToken}`;
-          processQueue(null, dto.accessToken);
+  //         api.defaults.headers.common.Authorization = `Bearer ${dto.accessToken}`;
+  //         processQueue(null, dto.accessToken);
 
-          originalRequest.headers.Authorization = `Bearer ${dto.accessToken}`;
-          return api(originalRequest);
-        } catch (refreshErr) {
-          processQueue(refreshErr, null);
-          await tokenStorage.clear(); // ✅ 안전하게 전부 삭제
-          Alert.alert('세션 만료', '다시 로그인해주세요.');
-          return Promise.reject(refreshErr);
-        } finally {
-          isRefreshing = false;
-        }
-      }
-      return Promise.reject(err);
-    },
-  );
+  //         originalRequest.headers.Authorization = `Bearer ${dto.accessToken}`;
+  //         return api(originalRequest);
+  //       } catch (refreshErr) {
+  //         processQueue(refreshErr, null);
+  //         await tokenStorage.clear(); // ✅ 안전하게 전부 삭제
+  //         Alert.alert('세션 만료', '다시 로그인해주세요.');
+  //         return Promise.reject(refreshErr);
+  //       } finally {
+  //         isRefreshing = false;
+  //       }
+  //     }
+  //     return Promise.reject(err);
+  //   },
+  // );
 
   return api;
 };

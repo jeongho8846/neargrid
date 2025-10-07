@@ -7,7 +7,6 @@ export const apiWithToken: string[] = [
   '/member/signUp/checkDuplicateEmail',
   '/member/signUp/checkDuplicateNickName',
   '/member/signOut',
-  '/member/refreshToken',
   '/member/updateProfileText',
   '/member/updateNickName',
   '/member/updateRealName',
