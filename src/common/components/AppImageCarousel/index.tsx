@@ -8,9 +8,10 @@ import {
   NativeScrollEvent,
   Text,
 } from 'react-native';
-import FastImage from '@d11/react-native-fast-image'; // ✅ prefetch용 import
+import FastImage from '@d11/react-native-fast-image';
 import AppZoomableImage from '../AppZoomableImage';
 import DotIndicator from './DotIndicator';
+import Skeleton from 'react-native-reanimated-skeleton';
 import { COLORS } from '@/common/styles/colors';
 
 const { width } = Dimensions.get('window');
@@ -18,13 +19,15 @@ const { width } = Dimensions.get('window');
 type Props = {
   images: string[];
   height?: number;
-  prefetchCount?: number; // ✅ 다음 몇 장을 미리 캐싱할지 설정 가능 (기본 2)
+  prefetchCount?: number;
+  isLoading?: boolean;
 };
 
 const AppImageCarousel: React.FC<Props> = ({
   images,
   height = 300,
   prefetchCount = 2,
+  isLoading = false,
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
 
@@ -49,50 +52,77 @@ const AppImageCarousel: React.FC<Props> = ({
     prefetchNextImages(nextIndex);
   };
 
-  /** ✅ 초기 진입 시 첫 번째 이미지 다음 2장 미리 캐싱 */
+  /** ✅ 초기 prefetch */
   useEffect(() => {
-    if (images.length > 1) {
+    if (!isLoading && images.length > 1) {
       prefetchNextImages(0);
     }
-  }, [images]);
+  }, [images, isLoading]);
 
   return (
     <View style={{ width, height }}>
-      {/* ✅ 이미지 리스트 */}
-      <FlatList
-        data={images}
-        keyExtractor={(_, i) => i.toString()}
-        renderItem={({ item }) => (
-          <AppZoomableImage source={{ uri: item }} style={{ width, height }} />
-        )}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onMomentumScrollEnd={handleMomentumEnd}
-        style={{ height }}
-      />
-
-      {/* ✅ 숫자 카운터 */}
-      {images.length > 1 && (
-        <View style={styles.counterWrap}>
-          <View style={styles.counterBox}>
-            <Text style={styles.counterText}>
-              {activeIndex + 1} / {images.length}
-            </Text>
-          </View>
-        </View>
-      )}
-
-      {/* ✅ Dot indicator */}
-      {images.length > 1 && (
-        <View style={styles.dotWrap}>
-          <DotIndicator
-            curPage={activeIndex}
-            maxPage={images.length}
-            activeDotColor={COLORS.dot_active}
-            inactiveDotColor={COLORS.dot_inactive}
+      {/* ✅ 로딩 중 Skeleton */}
+      {isLoading ? (
+        <Skeleton
+          isLoading
+          hasFadeIn
+          duration={1200}
+          animationType="pulse"
+          boneColor={COLORS.skeleton_bone_light} // ✅ 공용 색상 (light/dark 자동 대응)
+          highlightColor={COLORS.skeleton_highlight_light}
+          containerStyle={styles.skeletonContainer}
+          layout={[
+            {
+              key: 'imageSkeleton',
+              width: '100%',
+              height,
+              borderRadius: 8,
+            },
+          ]}
+        />
+      ) : (
+        <>
+          {/* ✅ 이미지 리스트 */}
+          <FlatList
+            data={images}
+            keyExtractor={(_, i) => i.toString()}
+            renderItem={({ item }) => (
+              <AppZoomableImage
+                source={{ uri: item }}
+                style={{ width, height }}
+                isLoading={false}
+              />
+            )}
+            horizontal
+            pagingEnabled
+            showsHorizontalScrollIndicator={false}
+            onMomentumScrollEnd={handleMomentumEnd}
+            style={{ height }}
           />
-        </View>
+
+          {/* ✅ 이미지 카운터 */}
+          {images.length > 1 && (
+            <View style={styles.counterWrap}>
+              <View style={styles.counterBox}>
+                <Text style={styles.counterText}>
+                  {activeIndex + 1} / {images.length}
+                </Text>
+              </View>
+            </View>
+          )}
+
+          {/* ✅ Dot indicator */}
+          {images.length > 1 && (
+            <View style={styles.dotWrap}>
+              <DotIndicator
+                curPage={activeIndex}
+                maxPage={images.length}
+                activeDotColor={COLORS.dot_active}
+                inactiveDotColor={COLORS.dot_inactive}
+              />
+            </View>
+          )}
+        </>
       )}
     </View>
   );
@@ -119,8 +149,13 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   counterText: {
-    color: '#fff',
+    color: COLORS.text,
     fontSize: 12,
     fontWeight: '500',
+  },
+  skeletonContainer: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: COLORS.background, // ✅ 투명 대신 테마 배경색
   },
 });
