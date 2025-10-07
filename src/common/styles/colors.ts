@@ -16,6 +16,9 @@ export const COLORS = {
   // System
   error: '#FF3B30',
 
+  //badge
+  badge_background: '#ff6259ff',
+
   // Navigation
   nav_active: '#FFFFFF', // ✅ 활성화된 아이콘/텍스트
   nav_inactive: '#888888', // ✅ 비활성화된 아이콘/텍스트
