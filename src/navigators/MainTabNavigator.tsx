@@ -7,6 +7,7 @@ import MapStack from './stackNavigator/main/MapStack';
 import CustomTabBar from './components/CustomTabBar'; // 👈 커스텀 탭바
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
+import FeedStack from './stackNavigator/main/FeedStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -18,7 +19,7 @@ function renderTabIcon(routeName: string, color: string, size: number) {
     case 'Map':
       iconName = 'map';
       break;
-    case 'Ranking':
+    case 'FeedStack':
       iconName = 'trophy';
       break;
     case 'Add':
@@ -58,13 +59,13 @@ const MainTabNavigator = () => {
         options={{ tabBarLabel: '지도' }}
       />
       <Tab.Screen
-        name="Ranking"
-        component={MapStack}
-        options={{ tabBarLabel: '랭킹' }}
+        name="FeedStack"
+        component={FeedStack}
+        options={{ tabBarLabel: '피드' }}
       />
       <Tab.Screen
         name="Add"
-        component={MapStack}
+        component={FeedStack}
         options={{ tabBarLabel: '추가' }}
       />
       <Tab.Screen

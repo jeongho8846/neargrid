@@ -1,7 +1,7 @@
 import React from 'react';
 import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import AppText from '../AppText';
 import AppIcon from '../AppIcon';
@@ -33,9 +33,13 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 }) => {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
+  const route = useRoute();
   const canGoBack = navigation.canGoBack();
 
   const HEADER_TOTAL = headerHeight + insets.top;
+
+  // ✅ 특정 스택의 루트 스크린에서는 강제 숨김
+  const hideBackButton = route.name === 'Feed' || route.name === 'Map';
 
   return (
     <Animated.View
@@ -54,7 +58,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       <View style={styles.bar}>
         {/* 좌측: 뒤로가기 */}
         <View style={styles.side}>
-          {canGoBack && (
+          {!hideBackButton && canGoBack && (
             <TouchableOpacity
               onPress={onBackPress || (() => navigation.goBack())}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}

@@ -97,43 +97,6 @@ const MapScreen = () => {
           </TouchableOpacity>
         }
       />
-
-      {/* ✅ 공용 FlatList */}
-      <AppFlatList
-        data={isLoading ? skeletonData : data}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            {/* ✅ 제목 */}
-            <AppText style={styles.title}>
-              {isLoading ? ' ' : item.title}
-            </AppText>
-
-            {/* ✅ 이미지 캐러셀 (스켈레톤 포함) */}
-            <AppImageCarousel
-              images={isLoading ? [] : item.images}
-              height={300}
-              isLoading={isLoading}
-            />
-
-            {/* ✅ 본문 텍스트 (스켈레톤 포함) */}
-            <View style={styles.textBox}>
-              <AppTextField
-                text={isLoading ? '' : item.text}
-                numberOfLines={3}
-                isLoading={isLoading}
-              />
-            </View>
-          </View>
-        )}
-        contentContainerStyle={{ paddingTop: HEADER_TOTAL }}
-        scrollEventThrottle={16}
-        onScroll={handleScroll}
-        onEndReached={loadMore}
-        onEndReachedThreshold={0.2}
-        useTopButton
-        loadingMore={isLoadingMore} // ✅ 이것만 추가하면 Footer 인디케이터 자동 표시
-      />
     </View>
   );
 };

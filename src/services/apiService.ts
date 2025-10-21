@@ -1,13 +1,11 @@
 // services/apiService.ts
 import axios, { AxiosInstance } from 'axios';
-import { Alert } from 'react-native';
 import {
   MEMBER_API_BASE_URL,
   CONTENTS_API_BASE_URL,
   CHAT_API_BASE_URL,
 } from '@env';
 import { tokenStorage } from '@/features/member/utils/tokenStorage';
-import { refreshTokenApi } from '@/features/member/api/refreshToken';
 import { apiWithToken } from './apiWithToken';
 
 const createApiClient = (baseURL: string): AxiosInstance => {
