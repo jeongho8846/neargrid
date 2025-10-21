@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
   container: {
     width: '100%',
     justifyContent: 'flex-start',
-    backgroundColor: 'transparent', // ✅ 디버깅용 투명
   },
   skeletonContainer: {
     width: '100%',

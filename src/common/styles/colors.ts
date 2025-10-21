@@ -8,10 +8,20 @@ export const COLORS = {
   text: '#FFFFFFFF', // 기본 본문 텍스트 (흰색)
   text_secondary: '#919191ff', // ✅ 보조 텍스트 (연한 회색)
   text_muted: '#8A8A8A', // ✅ 더 연한 회색 (hint/placeholder 용)
+  danger: '#FF3B30', // 경고/삭제 등
+
+  // Text Bubble
+  text_bubble_background: '#25054dff',
+  text_bubble_border: '#1b1b1bff',
 
   // Layout
   background: '#110e03',
   border: '#46464665',
+
+  //bottom sheet
+  sheet_background: '#1c1c1cff',
+  sheet_handle: '#444444ff',
+  sheet_backdrop: 'rgba(0,0,0,0.7)',
 
   // System
   error: '#FF3B30',
