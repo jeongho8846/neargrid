@@ -4,6 +4,7 @@ import AppText from '@/common/components/AppText';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
 import AppTextField from '@/common/components/AppTextField';
 import AppIcon from '@/common/components/AppIcon';
+import AppProfileImage from '@/common/components/AppProfileImage'; // ✅ 추가
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
@@ -25,6 +26,12 @@ const ThreadItemDetail: React.FC<Props> = ({
     <View style={styles.container}>
       {/* ✅ 작성자 정보 */}
       <View style={styles.header}>
+        <AppProfileImage
+          imageUrl={item.memberProfileImageUrl}
+          memberId={item.memberId}
+          canGoToProfileScreen
+          size={36}
+        />
         <AppText style={styles.nickName} isLoading={isLoading}>
           {item.memberNickName}
         </AppText>
@@ -94,8 +101,15 @@ const styles = StyleSheet.create({
   },
   header: {
     width: '100%',
-    paddingHorizontal: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.sm,
+  },
+  profileImage: {
+    width: 36,
+    height: 36,
   },
   nickName: {
     ...FONT.body,

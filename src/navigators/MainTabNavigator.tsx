@@ -1,6 +1,5 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import MapStack from './stackNavigator/main/MapStack';
@@ -8,6 +7,7 @@ import CustomTabBar from './components/CustomTabBar'; // 👈 커스텀 탭바
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 import FeedStack from './stackNavigator/main/FeedStack';
+import ProfileStack from './stackNavigator/main/ProfileStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -37,8 +37,6 @@ function renderTabIcon(routeName: string, color: string, size: number) {
 }
 
 const MainTabNavigator = () => {
-  const insets = useSafeAreaInsets();
-
   return (
     <Tab.Navigator
       tabBar={props => <CustomTabBar {...props} />} // 👈 커스텀 탭바 적용
@@ -75,7 +73,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Profile"
-        component={MapStack}
+        component={ProfileStack}
         options={{ tabBarLabel: '프로필' }}
       />
     </Tab.Navigator>

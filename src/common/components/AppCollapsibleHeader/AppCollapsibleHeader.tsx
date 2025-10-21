@@ -39,7 +39,8 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const HEADER_TOTAL = headerHeight + insets.top;
 
   // ✅ 특정 스택의 루트 스크린에서는 강제 숨김
-  const hideBackButton = route.name === 'Feed' || route.name === 'Map';
+  const hideBackButton =
+    route.name === 'Feed' || route.name === 'Map' || route.name === 'Profile';
 
   return (
     <Animated.View
