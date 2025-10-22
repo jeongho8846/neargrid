@@ -46,7 +46,7 @@ const ThreadActionBar: React.FC<Props> = ({
   }, [thread.threadId]);
 
   const onPressShare = useCallback(() => {
-    openThreadShareSheet({ thread });
+    openThreadShareSheet({ threadId: thread.threadId });
   }, [thread]);
 
   const onPressDonate = useCallback(() => {
