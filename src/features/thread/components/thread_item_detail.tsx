@@ -134,6 +134,7 @@ const ThreadItemDetail: React.FC<Props> = ({
       </TouchableOpacity>
 
       {/* 액션바: 로딩 중엔 비활성/스켈레톤 */}
+
       <ThreadActionBar thread={item} isLoading={isLoading} />
     </View>
   );

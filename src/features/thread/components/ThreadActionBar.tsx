@@ -14,21 +14,26 @@ import { openThreadCommentListSheet } from '../sheets/openThreadCommentListSheet
 import { openThreadShareSheet } from '../sheets/openThreadShareSheet';
 import { openDonateSheet } from '../sheets/openDonateSheet';
 
+// ✅ 타입 전용 import로 런타임 번들에서 제외
+type ListParams = Parameters<
+  typeof import('../keys/threadKeys').THREAD_KEYS.list
+>;
+
 type Props = {
   thread: Thread;
   isLoading?: boolean;
-  listParams?: any[];
+  listParams?: ListParams;
 };
 
 const ThreadActionBar: React.FC<Props> = ({
   thread,
   isLoading = false,
-  listParams = [],
+  listParams = [] as ListParams,
 }) => {
   const { liked, likeCount, toggleLike, inflight } = useThreadLike({
     threadId: thread.threadId,
-    initialLiked: false,
-    initialCount: thread.popularityScore ?? 0,
+    initialLiked: thread.reactedByCurrentMember,
+    initialCount: thread.reactionCount ?? 0,
     listParams,
   });
 
@@ -54,34 +59,34 @@ const ThreadActionBar: React.FC<Props> = ({
   return (
     <View style={styles.container}>
       <View style={styles.rowLeft}>
-        {/* 하트 */}
         <ContentsHeartButton
           liked={liked}
           onToggle={toggleLike}
           isLoading={isLoading}
-          disabled={inflight}
+          disabled={inflight || !thread.available || thread.hiddenDueToReport}
         />
 
-        {/* 하트 ↔ 좋아요수 = SPACING.sm */}
+        {/* ❤️ 좋아요 수 (likeCount 사용) */}
         <View style={{ marginLeft: SPACING.sm }}>
           <ContentsIconCountButton
-            count={likeCount}
+            count={likeCount} // ✅ fix: thread.commentThreadCount → likeCount
             onPress={onPressLikeCount}
             isLoading={isLoading}
             accessibilityLabel="좋아요한 유저 보기"
           />
         </View>
 
-        {/* 좋아요수 ↔ 댓글 = SPACING.md */}
+        {/* 💬 댓글 수 */}
         <View style={{ marginLeft: SPACING.md }}>
           <ContentsIconCountButton
             icon={{ type: 'ion', name: 'chatbubble-outline', size: 20 }}
-            count={0} // TODO: 댓글 수 연결
+            count={thread.commentThreadCount ?? 0}
             onPress={onPressComment}
             isLoading={isLoading}
             accessibilityLabel="댓글 보기"
           />
         </View>
+
         <View style={{ marginLeft: SPACING.md }}>
           <ContentsShareButton onPress={onPressShare} isLoading={isLoading} />
         </View>
@@ -101,14 +106,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingHorizontal: SPACING.sm,
     paddingTop: SPACING.md,
-
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  rowLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    // gap 제거: 개별 marginLeft로 컨트롤
-  },
+  rowLeft: { flexDirection: 'row', alignItems: 'center' },
   rowRight: { flexDirection: 'row', alignItems: 'center', gap: 14 },
 });

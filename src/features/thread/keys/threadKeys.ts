@@ -7,4 +7,5 @@ export const THREAD_KEYS = {
       memberId ?? '',
       distance ?? '',
     ] as const,
+  detail: (id: string) => [...THREAD_KEYS.all, 'detail', id] as const,
 };

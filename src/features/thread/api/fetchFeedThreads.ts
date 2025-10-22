@@ -1,6 +1,6 @@
 import { apiContents } from '@/services/apiService';
 import { FetchThreadsResponse, Thread } from '../model/ThreadModel';
-import { mapThreadResponse } from '../mappers/threadMapper';
+import { mapServerThread } from '../mappers/threadMapper';
 
 export const fetchFeedThreads = async (
   member_id: string,
@@ -46,14 +46,14 @@ export const fetchFeedThreads = async (
     const response = await apiContents.get(apiEndpoint, { params });
     const data = response.data as FetchThreadsResponse;
 
-    const threads = data.threadResponseSingleDtos.map(mapThreadResponse);
+    const threads = data.threadResponseSingleDtos.map(mapServerThread);
     const threadIds = threads.map(t => t.threadId);
 
     console.log('✅ [fetchFeedThreads] Response:', {
       status: response.status,
       count: threads.length,
       nextCursorMark: data.nextCursorMark,
-      sample: threads[0],
+      sample: data.threadResponseSingleDtos[0],
     });
 
     return {

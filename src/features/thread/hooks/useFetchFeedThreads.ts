@@ -1,6 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { fetchFeedThreads } from '../api/fetchFeedThreads';
-import { THREAD_KEYS } from './keys';
+import { THREAD_KEYS } from '../keys/threadKeys';
 import { Thread } from '../model/ThreadModel';
 
 type FetchFeedThreadsResult = {

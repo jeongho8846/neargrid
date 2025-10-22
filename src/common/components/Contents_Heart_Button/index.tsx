@@ -30,13 +30,15 @@ const ContentsHeartButton: React.FC<Props> = ({
   const scale = useSharedValue(1);
 
   const handlePress = useCallback(() => {
+    if (disabled || isLoading) return; // ✅ 중복 방지
+
     // 팝 애니메이션
     scale.value = withSequence(
       withSpring(1.2),
       withTiming(1, { duration: 120 }),
     );
     onToggle();
-  }, [onToggle, scale]);
+  }, [onToggle, scale, disabled, isLoading]);
 
   const rStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
