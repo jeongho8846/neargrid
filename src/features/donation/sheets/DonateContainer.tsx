@@ -4,17 +4,22 @@ import { Platform, ToastAndroid, Alert } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import Contents_Donate_Viewer from '@/features/donation/components/Contents_Donate_Viewer';
 import { useDonate } from '@/features/donation/hooks/useDonate';
+import { openChargeSheet } from '@/features/donation/sheets/openChargeSheet'; // ✅ 추가
 
 type Props = {
   currentMemberId: string;
   threadId: string;
   currentPoint?: number;
+  bankType: string; // ✅ 추가 (예: 'SHINHAN')
+  accountNo: string; // ✅ 추가 (예: '1002233756246')
 };
 
 const DonateContainer: React.FC<Props> = ({
   currentMemberId,
   threadId,
   currentPoint = 0,
+  // bankType,
+  // accountNo,
 }) => {
   const { close } = useBottomSheetStore();
   const { donate, loading } = useDonate();
@@ -48,7 +53,6 @@ const DonateContainer: React.FC<Props> = ({
         point: n,
         message,
       });
-
       toast('기부가 완료되었습니다');
       close();
     } catch (e: any) {
@@ -67,7 +71,17 @@ const DonateContainer: React.FC<Props> = ({
       onChangeMessage={setMessage}
       onPressDonate={handleDonate}
       onPressCancel={close}
-      onPressCharge={() => toast('충전은 별도 시트로 분리 예정')}
+      // ✅ 충전 시트로 전환
+      onPressCharge={() =>
+        openChargeSheet({
+          currentMemberId,
+          threadId,
+          currentPoint,
+          // 선택: 초기값
+          defaultBank: 'SHINHAN',
+          defaultAccount: '',
+        })
+      }
     />
   );
 };

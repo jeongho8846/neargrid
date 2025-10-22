@@ -159,4 +159,5 @@ export const apiWithToken: string[] = [
   '/chatBot/updateIsPrivate',
   '/thread/attachThreadToHubThread',
   '/donation/createDonationThread',
+  '/payment/createPayment',
 ];
