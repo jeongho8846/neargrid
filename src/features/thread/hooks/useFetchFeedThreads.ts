@@ -20,41 +20,64 @@ type Params = {
   searchType: 'POPULARITY' | 'RECOMMENDED' | 'MOSTRECENT';
 };
 
-export const useFetchFeedThreads = ({
-  memberId,
-  distance,
-  latitude,
-  longitude,
-  searchType,
-}: Params) => {
+type Options = {
+  enabled?: boolean;
+};
+
+export const useFetchFeedThreads = (
+  { memberId, distance, latitude, longitude, searchType }: Params,
+  { enabled = true }: Options = {},
+) => {
   return useInfiniteQuery<
-    FetchFeedThreadsResult, // API 결과 타입
-    Error, // 에러 타입
-    Thread[], // select 결과 타입
-    ReturnType<typeof THREAD_KEYS.list>, // queryKey 타입
-    string // pageParam 타입
+    FetchFeedThreadsResult,
+    Error,
+    Thread[],
+    ReturnType<typeof THREAD_KEYS.list>,
+    string
   >({
     queryKey: THREAD_KEYS.list(searchType, memberId, distance),
-
-    // ✅ 필수! 초기 커서값 지정 (React Query v5부터 필수)
     initialPageParam: '',
 
     // ✅ 페이지 호출 함수
-    queryFn: ({ pageParam }) =>
-      fetchFeedThreads(
+    queryFn: ({ pageParam }) => {
+      // ⬇️⬇️⬇️ 여기 추가 ⬇️⬇️⬇️
+      if (!memberId) {
+        console.warn('⚠️ [useFetchFeedThreads] memberId 없음 → 요청 스킵');
+        return Promise.resolve({
+          threads: [],
+          threadIds: [],
+          nextCursorMark: null,
+        });
+      }
+
+      console.log('📡 [useFetchFeedThreads] 요청 파라미터', {
+        memberId,
+        distance,
+        latitude,
+        longitude,
+        searchType,
+        pageParam,
+      });
+      // ⬆️⬆️⬆️ 여기 추가 끝 ⬆️⬆️⬆️
+
+      return fetchFeedThreads(
         memberId,
         distance,
         pageParam,
         latitude,
         longitude,
         searchType,
-      ),
+      );
+    },
 
     // ✅ 다음 페이지 커서
     getNextPageParam: lastPage =>
       lastPage.nextCursorMark ? lastPage.nextCursorMark : undefined,
 
-    // ✅ 모든 페이지 평탄화 (배열 합치기)
+    // ✅ 모든 페이지 평탄화
     select: data => data.pages.flatMap(page => page.threads),
+
+    // ✅ member가 아직 로드 안됐으면 호출 안함
+    enabled,
   });
 };

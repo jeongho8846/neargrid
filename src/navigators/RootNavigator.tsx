@@ -3,8 +3,8 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthStack from './AuthStack';
 import MainTabNavigator from './MainTabNavigator';
 import { useRefresh } from '@/features/member/hooks/useRefresh';
-import { tokenStorage } from '@/features/member/utils/tokenStorage';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { memberStorage } from '@/features/member/utils/memberStorage';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,7 +14,7 @@ const RootNavigator = () => {
 
   useEffect(() => {
     const bootstrap = async () => {
-      const user = await tokenStorage.getUserInfo();
+      const user = await memberStorage.getMember();
       if (user) {
         setIsAuth(true);
 
@@ -28,7 +28,7 @@ const RootNavigator = () => {
     };
 
     bootstrap();
-  }, []);
+  }, [refresh]);
 
   if (isAuth === null) {
     return (

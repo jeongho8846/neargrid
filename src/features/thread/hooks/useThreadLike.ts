@@ -3,22 +3,21 @@ import { useMemo, useState } from 'react';
 import { THREAD_KEYS } from '../keys/threadKeys';
 import { Thread } from '../model/ThreadModel';
 import { updateThreadReaction } from '../api/updateThreadReaction';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember'; // ✅ 추가
 
 type ListParams = Parameters<typeof THREAD_KEYS.list>;
 
 type UseThreadLikeParams = {
   threadId: string;
-  currentMemberId?: string;
-  // 초기값은 Thread에서 가져옴
+  currentMemberId?: string; // 이제 선택적으로 유지 (직접 전달할 수도 있게)
   initialLiked: boolean;
   initialCount: number;
-  // THREAD_KEYS.list(type, memberId, distance) 그대로 넣어줄 것
-  listParams?: ListParams; // ✅ 통일
+  listParams?: ListParams;
 };
 
 export function useThreadLike({
   threadId,
-  currentMemberId = '682867966802399783',
+  currentMemberId, // ✅ 기본값 제거
   initialLiked,
   initialCount,
   listParams = [],
@@ -26,6 +25,10 @@ export function useThreadLike({
   const qc = useQueryClient();
   const [liked, setLiked] = useState<boolean>(initialLiked);
   const [likeCount, setLikeCount] = useState<number>(initialCount);
+
+  // ✅ AsyncStorage에서 로그인 유저 정보 가져오기
+  const { member } = useCurrentMember();
+  const resolvedMemberId = currentMemberId || member?.id;
 
   const targets = useMemo(
     () => ({
@@ -37,8 +40,15 @@ export function useThreadLike({
 
   const { mutate, isPending } = useMutation({
     mutationFn: async (nextLiked: boolean) => {
-      // true → create, false → delete
-      await updateThreadReaction({ threadId, currentMemberId, nextLiked });
+      if (!resolvedMemberId) {
+        console.warn('⚠️ [useThreadLike] memberId 없음 → 요청 스킵');
+        return;
+      }
+      await updateThreadReaction({
+        threadId,
+        currentMemberId: resolvedMemberId,
+        nextLiked,
+      });
     },
     onMutate: async nextLiked => {
       await Promise.all([
@@ -49,7 +59,7 @@ export function useThreadLike({
       const prevList = qc.getQueryData<any>(targets.listKey);
       const prevDetail = qc.getQueryData<Thread>(targets.detailKey);
 
-      // detail 갱신
+      // ✅ Detail 캐시 즉시 반영
       if (prevDetail) {
         qc.setQueryData<Thread>(targets.detailKey, {
           ...prevDetail,
@@ -61,7 +71,7 @@ export function useThreadLike({
         });
       }
 
-      // list 갱신 (무한스크롤 / 일반 리스트 모두 커버)
+      // ✅ List 캐시 즉시 반영 (무한스크롤 / 일반 리스트 모두 지원)
       if (prevList?.pages) {
         const newPages = prevList.pages.map((page: any) => {
           const items: Thread[] = page?.items ?? page ?? [];
@@ -96,7 +106,7 @@ export function useThreadLike({
         qc.setQueryData(targets.listKey, mapped);
       }
 
-      // 로컬 상태 즉시 반영
+      // ✅ 로컬 상태 즉시 반영
       setLiked(nextLiked);
       setLikeCount(c => Math.max(0, c + (nextLiked ? 1 : -1)));
 
@@ -114,7 +124,13 @@ export function useThreadLike({
     },
   });
 
-  const toggleLike = () => mutate(!liked);
+  const toggleLike = () => {
+    if (!resolvedMemberId) {
+      console.warn('⚠️ [useThreadLike] 로그인 정보 없음 → 좋아요 불가');
+      return;
+    }
+    mutate(!liked);
+  };
 
   return { liked, likeCount, toggleLike, inflight: isPending };
 }

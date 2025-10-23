@@ -1,37 +1,31 @@
-import { useState } from 'react';
+// src/features/member/hooks/useRefresh.ts
+import { useState, useCallback } from 'react';
 import { refreshTokenApi } from '../api/refreshToken';
 import { tokenStorage } from '../utils/tokenStorage';
 import { toMember } from '../mappers';
-import { Member } from '../types';
+import { memberStorage } from '../utils/memberStorage';
 
 export const useRefresh = () => {
   const [loading, setLoading] = useState(false);
 
-  const refresh = async (): Promise<{ success: boolean; member?: Member }> => {
+  const refresh = useCallback(async (): Promise<{ success: boolean }> => {
     setLoading(true);
     try {
-      const { refreshToken, accessToken } = await tokenStorage.getTokens();
-      if (!refreshToken) {
-        console.log('❌ refreshToken 없음 → 로그인 필요');
-        return { success: false };
-      }
+      const { refreshToken } = await tokenStorage.getTokens();
+      if (!refreshToken) return { success: false };
 
-      // ✅ API 호출
       const dto = await refreshTokenApi(refreshToken);
-
-      // ✅ 토큰 / 유저정보 저장
       await tokenStorage.saveTokens(dto.accessToken, dto.refreshToken);
-      await tokenStorage.saveUserInfo(dto);
-
       const member = toMember(dto);
-      return { success: true, member };
+      await memberStorage.saveMember(member);
+      return { success: true };
     } catch (e) {
       console.log('❌ 자동 로그인 실패:', e);
       return { success: false };
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // ✅ useCallback으로 고정
 
   return { refresh, loading };
 };

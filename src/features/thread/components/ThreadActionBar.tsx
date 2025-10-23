@@ -13,6 +13,7 @@ import { openThreadLikeListSheet } from '../sheets/openThreadLikeListSheet';
 import { openThreadCommentListSheet } from '../sheets/openThreadCommentListSheet';
 import { openThreadShareSheet } from '../sheets/openThreadShareSheet';
 import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember'; // ✅ 추가
 
 // ✅ 타입 전용 import로 런타임 번들에서 제외
 type ListParams = Parameters<
@@ -36,6 +37,7 @@ const ThreadActionBar: React.FC<Props> = ({
     initialCount: thread.reactionCount ?? 0,
     listParams,
   });
+  const { member } = useCurrentMember();
 
   const onPressLikeCount = useCallback(() => {
     openThreadLikeListSheet({ threadId: thread.threadId });
@@ -50,12 +52,16 @@ const ThreadActionBar: React.FC<Props> = ({
   }, [thread]);
 
   const onPressDonate = useCallback(() => {
+    if (!member || !member.id) {
+      console.warn('⚠️ 로그인 정보 없음 → 도네이션 시트 열지 않음');
+      return;
+    }
     openDonateSheet({
-      currentMemberId: '682867966802399783', // ✅ 실제 로그인 유저 id
-      threadId: thread.threadId, // hread 모델의 threadId✅ T
-      currentPoint: 0, // 선택
+      currentMemberId: member.id, // ✅ AsyncStorage에서 불러온 ID
+      threadId: thread.threadId,
+      currentPoint: 0, // 필요 시 추후 유저 포인트로 대체 가능
     });
-  }, [thread.threadId]);
+  }, [member, thread.threadId]);
 
   return (
     <View style={styles.container}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { signIn } from '../api/signIn';
 import { tokenStorage } from '../utils/tokenStorage';
 import { toMember } from '../mappers';
+import { memberStorage } from '../utils/memberStorage';
 
 export const useSignin = () => {
   const [loading, setLoading] = useState(false);
@@ -15,9 +16,10 @@ export const useSignin = () => {
       );
 
       await tokenStorage.saveTokens(accessToken, refreshToken);
-      await tokenStorage.saveUserInfo(dto);
 
       const member = toMember(dto);
+      await memberStorage.saveMember(member);
+
       return { success: true, member };
     } catch (err: any) {
       console.log('❌ 로그인 실패:', err?.response || err);

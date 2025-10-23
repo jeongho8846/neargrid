@@ -10,21 +10,29 @@ import { COLORS } from '@/common/styles/colors';
 import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 import { createEmptyThread, Thread } from '@/features/thread/model/ThreadModel';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 
 const FeedScreen = () => {
   const navigation = useNavigation();
   const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
     useCollapsibleHeader(56);
 
+  const { member, loading: memberLoading } = useCurrentMember();
+
   // ✅ React Query 훅
   const { data, isLoading, fetchNextPage, isFetchingNextPage } =
-    useFetchFeedThreads({
-      memberId: '682867966802399783',
-      distance: 10000000000000000,
-      latitude: 37.5,
-      longitude: 127.0,
-      searchType: 'MOSTRECENT',
-    });
+    useFetchFeedThreads(
+      {
+        memberId: member?.id ?? '', // 타입에러 방지
+        distance: 10000000000000000,
+        latitude: 37.5,
+        longitude: 127.0,
+        searchType: 'MOSTRECENT',
+      },
+      {
+        enabled: !!member?.id && !memberLoading,
+      },
+    );
 
   // ✅ 스켈레톤용 더미 데이터
   const skeletonData: Thread[] = Array.from({ length: 5 }).map((_, i) =>
