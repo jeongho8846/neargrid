@@ -6,17 +6,34 @@ buildscript {
         targetSdkVersion = 35
         ndkVersion = "26.1.10909125"
 
+        // ✅ Kotlin + Coroutines 버전 명시
         kotlinVersion = "2.1.20"
+        coroutinesVersion = "1.9.0"
     }
+
     repositories {
         google()
         mavenCentral()
     }
+
     dependencies {
-        classpath("com.android.tools.build:gradle")
+        classpath("com.android.tools.build:gradle:8.5.2")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin")
+        classpath("com.google.gms:google-services:4.4.2")
+
     }
 }
 
 apply plugin: "com.facebook.react.rootproject"
+
+// ✅ 모든 서브모듈에 공통 dependency 주입
+gradle.projectsEvaluated {
+    rootProject.allprojects { project ->
+        project.configurations.configureEach {
+            resolutionStrategy {
+                force "org.jetbrains.kotlinx:kotlinx-coroutines-android:${coroutinesVersion}"
+            }
+        }
+    }
+}

@@ -11,6 +11,7 @@ import { COLORS } from '@/common/styles/colors';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 import './src/i18n';
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
+import { initFCM } from '@/services/notification/fcmService';
 
 // ✅ 전역 QueryClient 생성
 const queryClient = new QueryClient();
@@ -37,8 +38,15 @@ const App = () => {
         StatusBar.setTranslucent(false);
         StatusBar.setBackgroundColor(COLORS.background, true);
       }
+
+      // ✅ Firebase 네이티브 초기화가 완전히 끝난 뒤 FCM 시작
+      const timer = setTimeout(() => {
+        // initFCM();
+      }, 800); // ← 0.8초 정도 지연
+
+      return () => clearTimeout(timer);
     } catch (err) {
-      console.warn('⚠️ System bar color change failed', err);
+      console.warn('⚠️ System bar or FCM init failed', err);
     }
   }, []);
 

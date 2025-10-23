@@ -1,4 +1,4 @@
-package com.neargrid
+package com.papayasns
 
 import android.app.Application
 import com.facebook.react.PackageList
