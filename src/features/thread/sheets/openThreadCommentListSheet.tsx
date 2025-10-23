@@ -1,8 +1,9 @@
-// src/features/thread/sheets/openThreadCommentListSheet.tsx
 import React from 'react';
-import { View } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import AppText from '@/common/components/AppText';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
+import ThreadCommentList from '../lists/ThreadCommentList';
+import { SPACING } from '@/common/styles/spacing';
 
 export const openThreadCommentListSheet = ({
   threadId,
@@ -11,9 +12,17 @@ export const openThreadCommentListSheet = ({
 }) => {
   const { open } = useBottomSheetStore.getState();
   open(
-    <View>
-      <AppText>댓글 리스트 (threadId: {threadId})</AppText>
+    <View style={styles.container}>
+      <AppText style={styles.title}>댓글</AppText>
+      <ThreadCommentList threadId={threadId} />
     </View>,
-    { snapPoints: ['95%'], initialIndex: 1 },
+    { snapPoints: ['90%'], initialIndex: 1 },
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  title: { fontSize: 18, marginBottom: SPACING.sm, alignSelf: 'center' },
+});

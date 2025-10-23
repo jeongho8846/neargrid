@@ -1,8 +1,7 @@
-// src/common/components/AppProfileImage/index.tsx
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import FastImage from '@d11/react-native-fast-image';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
 
@@ -17,21 +16,31 @@ type Props = {
   size?: number;
 };
 
+/**
+ * ✅ 안전한 네비게이션 훅 호출 (NavigationContext 외부일 경우 null 반환)
+ */
+function useSafeNavigation(): NavigationProp<any> | null {
+  try {
+    return useNavigation<NavigationProp<any>>();
+  } catch {
+    return null;
+  }
+}
+
 const AppProfileImage: React.FC<Props> = ({
   imageUrl,
   canGoToProfileScreen = false,
   memberId,
-  size = 40, // ✅ 기본값 40px
+  size = 40,
 }) => {
-  const navigation = useNavigation<any>();
+  const navigation = useSafeNavigation();
 
   const handlePress = () => {
-    if (!canGoToProfileScreen || !memberId) return;
+    if (!canGoToProfileScreen || !memberId || !navigation) return;
     navigation.navigate('Profile', { memberId });
   };
 
   const hasImage = !!imageUrl;
-
   const Wrapper = canGoToProfileScreen ? TouchableOpacity : View;
 
   return (
@@ -64,7 +73,7 @@ const AppProfileImage: React.FC<Props> = ({
           <AppIcon
             type="ion"
             name="person-circle-outline"
-            size={size} // ✅ size 비율로 자동 맞춤
+            size={size}
             color={COLORS.text}
           />
         </View>

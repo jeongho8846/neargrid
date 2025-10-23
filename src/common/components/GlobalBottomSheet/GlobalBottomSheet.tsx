@@ -80,6 +80,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: 'transparent',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.xs,
   },
 });
