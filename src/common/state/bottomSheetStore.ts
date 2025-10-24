@@ -6,14 +6,16 @@ import type { BottomSheetModal } from '@gorhom/bottom-sheet';
 type Snap = Array<number | string>;
 type OpenOptions = {
   snapPoints?: Snap;
-  initialIndex?: number; // 추가
+  initialIndex?: number;
+  onCloseCallback?: () => void; // ✅ 추가
 };
 
 type State = {
   ref: BottomSheetModal | null;
   content: ReactNode | null;
   snapPoints: Snap;
-  initialIndex: number; // 추가
+  initialIndex: number;
+  onCloseCallback?: () => void; // ✅ 추가
 };
 
 type Actions = {
@@ -26,7 +28,8 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
   ref: null,
   content: null,
   snapPoints: ['50%'],
-  initialIndex: 0, // 기본 0
+  initialIndex: 0,
+  onCloseCallback: undefined, // ✅ 초기값 추가
 
   setRef: ref => set({ ref }),
 
@@ -39,9 +42,14 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
     const index =
       typeof opts?.initialIndex === 'number' ? opts!.initialIndex : 0;
 
-    set({ content, snapPoints: snap, initialIndex: index });
+    set({
+      content,
+      snapPoints: snap,
+      initialIndex: index,
+      onCloseCallback: opts?.onCloseCallback, // ✅ 저장
+    });
 
-    // present → 곧바로 원하는 스냅 인덱스로
+    // ✅ 시트 열기
     requestAnimationFrame(() => {
       const modal = get().ref;
       if (!modal) return;
@@ -51,7 +59,10 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
   },
 
   close: () => {
-    get().ref?.dismiss?.();
-    set({ content: null });
+    const { ref, onCloseCallback } = get();
+    ref?.dismiss?.();
+    // ✅ 닫을 때 콜백 실행
+    if (onCloseCallback) onCloseCallback();
+    set({ content: null, onCloseCallback: undefined });
   },
 }));

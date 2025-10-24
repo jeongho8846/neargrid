@@ -1,17 +1,18 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, StatusBar, Platform } from 'react-native';
+import { StyleSheet, StatusBar, Platform, Keyboard } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
 import RootNavigator from './src/navigators/RootNavigator';
-import { COLORS } from '@/common/styles/colors';
-import changeNavigationBarColor from 'react-native-navigation-bar-color';
-import './src/i18n';
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
-import { initFCM } from '@/services/notification/fcmService';
+import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
+import { COLORS } from '@/common/styles/colors';
+import { useKeyboardStore } from '@/common/state/keyboardStore'; // ✅ 전역 키보드 store
+import './src/i18n';
 
 // ✅ 전역 QueryClient 생성
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const MyTheme = {
 };
 
 const App = () => {
+  // ✅ 시스템 바, FCM 초기화
   useEffect(() => {
     try {
       changeNavigationBarColor(COLORS.background, true);
@@ -39,7 +41,7 @@ const App = () => {
         StatusBar.setBackgroundColor(COLORS.background, true);
       }
 
-      // ✅ Firebase 네이티브 초기화가 완전히 끝난 뒤 FCM 시작
+      // Firebase 네이티브 초기화가 완전히 끝난 뒤 FCM 시작
       const timer = setTimeout(() => {
         // initFCM();
       }, 800); // ← 0.8초 정도 지연
@@ -50,10 +52,27 @@ const App = () => {
     }
   }, []);
 
+  // ✅ 전역 키보드 감지 → store 업데이트
+  useEffect(() => {
+    const { setKeyboard } = useKeyboardStore.getState();
+
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboard(true, e.endCoordinates.height);
+    });
+
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboard(false, 0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider style={{ flex: 1, backgroundColor: COLORS.background }}>
-        {/* ✅ React Query Provider를 앱 전체 감싸기 */}
         <QueryClientProvider client={queryClient}>
           <BottomSheetModalProvider>
             <StatusBar
@@ -61,12 +80,17 @@ const App = () => {
               backgroundColor={COLORS.background}
               barStyle="light-content"
             />
+
+            {/* ✅ 네비게이션 */}
             <NavigationContainer theme={MyTheme}>
               <RootNavigator />
             </NavigationContainer>
 
-            {/* ✅ NavigationContainer 바깥에 두기 */}
+            {/* ✅ 전역 바텀시트 */}
             <GlobalBottomSheet />
+
+            {/* ✅ 전역 인풋바 */}
+            <GlobalInputBar />
           </BottomSheetModalProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
