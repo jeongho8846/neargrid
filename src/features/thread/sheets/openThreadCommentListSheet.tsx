@@ -1,6 +1,7 @@
-// ✅ openThreadCommentListSheet.tsx
+// src/features/thread/sheets/openThreadCommentListSheet.tsx
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
+import { useLocationStore } from '@/features/location/state/locationStore';
 import ThreadCommentList from '../lists/ThreadCommentList';
 import { createThreadComment } from '../api/createThreadComment';
 import { View, StyleSheet } from 'react-native';
@@ -9,7 +10,6 @@ import { SPACING } from '@/common/styles/spacing';
 
 export const openThreadCommentListSheet = ({
   threadId,
-  currentMemberId,
 }: {
   threadId: string;
   currentMemberId: string;
@@ -26,20 +26,35 @@ export const openThreadCommentListSheet = ({
     {
       snapPoints: ['90%'],
       initialIndex: 1,
-      onCloseCallback: closeInputBar, // ✅ 여기서 타입 에러 없음!
+      onCloseCallback: closeInputBar,
     },
   );
 
   openInputBar({
     placeholder: '댓글을 입력하세요...',
     onSubmit: async text => {
-      await createThreadComment({ threadId, text, currentMemberId });
-      // TODO: 댓글 새로고침
+      const { latitude, longitude } = useLocationStore.getState();
+      if (!latitude || !longitude) {
+        console.warn('위치 정보 없음');
+        return;
+      }
+
+      await createThreadComment({
+        threadId,
+        description: text,
+      });
+
+      console.log('댓글 등록 완료 ✅');
+      // TODO: 댓글 리스트 새로고침
     },
   });
 };
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  title: { fontSize: 18, marginBottom: SPACING.sm, alignSelf: 'center' },
+  title: {
+    fontSize: 18,
+    marginBottom: SPACING.sm,
+    alignSelf: 'center',
+  },
 });

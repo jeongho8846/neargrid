@@ -6,6 +6,7 @@ import {
   StyleSheet,
   NativeSyntheticEvent,
   TextInputContentSizeChangeEventData,
+  Keyboard,
 } from 'react-native';
 import Animated, {
   useAnimatedKeyboard,
@@ -27,11 +28,11 @@ const GlobalInputBar = () => {
     useGlobalInputBarStore();
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
-  const [inputHeight, setInputHeight] = useState(LINE_HEIGHT * 1); // 기본 1줄 정도 높이
+  const [inputHeight, setInputHeight] = useState(LINE_HEIGHT * 1);
 
   const keyboard = useAnimatedKeyboard();
 
-  // ✅ 키보드에 따라 인풋바 이동
+  // ✅ 키보드 애니메이션
   const animatedStyle = useAnimatedStyle(() => {
     const keyboardHeight = keyboard.height.value;
     const translateY = keyboardHeight > 0 ? -keyboardHeight : 0;
@@ -54,15 +55,16 @@ const GlobalInputBar = () => {
     onSubmit?.(text.trim());
     setText('');
     close();
+    Keyboard.dismiss();
   };
 
-  // ✅ 높이 계산 (패딩 보정 포함)
+  // ✅ 높이 계산
   const handleContentSizeChange = (
     e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
   ) => {
     const newHeight = e.nativeEvent.contentSize.height;
-    const maxHeight = LINE_HEIGHT * MAX_LINES + SPACING.sm * 2; // padding 고려
-    const adjustedHeight = newHeight + SPACING.sm * 1.5; // ✅ 보정치 추가
+    const maxHeight = LINE_HEIGHT * MAX_LINES + SPACING.sm * 2;
+    const adjustedHeight = newHeight + SPACING.sm * 1.5;
     setInputHeight(Math.min(adjustedHeight, maxHeight));
   };
 
@@ -90,10 +92,13 @@ const GlobalInputBar = () => {
           onChangeText={setText}
           multiline
           autoFocus
-          scrollEnabled={inputHeight >= LINE_HEIGHT * MAX_LINES} // ✅ 내부 스크롤
+          scrollEnabled={inputHeight >= LINE_HEIGHT * MAX_LINES}
           onContentSizeChange={handleContentSizeChange}
           textAlignVertical="top"
           underlineColorAndroid="transparent"
+          blurOnSubmit={false} // ✅ 엔터 누를 때 포커스 유지
+          onSubmitEditing={() => {}} // ✅ 엔터키로 submit 막기
+          returnKeyType="default" // ✅ "전송" 키 대신 줄바꿈용
         />
 
         <TouchableOpacity onPress={handleSend} style={styles.sendBtn}>
@@ -118,26 +123,25 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    alignItems: 'center', // ✅ 세로 가운데 정렬 (flex-end → center)
+    alignItems: 'center',
     paddingHorizontal: SPACING.md,
-    paddingVertical: SPACING.xs, // ✅ 상하 패딩 최소화
+    paddingVertical: SPACING.xs,
   },
   input: {
     flex: 1,
     flexShrink: 1,
     ...FONT.body,
     color: COLORS.text,
-    height: 36, // ✅ 명시적으로 기본 높이 지정
-    paddingVertical: 0, // ✅ 내부 여백 제거
+    height: 36,
+    paddingVertical: 0,
     paddingHorizontal: SPACING.md,
     borderRadius: 18,
     backgroundColor: COLORS.sheet_background,
     paddingTop: LINE_HEIGHT * 0.5,
   },
-
   sendBtn: {
     marginLeft: SPACING.sm,
-    paddingBottom: 2, // ✅ 살짝 정렬 보정
+    paddingBottom: 2,
   },
 });
 

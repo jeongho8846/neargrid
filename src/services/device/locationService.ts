@@ -1,26 +1,30 @@
+// src/features/location/utils/locationWatcher.ts
 import Geolocation from 'react-native-geolocation-service';
 import { useLocationStore } from '@/features/location/state/locationStore';
 
 let watchId: number | null = null;
 
-/** 앱 시작 시 3초마다 위치 추적 시작 */
+/** 앱 시작 시 3초마다 위치 추적 시작 (latitude / longitude / altitude 모두 저장) */
 export const startWatchingLocation = () => {
   const { setLocation } = useLocationStore.getState();
 
-  if (watchId) return; // 중복 방지
+  if (watchId) return; // ✅ 중복 실행 방지
 
   watchId = Geolocation.watchPosition(
     position => {
-      const { latitude, longitude } = position.coords;
-      setLocation(latitude, longitude);
-      console.log(`[GPS] 위치 갱신됨 → lat: ${latitude}, lon: ${longitude}`);
+      const { latitude, longitude, altitude } = position.coords;
+
+      setLocation(latitude, longitude, altitude ?? null); // ✅ 고도까지 스토어에 저장
+      // console.log(
+      //   `[GPS] 위치 갱신됨 → lat: ${latitude}, lon: ${longitude}, alt: ${altitude}`,
+      // );
     },
     error => {
       console.warn('[GPS] 감시 에러:', error);
     },
     {
       enableHighAccuracy: true,
-      interval: 3000, // 3초 간격으로 위치 요청
+      interval: 3000, // ✅ 3초 간격으로 위치 요청
       fastestInterval: 2000,
       distanceFilter: 0,
     },
@@ -36,17 +40,24 @@ export const stopWatchingLocation = () => {
   }
 };
 
-/** 단발성 현재 위치 */
+/** 단발성 현재 위치 가져오기 (고도 포함) */
 export const getCurrentLocation = (): Promise<{
   latitude: number;
   longitude: number;
+  altitude: number | null;
 }> => {
   return new Promise((resolve, reject) => {
     Geolocation.getCurrentPosition(
       pos => {
-        const { latitude, longitude } = pos.coords;
-        console.log(`[GPS] 현재 위치: lat=${latitude}, lon=${longitude}`);
-        resolve({ latitude, longitude });
+        const { latitude, longitude, altitude } = pos.coords;
+        console.log(
+          `[GPS] 현재 위치: lat=${latitude}, lon=${longitude}, alt=${altitude}`,
+        );
+        resolve({
+          latitude,
+          longitude,
+          altitude: altitude ?? null, // ✅ altitude가 undefined일 경우 null로 변환
+        });
       },
       err => {
         console.warn('[GPS] 현재 위치 가져오기 실패:', err);
