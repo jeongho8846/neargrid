@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { StyleSheet, StatusBar, Platform, Keyboard } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -11,7 +11,7 @@ import RootNavigator from './src/navigators/RootNavigator';
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 import { COLORS } from '@/common/styles/colors';
-import { useKeyboardStore } from '@/common/state/keyboardStore'; // ✅ 전역 키보드 store
+import { useKeyboardStore } from '@/common/state/keyboardStore';
 import './src/i18n';
 
 // ✅ 전역 QueryClient 생성
@@ -44,7 +44,7 @@ const App = () => {
       // Firebase 네이티브 초기화가 완전히 끝난 뒤 FCM 시작
       const timer = setTimeout(() => {
         // initFCM();
-      }, 800); // ← 0.8초 정도 지연
+      }, 800);
 
       return () => clearTimeout(timer);
     } catch (err) {
@@ -72,27 +72,30 @@ const App = () => {
 
   return (
     <GestureHandlerRootView style={styles.container}>
-      <SafeAreaProvider style={{ flex: 1, backgroundColor: COLORS.background }}>
-        <QueryClientProvider client={queryClient}>
-          <BottomSheetModalProvider>
-            <StatusBar
-              translucent={false}
-              backgroundColor={COLORS.background}
-              barStyle="light-content"
-            />
+      <SafeAreaProvider>
+        {/* ✅ 모든 화면에 공통 SafeArea 적용 */}
+        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <QueryClientProvider client={queryClient}>
+            <BottomSheetModalProvider>
+              <StatusBar
+                translucent={false}
+                backgroundColor={COLORS.background}
+                barStyle="light-content"
+              />
 
-            {/* ✅ 네비게이션 */}
-            <NavigationContainer theme={MyTheme}>
-              <RootNavigator />
-            </NavigationContainer>
+              {/* ✅ 네비게이션 */}
+              <NavigationContainer theme={MyTheme}>
+                <RootNavigator />
+              </NavigationContainer>
 
-            {/* ✅ 전역 바텀시트 */}
-            <GlobalBottomSheet />
+              {/* ✅ 전역 바텀시트 */}
+              <GlobalBottomSheet />
 
-            {/* ✅ 전역 인풋바 */}
-            <GlobalInputBar />
-          </BottomSheetModalProvider>
-        </QueryClientProvider>
+              {/* ✅ 전역 인풋바 */}
+              <GlobalInputBar />
+            </BottomSheetModalProvider>
+          </QueryClientProvider>
+        </SafeAreaView>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
@@ -100,6 +103,10 @@ const App = () => {
 
 const styles = StyleSheet.create({
   container: { flex: 1, width: '100%' },
+  safeArea: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
 });
 
 export default App;

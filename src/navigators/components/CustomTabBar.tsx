@@ -17,8 +17,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 
-const MIN_HEIGHT = 50;
-const MAX_HEIGHT = 80;
+const MIN_HEIGHT = 20;
+const MAX_HEIGHT = 30;
 
 const CustomTabBar = ({
   state,
@@ -84,13 +84,7 @@ const CustomTabBar = ({
 
   return (
     <GestureDetector gesture={gesture}>
-      <Animated.View
-        style={[
-          styles.container,
-          animatedContainerStyle,
-          { paddingBottom: insets.bottom },
-        ]}
-      >
+      <Animated.View style={[styles.container, animatedContainerStyle]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
 
@@ -154,7 +148,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: COLORS.background,
     borderTopColor: COLORS.border,
-    borderTopWidth: 0.5,
+    borderTopWidth: 2,
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
     borderTopLeftRadius: 20,
@@ -164,6 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    zIndex: 999,
   },
   tabItem: {
     flex: 1,

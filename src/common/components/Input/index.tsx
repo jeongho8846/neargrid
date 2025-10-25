@@ -64,6 +64,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     fontSize: FONT.body.fontSize,
     color: COLORS.text,
+    flexShrink: 1, // ✅ 부모 영역 안에서 줄바꿈되어도 가로길이 고정
   },
   errorBorder: {
     borderColor: COLORS.error,
