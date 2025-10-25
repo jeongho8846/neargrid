@@ -1,27 +1,49 @@
 // src/features/thread/sheets/openThreadCommentListSheet.tsx
+import { View, StyleSheet } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
-import { useLocationStore } from '@/features/location/state/locationStore';
-import ThreadCommentList from '../lists/ThreadCommentList';
+import { memberStorage } from '@/features/member/utils/memberStorage';
 import { createThreadComment } from '../api/createThreadComment';
-import { View, StyleSheet } from 'react-native';
+import ThreadCommentList, {
+  ThreadCommentListRef,
+} from '../lists/ThreadCommentList';
 import AppText from '@/common/components/AppText';
 import { SPACING } from '@/common/styles/spacing';
 
-export const openThreadCommentListSheet = ({
+/**
+ * ✅ Hook 금지 구역
+ * Hook(useRef, useState 등) 대신 일반 객체로 ref 관리
+ */
+export const openThreadCommentListSheet = async ({
   threadId,
 }: {
   threadId: string;
-  currentMemberId: string;
 }) => {
   const { open } = useBottomSheetStore.getState();
   const { open: openInputBar, close: closeInputBar } =
     useGlobalInputBarStore.getState();
 
+  // ✅ 일반 객체로 ref 대체
+  const listRef: { current: ThreadCommentListRef | null } = { current: null };
+
+  const member = await memberStorage.getMember();
+  if (!member) {
+    console.warn('로그인 유저 정보 없음');
+    return;
+  }
+
+  // ✅ 시트 열기
   open(
     <View style={styles.container}>
       <AppText style={styles.title}>댓글</AppText>
-      <ThreadCommentList threadId={threadId} />
+
+      {/* ref 연결 */}
+      <ThreadCommentList
+        ref={r => {
+          listRef.current = r;
+        }}
+        threadId={threadId}
+      />
     </View>,
     {
       snapPoints: ['90%'],
@@ -30,22 +52,37 @@ export const openThreadCommentListSheet = ({
     },
   );
 
+  // ✅ 인풋바 열기
   openInputBar({
     placeholder: '댓글을 입력하세요...',
     onSubmit: async text => {
-      const { latitude, longitude } = useLocationStore.getState();
-      if (!latitude || !longitude) {
-        console.warn('위치 정보 없음');
-        return;
-      }
+      if (!text.trim()) return;
 
-      await createThreadComment({
-        threadId,
+      const tempId = `${member.id}_${Date.now()}`;
+      const tempComment = {
+        commentThreadId: tempId,
         description: text,
-      });
+        memberNickName: member.nickname,
+        memberProfileImageUrl: member.profileImageUrl ?? '',
+        createDatetime: new Date().toISOString(),
+        isPending: true,
+      };
+      listRef.current?.addOptimisticComment(tempComment as any);
 
-      console.log('댓글 등록 완료 ✅');
-      // TODO: 댓글 리스트 새로고침
+      try {
+        const res = await createThreadComment({
+          threadId,
+          description: text,
+        });
+
+        listRef.current?.replaceTempComment(tempId, {
+          ...res,
+          isPending: false,
+        });
+      } catch (err) {
+        console.error('댓글 등록 실패:', err);
+        listRef.current?.removeTempComment(tempId);
+      }
     },
   });
 };

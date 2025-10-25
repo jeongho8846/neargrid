@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useCallback } from 'react';
+// src/features/thread/lists/ThreadCommentList.tsx
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  forwardRef,
+  useImperativeHandle,
+} from 'react';
 import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
 import { fetchThreadComments } from '../api/fetchThreadComments';
@@ -7,13 +14,16 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 
-type Props = {
-  threadId: string;
-  /** ✅ 외부에서 강제로 새로고침할 때 refetchTrigger 변경 */
-  refetchTrigger?: number;
+export type ThreadCommentListRef = {
+  addOptimisticComment: (comment: ThreadComment) => void;
+  replaceTempComment: (tempId: string, newComment: ThreadComment) => void;
+  removeTempComment: (tempId: string) => void;
 };
 
-const ThreadCommentList: React.FC<Props> = ({ threadId, refetchTrigger }) => {
+const ThreadCommentList = forwardRef<
+  ThreadCommentListRef,
+  { threadId: string }
+>(({ threadId }, ref) => {
   const { member } = useCurrentMember();
   const [comments, setComments] = useState<ThreadComment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +44,21 @@ const ThreadCommentList: React.FC<Props> = ({ threadId, refetchTrigger }) => {
 
   useEffect(() => {
     loadComments();
-  }, [loadComments, refetchTrigger]);
+  }, [loadComments]);
+
+  useImperativeHandle(ref, () => ({
+    addOptimisticComment: comment => {
+      setComments(prev => [comment, ...prev]);
+    },
+    replaceTempComment: (tempId, newComment) => {
+      setComments(prev =>
+        prev.map(c => (c.commentThreadId === tempId ? newComment : c)),
+      );
+    },
+    removeTempComment: tempId => {
+      setComments(prev => prev.filter(c => c.commentThreadId !== tempId));
+    },
+  }));
 
   if (loading)
     return (
@@ -59,7 +83,7 @@ const ThreadCommentList: React.FC<Props> = ({ threadId, refetchTrigger }) => {
       showsVerticalScrollIndicator={false}
     />
   );
-};
+});
 
 const styles = StyleSheet.create({
   loading: {
@@ -73,7 +97,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   listContent: {
-    paddingBottom: 80, // 인풋바 높이 확보
+    paddingBottom: 80,
   },
 });
 

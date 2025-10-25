@@ -24,7 +24,7 @@ const MAX_LINES = 3;
 const LINE_HEIGHT = FONT.body.fontSize ?? 20;
 
 const GlobalInputBar = () => {
-  const { isVisible, text, placeholder, setText, onSubmit, close } =
+  const { isVisible, text, placeholder, setText, onSubmit } =
     useGlobalInputBarStore();
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
@@ -54,7 +54,7 @@ const GlobalInputBar = () => {
     if (!text.trim()) return;
     onSubmit?.(text.trim());
     setText('');
-    close();
+
     Keyboard.dismiss();
   };
 
