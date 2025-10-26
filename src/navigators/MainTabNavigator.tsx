@@ -1,20 +1,20 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import MapStack from './stackNavigator/main/MapStack';
-import CustomTabBar from './components/CustomTabBar'; // 👈 커스텀 탭바
-import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
 import FeedStack from './stackNavigator/main/FeedStack';
 import ProfileStack from './stackNavigator/main/ProfileStack';
+import CustomTabBar from './components/CustomTabBar';
+import { COLORS } from '@/common/styles/colors';
+import { FONT } from '@/common/styles/typography';
 
 const Tab = createBottomTabNavigator();
 
 // ✅ 아이콘 렌더러
 function renderTabIcon(routeName: string, color: string, size: number) {
   let iconName: string = 'ellipse';
-
   switch (routeName) {
     case 'Map':
       iconName = 'map';
@@ -32,14 +32,20 @@ function renderTabIcon(routeName: string, color: string, size: number) {
       iconName = 'person';
       break;
   }
-
   return <Ionicons name={iconName} size={size} color={color} />;
+}
+
+// ✅ FeedStack 내부 특정 화면(DetailThread)에서 탭 숨김
+function getTabBarDisplay(route: any) {
+  const routeName = getFocusedRouteNameFromRoute(route) ?? '';
+  if (routeName === 'DetailThread') return 'none';
+  return 'flex';
 }
 
 const MainTabNavigator = () => {
   return (
     <Tab.Navigator
-      tabBar={props => <CustomTabBar {...props} />} // 👈 커스텀 탭바 적용
+      tabBar={props => <CustomTabBar {...props} />}
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: COLORS.nav_active,
@@ -59,7 +65,10 @@ const MainTabNavigator = () => {
       <Tab.Screen
         name="FeedStack"
         component={FeedStack}
-        options={{ tabBarLabel: '피드' }}
+        options={({ route }) => ({
+          tabBarLabel: '피드',
+          tabBarStyle: { display: getTabBarDisplay(route) }, // 👈 여기서 제어
+        })}
       />
       <Tab.Screen
         name="Add"

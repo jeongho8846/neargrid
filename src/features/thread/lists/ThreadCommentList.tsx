@@ -1,13 +1,15 @@
-// src/features/thread/lists/ThreadCommentList.tsx
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
+import ThreadItemDetail from '../components/thread_item_detail';
 import { fetchThreadComments } from '../api/fetchThreadComments';
+import { Thread } from '../model/ThreadModel';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import { SPACING } from '@/common/styles/spacing';
 
 export type ThreadCommentListRef = {
   addOptimisticComment: (comment: ThreadComment) => void;
@@ -17,10 +19,11 @@ export type ThreadCommentListRef = {
 
 type Props = {
   threadId: string;
+  headerThread?: Thread | null;
 };
 
 const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
-  ({ threadId }, ref) => {
+  ({ threadId, headerThread }, ref) => {
     const { member } = useCurrentMember();
     const queryClient = useQueryClient();
 
@@ -35,8 +38,8 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
           threadId,
           currentMemberId: member?.id ?? '',
         }).then(res => res.commentThreadResponseDtos || []),
-      enabled: !!member,
-      staleTime: 1000 * 60 * 0, // 바로바로 갱신, 지정한 시간동안 다시 api 호출 안함
+      enabled: !!member?.id && !!threadId,
+      staleTime: 0,
       gcTime: 1000 * 60 * 10,
     });
 
@@ -77,7 +80,7 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
               memberNickName: '',
               memberProfileImageUrl: '',
               createDatetime: '',
-              isSkeleton: true, // 이제 타입 에러 ❌
+              isSkeleton: true,
             }}
           />
         )}
@@ -87,6 +90,9 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
           queryClient.invalidateQueries({
             queryKey: ['threadComments', threadId],
           })
+        }
+        ListHeaderComponent={
+          headerThread ? <ThreadItemDetail item={headerThread} /> : null
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -102,6 +108,8 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
   },
 );
 
+export default ThreadCommentList;
+
 const styles = StyleSheet.create({
   empty: {
     alignItems: 'center',
@@ -110,8 +118,6 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   listContent: {
-    paddingBottom: 80,
+    paddingBottom: SPACING.xl * 3,
   },
 });
-
-export default ThreadCommentList;

@@ -20,7 +20,6 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
   const isSkeleton = comment.isSkeleton === true;
 
   if (isSkeleton) {
-    // ✅ 프리셋 스켈레톤 (심플형)
     return (
       <View style={[styles.container, { opacity: 0.9 }]}>
         <AppSkeletonPreset type="simple" />
@@ -62,7 +61,7 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
           onToggle={() => {}}
           size={18}
         />
-        {comment.reactionCount && comment.reactionCount > 0 && (
+        {!!comment.reactionCount && (
           <AppText style={styles.likeCount}>{comment.reactionCount}</AppText>
         )}
       </View>
@@ -80,7 +79,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.sm,
   },
 
-  /** LEFT */
   left: {
     width: 40,
     alignItems: 'center',
@@ -88,7 +86,6 @@ const styles = StyleSheet.create({
     top: SPACING.xs,
   },
 
-  /** CENTER */
   center: {
     flex: 1,
     marginLeft: SPACING.sm,
@@ -118,7 +115,6 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
 
-  /** RIGHT */
   right: {
     alignItems: 'center',
     justifyContent: 'center',

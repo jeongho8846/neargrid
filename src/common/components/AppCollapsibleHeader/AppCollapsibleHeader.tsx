@@ -1,3 +1,4 @@
+// src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React from 'react';
 import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -14,8 +15,9 @@ type Props = {
   backgroundColor?: string;
   onBackPress?: () => void;
   right?: React.ReactNode;
-  headerOffset: Animated.Value; // ✅ 스크롤 delta 기반 오프셋 전달
-  isAtTop: boolean; // ✅ 최상단 여부
+  /** ✅ 변경: optional 로 지정 */
+  headerOffset?: Animated.Value; // ← 옵셔널로 변경
+  isAtTop: boolean;
   showBorder?: boolean;
 };
 
@@ -34,9 +36,10 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
 
-  const HEADER_TOTAL = headerHeight; // ✅ insets.top 제거
+  /** ✅ headerOffset이 안 넘어오면 기본값을 생성 */
+  const offset = headerOffset ?? new Animated.Value(0);
 
-  // ✅ 특정 스택의 루트 스크린에서는 강제 숨김
+  const HEADER_TOTAL = headerHeight;
   const hideBackButton =
     route.name === 'Feed' || route.name === 'Map' || route.name === 'Profile';
 
@@ -45,16 +48,15 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       style={[
         styles.header,
         {
-          height: HEADER_TOTAL, // ✅ safe area 제외
-          paddingTop: 0, // ✅ 제거
+          height: HEADER_TOTAL,
           backgroundColor,
-          transform: [{ translateY: headerOffset }],
+          transform: [{ translateY: offset }], // ✅ 기본 offset 사용
           borderBottomWidth: !isAtTop && showBorder ? 0.5 : 0,
         },
       ]}
     >
       <View style={styles.bar}>
-        {/* 좌측: 뒤로가기 */}
+        {/* 왼쪽: 뒤로가기 */}
         <View style={styles.side}>
           {!hideBackButton && canGoBack && (
             <TouchableOpacity
@@ -76,7 +78,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
           {title}
         </AppText>
 
-        {/* 우측 */}
+        {/* 오른쪽: 커스텀 */}
         <View style={styles.side}>{right}</View>
       </View>
     </Animated.View>
@@ -85,7 +87,6 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 
 export default AppCollapsibleHeader;
 
-// ✅ 스타일은 맨 아래
 const styles = StyleSheet.create({
   header: {
     position: 'absolute',

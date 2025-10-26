@@ -6,12 +6,6 @@ import AppSkeletonTextLines from './AppSkeletonTextLines';
 import AppSkeletonMediaBox from './AppSkeletonMediaBox';
 import { SPACING } from '@/common/styles/spacing';
 
-/**
- * ✅ 스켈레톤 프리셋 엔트리
- * - "detail": 프로필 + 이미지 + 텍스트
- * - "simple": 프로필 + 텍스트
- * - 필요 시 이후 "compact", "chat" 등 확장 가능
- */
 type PresetType = 'detail' | 'simple';
 
 type Props = {

@@ -13,6 +13,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
@@ -27,10 +28,9 @@ const CustomTabBar = ({
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
   const [tabHeight, setTabHeight] = useState(MIN_HEIGHT + insets.bottom);
-
   const height = useSharedValue(tabHeight);
 
-  // ✅ 제스처 (위로 → 확장, 아래로 → 축소)
+  /** ✅ Gesture (위로 확장 / 아래로 축소) */
   const gesture = Gesture.Pan().onEnd(e => {
     if (e.translationY < -30) {
       runOnJS(setTabHeight)(MAX_HEIGHT + insets.bottom);
@@ -47,47 +47,58 @@ const CustomTabBar = ({
     }
   });
 
-  // ✅ 컨테이너 높이 애니메이션
+  /** ✅ 탭 전체 높이 애니메이션 */
   const animatedContainerStyle = useAnimatedStyle(() => ({
     height: height.value,
   }));
 
-  // ✅ 아이콘 위치 (위로 올리기)
+  /** ✅ 아이콘 Y 이동 애니메이션 */
   const iconAnim = useAnimatedStyle(() => {
     const ratio =
       (height.value - (MIN_HEIGHT + insets.bottom)) / (MAX_HEIGHT - MIN_HEIGHT);
-
     const translateY = interpolate(ratio, [0, 1], [10, -8], Extrapolate.CLAMP);
-
-    return {
-      transform: [{ translateY }],
-    };
+    return { transform: [{ translateY }] };
   });
 
-  // ✅ 라벨 애니메이션 값
-  const labelAnim = useDerivedValue(() => {
-    const visible = height.value > MIN_HEIGHT + insets.bottom + 5;
-    return {
-      opacity: visible
-        ? withTiming(1, { duration: 200 })
-        : withTiming(0, { duration: 120 }),
-      translateY: visible
-        ? withTiming(0, { duration: 200 })
-        : withTiming(5, { duration: 120 }),
-    };
-  });
+  /** ✅ 라벨 애니메이션 (opacity / translateY 분리) */
+  const isVisible = useDerivedValue(
+    () => height.value > MIN_HEIGHT + insets.bottom + 5,
+  );
+
+  const opacity = useDerivedValue(() =>
+    withTiming(isVisible.value ? 1 : 0, {
+      duration: isVisible.value ? 200 : 120,
+    }),
+  );
+
+  const translateY = useDerivedValue(() =>
+    withTiming(isVisible.value ? 0 : 5, {
+      duration: isVisible.value ? 200 : 120,
+    }),
+  );
 
   const labelStyle = useAnimatedStyle(() => ({
-    opacity: labelAnim.value.opacity,
-    transform: [{ translateY: labelAnim.value.translateY }],
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
   }));
+
+  /** ✅ 현재 스택의 활성화된 화면 이름 */
+  const activeRouteKey = state.routes[state.index].key;
+  const focusedRouteName =
+    getFocusedRouteNameFromRoute(descriptors[activeRouteKey]?.route) ??
+    state.routes[state.index].name;
+
+  /** ✅ DetailThread일 때 숨김 */
+  const shouldHide = focusedRouteName === 'DetailThread';
+  if (shouldHide) {
+    return <Animated.View style={{ height: 0 }} />; // 완전 숨기기: return null;
+  }
 
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View style={[styles.container, animatedContainerStyle]}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
-
           const rawLabel =
             options.tabBarLabel !== undefined
               ? options.tabBarLabel
@@ -96,8 +107,8 @@ const CustomTabBar = ({
               : route.name;
 
           const label = typeof rawLabel === 'string' ? rawLabel : route.name;
-
           const isFocused = state.index === index;
+
           const icon =
             options.tabBarIcon &&
             options.tabBarIcon({
@@ -120,7 +131,6 @@ const CustomTabBar = ({
           return (
             <TouchableOpacity
               key={route.key}
-              accessibilityRole="button"
               onPress={onPress}
               style={styles.tabItem}
               activeOpacity={0.7}

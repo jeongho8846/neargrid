@@ -11,9 +11,7 @@ type Props = TextProps & {
   color?: keyof typeof COLORS; // colors.ts에 정의된 색상 선택
   style?: StyleProp<TextStyle>;
   values?: Record<string, any>; // i18n interpolation 지원
-  /** ✅ 스켈레톤 표시 여부 */
   isLoading?: boolean;
-  /** ✅ 스켈레톤 길이 (문자 수 기반 비율, 0~1 사이 추천) */
   skeletonWidth?: number;
 };
 
