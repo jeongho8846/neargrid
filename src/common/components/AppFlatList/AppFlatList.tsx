@@ -24,7 +24,7 @@ import AppText from '../AppText';
  * - 무한 스크롤 (onEndReached + Footer 로딩)
  * - 최상단 이동 버튼 (조건1: 화면높이 이상, 조건2: 위로 스크롤 시 표시)
  * - 모든 스크롤 이벤트 지원
- * - isHorizontal: 가로/세로 모드 전환 (기본 세로)
+ * - Skeleton 렌더링 지원 (isLoading, renderSkeletonItem)
  */
 
 type EmptyType = React.ComponentType<any> | React.ReactElement | null;
@@ -38,6 +38,11 @@ type AppFlatListProps<T> = FlatListProps<T> & {
   emptyComponent?: EmptyType;
   loadingMore?: boolean;
   isHorizontal?: boolean;
+
+  /** ✅ Skeleton 렌더링 관련 */
+  isLoading?: boolean;
+  skeletonCount?: number;
+  renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
 };
 
 // ✅ 기본 EmptyComponent는 컴포넌트 외부에 정의
@@ -65,34 +70,37 @@ function AppFlatList<T>({
   onMomentumScrollBegin,
   onMomentumScrollEnd,
   onScrollEndDrag,
+  // ✅ 추가 props
+  isLoading = false,
+  skeletonCount = 5,
+  renderSkeletonItem,
   ...rest
 }: AppFlatListProps<T>) {
   const listRef = useRef<FlatList<T>>(null);
   const [showButton, setShowButton] = useState(false);
-
-  const screenHeight = Dimensions.get('window').height;
   const [lastOffset, setLastOffset] = useState(0);
+  const screenHeight = Dimensions.get('window').height;
 
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
   // ✅ Animated 값 (Y 위치 & 투명도)
-  const slideAnim = useRef(new Animated.Value(100)).current; // 시작은 아래에 숨김
+  const slideAnim = useRef(new Animated.Value(100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     Animated.parallel([
       Animated.timing(slideAnim, {
-        toValue: showButton ? 0 : 100, // 올라오기 / 내려가기
+        toValue: showButton ? 0 : 100,
         duration: 250,
         useNativeDriver: true,
       }),
       Animated.timing(opacityAnim, {
-        toValue: showButton ? 1 : 0, // 페이드 인/아웃
+        toValue: showButton ? 1 : 0,
         duration: 250,
         useNativeDriver: true,
       }),
     ]).start();
-  }, [showButton]);
+  }, [showButton, slideAnim, opacityAnim]);
 
   // ✅ 스크롤 감지
   const handleScroll = (event: any) => {
@@ -111,6 +119,17 @@ function AppFlatList<T>({
 
     onScroll?.(event);
   };
+
+  // ✅ Skeleton 처리
+  if (isLoading && renderSkeletonItem) {
+    const skeletonItems = Array.from({ length: skeletonCount }).map((_, i) =>
+      React.cloneElement(renderSkeletonItem({ index: i }), {
+        key: `skeleton-${i}`,
+      }),
+    );
+
+    return <View style={[{ flex: 1 }, containerStyle]}>{skeletonItems}</View>;
+  }
 
   return (
     <>

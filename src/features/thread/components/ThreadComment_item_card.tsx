@@ -1,3 +1,4 @@
+// src/features/thread/components/ThreadComment_item_card.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import AppText from '@/common/components/AppText';
@@ -7,6 +8,7 @@ import ContentsHeartButton from '@/common/components/Contents_Heart_Button';
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
+import { AppSkeletonPreset } from '@/common/components/Skeletons'; // ✅ 추가
 
 type Props = {
   comment: ThreadComment;
@@ -14,7 +16,17 @@ type Props = {
 };
 
 const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
-  const isChild = comment.depth > 0;
+  const isChild = (comment as any)?.depth > 0;
+  const isSkeleton = comment.isSkeleton === true;
+
+  if (isSkeleton) {
+    // ✅ 프리셋 스켈레톤 (심플형)
+    return (
+      <View style={[styles.container, { opacity: 0.9 }]}>
+        <AppSkeletonPreset type="simple" />
+      </View>
+    );
+  }
 
   return (
     <View
@@ -37,7 +49,7 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
         <View style={styles.headerRow}>
           <AppText style={styles.nick}>{comment.memberNickName}</AppText>
           <AppText style={styles.date}>
-            {comment.createDateTime?.split('T')[0] ?? ''}
+            {comment.createDatetime?.split('T')[0] ?? ''}
           </AppText>
         </View>
 
@@ -54,11 +66,11 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
       {/* RIGHT: 좋아요 */}
       <View style={styles.right}>
         <ContentsHeartButton
-          liked={comment.reactedByCurrentMember}
+          liked={!!comment.reactedByCurrentMember}
           onToggle={() => {}}
           size={18}
         />
-        {comment.reactionCount > 0 && (
+        {comment.reactionCount && comment.reactionCount > 0 && (
           <AppText style={styles.likeCount}>{comment.reactionCount}</AppText>
         )}
       </View>
@@ -101,7 +113,7 @@ const styles = StyleSheet.create({
   },
   date: {
     ...FONT.caption,
-    color: COLORS.text,
+    color: COLORS.text_secondary,
   },
   desc: {
     ...FONT.body,
