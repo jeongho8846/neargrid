@@ -18,11 +18,15 @@ const DetailThreadScreen = () => {
   return (
     <View style={styles.container}>
       <AppCollapsibleHeader
-        titleKey="STR_FEED"
+        titleKey="STR_THREAD"
         isAtTop={false}
         onBackPress={() => navigation.goBack()}
       />
-      <ThreadCommentList threadId={thread.threadId} headerThread={thread} />
+      <ThreadCommentList
+        threadId={thread.threadId}
+        headerThread={thread}
+        style={{ flex: 1 }} // ✅ 추가!
+      />
     </View>
   );
 };

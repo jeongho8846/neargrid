@@ -49,7 +49,6 @@ const ThreadList: React.FC<Props> = ({
       onScroll={onScroll}
       onEndReached={() => onEndReached?.()}
       onEndReachedThreshold={0.2}
-      useTopButton
       loadingMore={loadingMore}
       contentContainerStyle={{
         paddingTop: contentPaddingTop,

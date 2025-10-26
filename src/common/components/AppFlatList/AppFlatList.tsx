@@ -1,5 +1,5 @@
 // src/common/components/AppFlatList/AppFlatList.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -30,8 +30,6 @@ export type AppFlatListProps<T> = FlatListProps<T> & {
   containerStyle?: StyleProp<ViewStyle>;
   refreshing?: boolean;
   onRefresh?: () => void;
-  useTopButton?: boolean;
-  topButtonStyle?: StyleProp<ViewStyle>;
   emptyComponent?: EmptyType;
   loadingMore?: boolean;
   isHorizontal?: boolean;
@@ -57,8 +55,6 @@ function AppFlatList<T>({
   contentContainerStyle,
   onEndReached,
   onEndReachedThreshold = 0.1,
-  useTopButton = false,
-  topButtonStyle,
   emptyComponent,
   loadingMore = false,
   isHorizontal = false,
@@ -78,13 +74,15 @@ function AppFlatList<T>({
   const [showButton, setShowButton] = useState(false);
   const [lastOffset, setLastOffset] = useState(0);
   const screenHeight = Dimensions.get('window').height;
+  const fadeAnim = useRef(new Animated.Value(0)).current; // ✅ 애니메이션 상태
+
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
   // ✅ 키보드/안전영역 대응
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
-
   const bottomPadding = isVisible ? height + bottom + 100 : bottom + 100;
+
   // ✅ BottomSheet 내부 감지
   let isInsideBottomSheet = false;
   try {
@@ -101,7 +99,8 @@ function AppFlatList<T>({
     setLastOffset(offsetY);
 
     if (!isHorizontal) {
-      if (offsetY >= screenHeight) {
+      if (offsetY >= screenHeight * 1) {
+        // 화면 한 개 높이 이상 내려갔을 때
         if (dy < 0 && !showButton) setShowButton(true);
         if (dy > 10 && showButton) setShowButton(false);
       } else {
@@ -112,11 +111,20 @@ function AppFlatList<T>({
     onScroll?.(event);
   };
 
-  // ✅ scrollToTop 버튼 핸들러
+  // ✅ 위로 스크롤
   const handleScrollToTop = () => {
     flatRef.current?.scrollToOffset?.({ offset: 0, animated: true });
     bottomRef.current?.scrollToOffset?.({ offset: 0, animated: true });
   };
+
+  // ✅ 버튼 등장 애니메이션
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: showButton ? 1 : 0,
+      duration: 250,
+      useNativeDriver: true,
+    }).start();
+  }, [showButton]);
 
   // ✅ Skeleton 렌더링
   if (isLoading && renderSkeletonItem) {
@@ -145,7 +153,10 @@ function AppFlatList<T>({
     showsVerticalScrollIndicator: !isHorizontal && showsVerticalScrollIndicator,
     showsHorizontalScrollIndicator: isHorizontal ? false : undefined,
     keyboardShouldPersistTaps,
-    contentContainerStyle: [{ flexGrow: 1, paddingBottom: bottomPadding }],
+    contentContainerStyle: [
+      { flexGrow: 1, paddingBottom: bottomPadding },
+      contentContainerStyle,
+    ],
     onEndReached,
     onEndReachedThreshold,
     onScroll: handleScroll,
@@ -198,21 +209,30 @@ function AppFlatList<T>({
         style={containerStyle}
       />
 
-      {!isHorizontal && useTopButton && (
+      {/* ✅ 스크롤 위로가기 버튼 (전역 적용) */}
+      {!isHorizontal && (
         <Animated.View
           style={[
             styles.scrollTopButton,
-            topButtonStyle,
             {
+              opacity: fadeAnim,
               transform: [
-                { translateY: new Animated.Value(showButton ? 0 : 100) },
+                {
+                  translateY: fadeAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [50, 0],
+                  }),
+                },
               ],
-              opacity: new Animated.Value(showButton ? 1 : 0),
             },
           ]}
         >
-          <TouchableOpacity onPress={handleScrollToTop}>
-            <AppIcon type="ion" name="arrow-up" size={20} color={COLORS.text} />
+          <TouchableOpacity
+            onPress={handleScrollToTop}
+            activeOpacity={0.8}
+            style={styles.topButtonInner}
+          >
+            <AppIcon type="ion" name="arrow-up" size={18} color={COLORS.text} />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -225,14 +245,14 @@ export default AppFlatList;
 const styles = StyleSheet.create({
   scrollTopButton: {
     position: 'absolute',
-    bottom: 20,
-    right: 16,
+    bottom: 30,
+    right: 20,
+  },
+  topButtonInner: {
     backgroundColor: COLORS.background,
     padding: 12,
     borderRadius: 24,
     elevation: 5,
-    borderWidth: 1,
-    borderColor: COLORS.border,
   },
   emptyWrap: {
     flex: 1,

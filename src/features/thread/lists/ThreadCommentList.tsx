@@ -10,6 +10,8 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import { SPACING } from '@/common/styles/spacing';
+import { COLORS } from '@/common/styles';
+import { FONT } from '@/common/styles';
 
 export type ThreadCommentListRef = {
   addOptimisticComment: (comment: ThreadComment) => void;
@@ -20,10 +22,11 @@ export type ThreadCommentListRef = {
 type Props = {
   threadId: string;
   headerThread?: Thread | null;
+  style?: object;
 };
 
 const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
-  ({ threadId, headerThread }, ref) => {
+  ({ threadId, headerThread, style }, ref) => {
     const { member } = useCurrentMember();
     const queryClient = useQueryClient();
 
@@ -69,6 +72,7 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
     return (
       <AppFlatList
         data={mergedComments}
+        style={style} // ✅ 전달
         keyExtractor={item => item.commentThreadId}
         renderItem={({ item }) => <ThreadCommentItem comment={item} />}
         isLoading={isLoading}
@@ -92,7 +96,18 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
           })
         }
         ListHeaderComponent={
-          headerThread ? <ThreadItemDetail item={headerThread} /> : null
+          headerThread ? (
+            <View>
+              <ThreadItemDetail item={headerThread} />
+
+              {/* ✅ 구분선 + 댓글 개수 표시 */}
+              <View style={styles.headerDivider}>
+                <AppText style={styles.commentCount}>
+                  댓글 {mergedComments.length}개
+                </AppText>
+              </View>
+            </View>
+          ) : null
         }
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
@@ -119,5 +134,23 @@ const styles = StyleSheet.create({
   },
   listContent: {
     paddingBottom: SPACING.xl * 3,
+  },
+
+  headerDivider: {
+    marginTop: SPACING.md,
+    marginBottom: SPACING.md,
+    alignItems: 'flex-start',
+    borderTopWidth: 1,
+    borderTopColor: COLORS.border,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+    paddingVertical: SPACING.sm,
+    paddingHorizontal: SPACING.md,
+  },
+
+  commentCount: {
+    marginVertical: 6,
+    ...FONT.body,
+    color: COLORS.text,
   },
 });

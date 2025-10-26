@@ -15,8 +15,7 @@ type Props = {
   backgroundColor?: string;
   onBackPress?: () => void;
   right?: React.ReactNode;
-  /** ✅ 변경: optional 로 지정 */
-  headerOffset?: Animated.Value; // ← 옵셔널로 변경
+  headerOffset?: Animated.Value;
   isAtTop: boolean;
   showBorder?: boolean;
 };
@@ -36,12 +35,13 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
 
-  /** ✅ headerOffset이 안 넘어오면 기본값을 생성 */
   const offset = headerOffset ?? new Animated.Value(0);
 
   const HEADER_TOTAL = headerHeight;
   const hideBackButton =
     route.name === 'Feed' || route.name === 'Map' || route.name === 'Profile';
+
+  const showBackButton = !hideBackButton && canGoBack;
 
   return (
     <Animated.View
@@ -50,7 +50,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         {
           height: HEADER_TOTAL,
           backgroundColor,
-          transform: [{ translateY: offset }], // ✅ 기본 offset 사용
+          transform: [{ translateY: offset }],
           borderBottomWidth: !isAtTop && showBorder ? 0.5 : 0,
         },
       ]}
@@ -58,7 +58,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       <View style={styles.bar}>
         {/* 왼쪽: 뒤로가기 */}
         <View style={styles.side}>
-          {!hideBackButton && canGoBack && (
+          {showBackButton && (
             <TouchableOpacity
               onPress={onBackPress || (() => navigation.goBack())}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -73,8 +73,14 @@ const AppCollapsibleHeader: React.FC<Props> = ({
           )}
         </View>
 
-        {/* 중앙: 타이틀 */}
-        <AppText i18nKey={titleKey} style={styles.title}>
+        {/* 중앙(또는 왼쪽): 타이틀 */}
+        <AppText
+          i18nKey={titleKey}
+          style={[
+            styles.title,
+            showBackButton ? styles.titleLeft : styles.titleCenter,
+          ]}
+        >
           {title}
         </AppText>
 
@@ -100,7 +106,7 @@ const styles = StyleSheet.create({
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
   },
   side: {
     width: 48,
@@ -109,7 +115,13 @@ const styles = StyleSheet.create({
   },
   title: {
     flex: 1,
-    textAlign: 'center',
     ...FONT.title,
+  },
+  titleCenter: {
+    textAlign: 'center',
+  },
+  titleLeft: {
+    textAlign: 'left',
+    marginLeft: 4, // 버튼과 간격
   },
 });
