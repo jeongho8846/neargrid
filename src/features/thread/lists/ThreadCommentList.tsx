@@ -1,12 +1,7 @@
 // src/features/thread/lists/ThreadCommentList.tsx
-import React, {
-  useEffect,
-  useState,
-  useCallback,
-  forwardRef,
-  useImperativeHandle,
-} from 'react';
-import { ActivityIndicator, View, StyleSheet } from 'react-native';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
 import { fetchThreadComments } from '../api/fetchThreadComments';
 import { ThreadComment } from '../model/ThreadCommentModel';
@@ -20,79 +15,99 @@ export type ThreadCommentListRef = {
   removeTempComment: (tempId: string) => void;
 };
 
-const ThreadCommentList = forwardRef<
-  ThreadCommentListRef,
-  { threadId: string }
->(({ threadId }, ref) => {
-  const { member } = useCurrentMember();
-  const [comments, setComments] = useState<ThreadComment[]>([]);
-  const [loading, setLoading] = useState(true);
+type Props = {
+  threadId: string;
+};
 
-  const loadComments = useCallback(async () => {
-    if (!member) return;
-    try {
-      setLoading(true);
-      const res = await fetchThreadComments({
-        threadId,
-        currentMemberId: member.id,
-      });
-      setComments(res.commentThreadResponseDtos || []);
-    } finally {
-      setLoading(false);
-    }
-  }, [threadId, member]);
+const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
+  ({ threadId }, ref) => {
+    const { member } = useCurrentMember();
+    const queryClient = useQueryClient();
 
-  useEffect(() => {
-    loadComments();
-  }, [loadComments]);
+    // ✅ 댓글 리스트 쿼리
+    const {
+      data: comments = [],
+      isLoading,
+      isFetching,
+    } = useQuery({
+      queryKey: ['threadComments', threadId],
+      queryFn: () =>
+        fetchThreadComments({
+          threadId,
+          currentMemberId: member?.id ?? '',
+        }).then(res => res.commentThreadResponseDtos || []),
+      enabled: !!member,
+      staleTime: 1000 * 60 * 3, // 3분 동안 캐시 신선하게 유지
+      gcTime: 1000 * 60 * 10, // 10분 후 캐시 제거
+    });
 
-  useImperativeHandle(ref, () => ({
-    addOptimisticComment: comment => {
-      setComments(prev => [comment, ...prev]);
-    },
-    replaceTempComment: (tempId, newComment) => {
-      setComments(prev =>
-        prev.map(c => (c.commentThreadId === tempId ? newComment : c)),
+    // ✅ 낙관적 업데이트용 로컬 상태
+    const [optimisticComments, setOptimisticComments] = useState<
+      ThreadComment[]
+    >([]);
+
+    useImperativeHandle(ref, () => ({
+      addOptimisticComment: comment => {
+        setOptimisticComments(prev => [comment, ...prev]);
+      },
+      replaceTempComment: (tempId, newComment) => {
+        setOptimisticComments(prev =>
+          prev.map(c => (c.commentThreadId === tempId ? newComment : c)),
+        );
+      },
+      removeTempComment: tempId => {
+        setOptimisticComments(prev =>
+          prev.filter(c => c.commentThreadId !== tempId),
+        );
+      },
+    }));
+
+    // ✅ 스켈레톤용 더미 데이터 (5개)
+    const skeletons: ThreadComment[] = Array.from({ length: 5 }, (_, i) => ({
+      commentThreadId: `skeleton-${i}`,
+      description: '',
+      memberNickName: '',
+      memberProfileImageUrl: '',
+      createDatetime: '',
+      isSkeleton: true, // ThreadCommentItem에서 이 값으로 스켈레톤 처리
+    }));
+
+    // ✅ 최종 데이터 병합
+    const mergedComments = isLoading
+      ? skeletons // 로딩 중일 때는 스켈레톤 표시
+      : [...optimisticComments, ...(comments ?? [])];
+
+    // ✅ 데이터 없음 (로딩 X + 빈 배열)
+    if (!isLoading && mergedComments.length === 0) {
+      return (
+        <View style={styles.empty}>
+          <AppText>아직 댓글이 없습니다.</AppText>
+        </View>
       );
-    },
-    removeTempComment: tempId => {
-      setComments(prev => prev.filter(c => c.commentThreadId !== tempId));
-    },
-  }));
+    }
 
-  if (loading)
     return (
-      <View style={styles.loading}>
-        <ActivityIndicator />
-      </View>
+      <AppFlatList
+        data={mergedComments}
+        keyExtractor={item => item.commentThreadId}
+        renderItem={({ item }) => <ThreadCommentItem comment={item} />}
+        contentContainerStyle={styles.listContent}
+        showsVerticalScrollIndicator={false}
+        refreshing={isFetching}
+        onRefresh={() =>
+          queryClient.invalidateQueries({
+            queryKey: ['threadComments', threadId],
+          })
+        }
+      />
     );
-
-  if (!comments.length)
-    return (
-      <View style={styles.empty}>
-        <AppText>아직 댓글이 없습니다.</AppText>
-      </View>
-    );
-
-  return (
-    <AppFlatList
-      data={comments}
-      keyExtractor={item => item.commentThreadId}
-      renderItem={({ item }) => <ThreadCommentItem comment={item} />}
-      contentContainerStyle={styles.listContent}
-      showsVerticalScrollIndicator={false}
-    />
-  );
-});
+  },
+);
 
 const styles = StyleSheet.create({
-  loading: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   empty: {
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 40,
     width: '100%',
   },

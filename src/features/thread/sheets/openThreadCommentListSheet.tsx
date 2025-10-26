@@ -9,6 +9,7 @@ import ThreadCommentList, {
 } from '../lists/ThreadCommentList';
 import AppText from '@/common/components/AppText';
 import { SPACING } from '@/common/styles/spacing';
+import { updateThreadCommentCountCache } from '../utils/updateThreadCommentCountCache';
 
 /**
  * ✅ Hook 금지 구역
@@ -75,6 +76,10 @@ export const openThreadCommentListSheet = async ({
           description: text,
         });
 
+        // ✅ 성공 시 캐시에서 commentThreadCount +1
+        updateThreadCommentCountCache(threadId);
+
+        // ✅ 임시 댓글 → 실제 데이터로 교체
         listRef.current?.replaceTempComment(tempId, {
           ...res,
           isPending: false,

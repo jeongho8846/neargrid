@@ -52,9 +52,8 @@ const GlobalInputBar = () => {
 
   const handleSend = () => {
     if (!text.trim()) return;
-    onSubmit?.(text.trim());
+    onSubmit?.(text.trim()); // ✅ 도메인에 따라 다른 로직 실행됨
     setText('');
-
     Keyboard.dismiss();
   };
 

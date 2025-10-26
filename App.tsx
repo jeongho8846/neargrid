@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
 import RootNavigator from './src/navigators/RootNavigator';
@@ -12,10 +12,8 @@ import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 import { COLORS } from '@/common/styles/colors';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
+import { queryClient } from '@/services/reactQuery/reactQueryClient'; // ✅ 전역 클라이언트 import
 import './src/i18n';
-
-// ✅ 전역 QueryClient 생성
-const queryClient = new QueryClient();
 
 const MyTheme = {
   ...DefaultTheme,
@@ -41,7 +39,7 @@ const App = () => {
         StatusBar.setBackgroundColor(COLORS.background, true);
       }
 
-      // Firebase 네이티브 초기화가 완전히 끝난 뒤 FCM 시작
+      // Firebase 네이티브 초기화 완료 후 FCM 시작
       const timer = setTimeout(() => {
         // initFCM();
       }, 800);
@@ -73,7 +71,6 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        {/* ✅ 모든 화면에 공통 SafeArea 적용 */}
         <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
           <QueryClientProvider client={queryClient}>
             <BottomSheetModalProvider>

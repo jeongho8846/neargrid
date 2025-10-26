@@ -1,3 +1,4 @@
+// src/features/thread/screens/FeedScreen.tsx
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -19,31 +20,45 @@ const FeedScreen = () => {
 
   const { member, loading: memberLoading } = useCurrentMember();
 
-  // ✅ React Query 훅
-  const { data, isLoading, fetchNextPage, isFetchingNextPage } =
+  const { data, isLoading, isFetchingNextPage, fetchNextPage } =
     useFetchFeedThreads(
       {
-        memberId: member?.id ?? '', // 타입에러 방지
+        memberId: member?.id ?? '',
         distance: 10000000000000000,
         latitude: 37.5,
         longitude: 127.0,
         searchType: 'MOSTRECENT',
       },
-      {
-        enabled: !!member?.id && !memberLoading,
-      },
+      { enabled: !!member?.id && !memberLoading },
     );
 
-  // ✅ 스켈레톤용 더미 데이터
+  // ✅ 5개의 skeleton dummy threads
   const skeletonData: Thread[] = Array.from({ length: 5 }).map((_, i) =>
     createEmptyThread(`skeleton-${i}`),
   );
-  // ✅ 표시 데이터 (로딩 시엔 skeleton, 완료 시엔 실제 데이터)
-  const flatData = isLoading ? skeletonData : data || [];
+
+  // ✅ 깜빡임 방지용 guard (isLoading → false 후 50ms 유지)
+  const [loadingGuard, setLoadingGuard] = React.useState(true);
+  React.useEffect(() => {
+    if (!isLoading) {
+      const t = setTimeout(() => setLoadingGuard(false), 50);
+      return () => clearTimeout(t);
+    }
+  }, [isLoading]);
+
+  // ✅ skeleton 우선 조건
+  const flatData =
+    isLoading || loadingGuard || !data
+      ? skeletonData
+      : data.length > 0
+      ? data
+      : [];
+
+  // ✅ 완전 비었을 때만 “데이터 없음” 표시
+  const isEmpty = !isLoading && !loadingGuard && data && data.length === 0;
 
   return (
     <View style={{ flex: 1 }}>
-      {/* ✅ 상단 헤더 */}
       <AppCollapsibleHeader
         titleKey="STR_FEED"
         headerOffset={headerOffset}
@@ -56,18 +71,16 @@ const FeedScreen = () => {
         }
       />
 
-      {/* ✅ 메인 피드 리스트 */}
       <AppFlatList
         data={flatData}
         keyExtractor={item => item.threadId.toString()}
         renderItem={({ item }) => (
           <ThreadItemDetail
             item={item}
-            isLoading={isLoading}
+            isLoading={isLoading || loadingGuard}
             onPress={id => console.log('📄 상세보기:', id)}
           />
         )}
-        // ✅ 스켈레톤은 padding 포함해서 자연스럽게 보여야 함
         contentContainerStyle={{
           paddingTop: HEADER_TOTAL,
           paddingBottom: 40,
@@ -78,9 +91,8 @@ const FeedScreen = () => {
         onEndReachedThreshold={0.2}
         useTopButton
         loadingMore={isFetchingNextPage}
-        // ✅ 데이터 없음 처리
         ListEmptyComponent={
-          !isLoading ? (
+          isEmpty ? (
             <View style={styles.emptyContainer}>
               <AppIcon
                 type="ion"
