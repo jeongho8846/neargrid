@@ -1,42 +1,46 @@
 // src/common/components/GlobalBottomSheet.tsx
 import React, { useEffect, useRef } from 'react';
-import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetBackdrop,
+import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
+import type {
+  BottomSheetModal as BottomSheetModalType,
+  BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
-import type { BottomSheetBackdropProps } from '@gorhom/bottom-sheet';
 import { StyleSheet } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles';
 
-/** 렌더 밖으로 뺀 Backdrop 컴포넌트 (memo로 불필요한 리렌더 방지) */
-const SheetBackdrop = React.memo((props: BottomSheetBackdropProps) => {
-  return (
-    <BottomSheetBackdrop
-      {...props}
-      appearsOnIndex={0}
-      disappearsOnIndex={-1}
-      pressBehavior="close"
-      style={[props.style, styles.backdrop]}
-    />
-  );
-});
+const SheetBackdrop = React.memo((props: BottomSheetBackdropProps) => (
+  <BottomSheetBackdrop
+    {...props}
+    appearsOnIndex={0}
+    disappearsOnIndex={-1}
+    pressBehavior="close"
+    style={[props.style, styles.backdrop]}
+  />
+));
 
 const GlobalBottomSheet = () => {
-  const ref = useRef<BottomSheetModal>(null);
-  const { setRef, content, snapPoints, close, initialIndex } =
-    useBottomSheetStore();
+  // ✅ ref 타입 올바르게 지정
+  const ref = useRef<BottomSheetModalType>(null);
+
+  const {
+    setRef,
+    content,
+    snapPoints,
+    close,
+    initialIndex,
+    enableHandlePanningGesture,
+    enableContentPanningGesture,
+  } = useBottomSheetStore();
 
   useEffect(() => {
-    if (ref.current) setRef(ref.current);
+    setRef(ref);
   }, [setRef]);
 
   const safeSnapPoints =
     Array.isArray(snapPoints) && snapPoints.length > 0 ? snapPoints : ['50%'];
 
-  // 인덱스 0이면 닫힌 상태(-1)로 시작
   const resolvedInitialIndex = initialIndex === 0 ? -1 : initialIndex;
 
   return (
@@ -45,7 +49,6 @@ const GlobalBottomSheet = () => {
       index={resolvedInitialIndex}
       snapPoints={safeSnapPoints}
       onDismiss={close}
-      // 인덱스 변화 시 0이면 즉시 닫기
       onChange={idx => {
         if (idx === 0) {
           ref.current?.dismiss();
@@ -54,14 +57,16 @@ const GlobalBottomSheet = () => {
       }}
       enableDismissOnClose
       enablePanDownToClose
+      enableHandlePanningGesture={enableHandlePanningGesture ?? true}
+      enableContentPanningGesture={enableContentPanningGesture ?? true}
+      keyboardBehavior="interactive"
+      keyboardBlurBehavior="restore"
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.handle}
       handleIndicatorStyle={styles.handleIndicator}
-      /** ← 컴포넌트 참조를 전달 (렌더 중 새 정의 금지) */
       backdropComponent={SheetBackdrop}
-      // bottomInset={100}
     >
-      <BottomSheetView style={styles.content}>{content}</BottomSheetView>
+      {content}
     </BottomSheetModal>
   );
 };

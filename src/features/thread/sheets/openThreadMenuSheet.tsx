@@ -1,6 +1,7 @@
 // src/features/thread/sheets/openThreadMenuSheet.tsx
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { BottomSheetView } from '@gorhom/bottom-sheet'; // ✅ 추가
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
@@ -13,6 +14,7 @@ export const openThreadMenuSheet = ({ thread }: { thread: Thread }) => {
   const { open, close } = useBottomSheetStore.getState();
 
   console.log('openThreadMenuSheet thread=', thread);
+
   const Row = ({
     icon,
     label,
@@ -49,59 +51,68 @@ export const openThreadMenuSheet = ({ thread }: { thread: Thread }) => {
 
   const isMyThread = false;
 
+  // ✅ 반드시 BottomSheetView로 감싸기
   open(
-    <View style={styles.wrap}>
-      <View style={styles.group}>
-        <Row
-          icon="share-outline"
-          label="공유하기"
-          onPress={() => {
-            // TODO: 공유 로직
-          }}
-        />
-        <Row
-          icon="link-outline"
-          label="링크 복사"
-          onPress={() => {
-            // TODO: 클립보드
-          }}
-        />
-      </View>
-
-      <View style={styles.group}>
-        <Row
-          icon="alert-circle-outline"
-          label="신고하기"
-          danger
-          onPress={() => {
-            // TODO: 신고
-          }}
-        />
-        <Row
-          icon="person-remove-outline"
-          label="작성자 차단"
-          danger
-          onPress={() => {
-            // TODO: 차단
-          }}
-        />
-        {isMyThread && (
+    <BottomSheetView style={styles.container}>
+      <View style={styles.wrap}>
+        <View style={styles.group}>
           <Row
-            icon="trash-outline"
-            label="게시물 삭제"
-            danger
+            icon="share-outline"
+            label="공유하기"
             onPress={() => {
-              // TODO: 삭제
+              // TODO: 공유 로직
             }}
           />
-        )}
+          <Row
+            icon="link-outline"
+            label="링크 복사"
+            onPress={() => {
+              // TODO: 클립보드
+            }}
+          />
+        </View>
+
+        <View style={styles.group}>
+          <Row
+            icon="alert-circle-outline"
+            label="신고하기"
+            danger
+            onPress={() => {
+              // TODO: 신고
+            }}
+          />
+          <Row
+            icon="person-remove-outline"
+            label="작성자 차단"
+            danger
+            onPress={() => {
+              // TODO: 차단
+            }}
+          />
+          {isMyThread && (
+            <Row
+              icon="trash-outline"
+              label="게시물 삭제"
+              danger
+              onPress={() => {
+                // TODO: 삭제
+              }}
+            />
+          )}
+        </View>
       </View>
-    </View>,
-    { snapPoints: ['40%', '70%'], initialIndex: 1 }, // 인덱스 0은 네 전역 규칙상 닫힘
+    </BottomSheetView>,
+    {
+      snapPoints: ['40%', '70%'],
+      initialIndex: 1,
+      enableHandlePanningGesture: true,
+      enableContentPanningGesture: true,
+    },
   );
 };
 
 const styles = StyleSheet.create({
+  container: { flex: 1 },
   wrap: {
     paddingHorizontal: SPACING.sm,
     paddingBottom: SPACING.lg,
@@ -111,7 +122,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     width: 36,
     height: 4,
-
     backgroundColor: COLORS.sheet_handle,
     marginBottom: SPACING.sm,
   },

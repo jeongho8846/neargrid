@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { BottomSheetView } from '@gorhom/bottom-sheet'; // ✅ 추가
 
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
@@ -56,18 +57,24 @@ export const openThreadShareSheet = ({ threadId }: Props) => {
             type="ion"
             name={copied ? 'checkmark-circle-outline' : 'link-outline'}
             size={22}
-            color={copied ? COLORS.error : COLORS.text}
+            color={copied ? COLORS.text : COLORS.text}
           />
         </TouchableOpacity>
       </View>
     );
   };
 
+  // ✅ BottomSheetView로 감싸서 gesture context 확보
   open(
-    <View style={styles.container}>
+    <BottomSheetView style={styles.container}>
       <CopyLinkRow />
-    </View>,
-    { snapPoints: ['16%'], initialIndex: 1 },
+    </BottomSheetView>,
+    {
+      snapPoints: ['20%'], // 높이를 약간 더 주면 터치 안정성 ↑
+      initialIndex: 1, // 전역 규칙상 0 → 닫힘(-1)
+      enableHandlePanningGesture: true,
+      enableContentPanningGesture: true,
+    },
   );
 };
 

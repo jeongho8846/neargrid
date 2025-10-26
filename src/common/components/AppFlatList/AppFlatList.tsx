@@ -1,4 +1,5 @@
-import React, { useRef, useState, useEffect } from 'react';
+// src/common/components/AppFlatList/AppFlatList.tsx
+import React, { useRef, useState } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -12,24 +13,20 @@ import {
   ActivityIndicator,
   Animated,
 } from 'react-native';
+import {
+  BottomSheetFlatList,
+  BottomSheetFlatListMethods,
+  useBottomSheetInternal,
+} from '@gorhom/bottom-sheet';
 import { COLORS } from '@/common/styles/colors';
+import { useKeyboardStore } from '@/common/state/keyboardStore';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppIcon from '../AppIcon';
 import AppText from '../AppText';
 
-/**
- * ✅ 공용 FlatList
- * - 기본 UX/성능 옵션 적용 (인스타그램 스타일)
- * - EmptyComponent (i18n 지원)
- * - RefreshControl
- * - 무한 스크롤 (onEndReached + Footer 로딩)
- * - 최상단 이동 버튼 (조건1: 화면높이 이상, 조건2: 위로 스크롤 시 표시)
- * - 모든 스크롤 이벤트 지원
- * - Skeleton 렌더링 지원 (isLoading, renderSkeletonItem)
- */
-
 type EmptyType = React.ComponentType<any> | React.ReactElement | null;
 
-type AppFlatListProps<T> = FlatListProps<T> & {
+export type AppFlatListProps<T> = FlatListProps<T> & {
   containerStyle?: StyleProp<ViewStyle>;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -45,7 +42,6 @@ type AppFlatListProps<T> = FlatListProps<T> & {
   renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
 };
 
-// ✅ 기본 EmptyComponent는 컴포넌트 외부에 정의
 const DefaultEmpty: React.FC = () => (
   <View style={styles.emptyWrap}>
     <AppText i18nKey="STR_NO_DATA" style={styles.emptyText} />
@@ -70,37 +66,33 @@ function AppFlatList<T>({
   onMomentumScrollBegin,
   onMomentumScrollEnd,
   onScrollEndDrag,
-  // ✅ 추가 props
+  // ✅ Skeleton 관련
   isLoading = false,
   skeletonCount = 5,
   renderSkeletonItem,
   ...rest
 }: AppFlatListProps<T>) {
-  const listRef = useRef<FlatList<T>>(null);
+  const flatRef = useRef<FlatList<T>>(null);
+  const bottomRef = useRef<BottomSheetFlatListMethods>(null);
+
   const [showButton, setShowButton] = useState(false);
   const [lastOffset, setLastOffset] = useState(0);
   const screenHeight = Dimensions.get('window').height;
-
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
-  // ✅ Animated 값 (Y 위치 & 투명도)
-  const slideAnim = useRef(new Animated.Value(100)).current;
-  const opacityAnim = useRef(new Animated.Value(0)).current;
+  // ✅ 키보드/안전영역 대응
+  const { isVisible, height } = useKeyboardStore();
+  const { bottom } = useSafeAreaInsets();
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: showButton ? 0 : 100,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: showButton ? 1 : 0,
-        duration: 250,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [showButton, slideAnim, opacityAnim]);
+  const bottomPadding = isVisible ? height + bottom + 100 : bottom + 100;
+  // ✅ BottomSheet 내부 감지
+  let isInsideBottomSheet = false;
+  try {
+    const internal = useBottomSheetInternal();
+    isInsideBottomSheet = !!internal?.animatedIndex;
+  } catch {
+    isInsideBottomSheet = false;
+  }
 
   // ✅ 스크롤 감지
   const handleScroll = (event: any) => {
@@ -120,7 +112,13 @@ function AppFlatList<T>({
     onScroll?.(event);
   };
 
-  // ✅ Skeleton 처리 (수정 버전)
+  // ✅ scrollToTop 버튼 핸들러
+  const handleScrollToTop = () => {
+    flatRef.current?.scrollToOffset?.({ offset: 0, animated: true });
+    bottomRef.current?.scrollToOffset?.({ offset: 0, animated: true });
+  };
+
+  // ✅ Skeleton 렌더링
   if (isLoading && renderSkeletonItem) {
     const skeletonItems = Array.from({ length: skeletonCount }).map((_, i) =>
       React.cloneElement(renderSkeletonItem({ index: i }), {
@@ -133,7 +131,6 @@ function AppFlatList<T>({
         style={[
           { flex: 1 },
           containerStyle,
-          // ✅ contentContainerStyle의 padding도 반영
           contentContainerStyle as ViewStyle,
         ]}
       >
@@ -142,69 +139,79 @@ function AppFlatList<T>({
     );
   }
 
+  // ✅ 공통 속성
+  const baseListProps = {
+    horizontal: isHorizontal,
+    showsVerticalScrollIndicator: !isHorizontal && showsVerticalScrollIndicator,
+    showsHorizontalScrollIndicator: isHorizontal ? false : undefined,
+    keyboardShouldPersistTaps,
+    contentContainerStyle: [{ flexGrow: 1, paddingBottom: bottomPadding }],
+    onEndReached,
+    onEndReachedThreshold,
+    onScroll: handleScroll,
+    onMomentumScrollBegin,
+    onMomentumScrollEnd,
+    onScrollEndDrag,
+    scrollEventThrottle: 16,
+    initialNumToRender: 10,
+    windowSize: 10,
+    maxToRenderPerBatch: 10,
+    removeClippedSubviews: false,
+    ListEmptyComponent: resolvedEmpty,
+    ListFooterComponent: loadingMore ? (
+      <View style={styles.footerWrap}>
+        <ActivityIndicator color={COLORS.text} />
+      </View>
+    ) : null,
+  };
+
+  const refreshControl = onRefresh ? (
+    <RefreshControl
+      refreshing={refreshing}
+      onRefresh={onRefresh}
+      tintColor={COLORS.text}
+      colors={[COLORS.text]}
+    />
+  ) : undefined;
+
+  // ✅ BottomSheet 내부라면 BottomSheetFlatList 사용
+  if (isInsideBottomSheet) {
+    return (
+      <BottomSheetFlatList
+        ref={bottomRef}
+        {...rest}
+        {...baseListProps}
+        refreshControl={refreshControl}
+        style={containerStyle}
+      />
+    );
+  }
+
+  // ✅ 일반 화면이라면 FlatList 사용
   return (
     <>
       <FlatList
+        ref={flatRef}
         {...rest}
-        ref={listRef}
+        {...baseListProps}
+        refreshControl={refreshControl}
         style={containerStyle}
-        horizontal={isHorizontal}
-        showsVerticalScrollIndicator={
-          !isHorizontal && showsVerticalScrollIndicator
-        }
-        showsHorizontalScrollIndicator={isHorizontal ? false : undefined}
-        keyboardShouldPersistTaps={keyboardShouldPersistTaps}
-        contentContainerStyle={[{ flexGrow: 1 }, contentContainerStyle]}
-        refreshControl={
-          onRefresh ? (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={COLORS.text}
-              colors={[COLORS.text]}
-            />
-          ) : undefined
-        }
-        onEndReached={onEndReached}
-        onEndReachedThreshold={onEndReachedThreshold}
-        onScroll={handleScroll}
-        onMomentumScrollBegin={onMomentumScrollBegin}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        onScrollEndDrag={onScrollEndDrag}
-        scrollEventThrottle={16}
-        // ✅ 성능 옵션 (인스타그램 스타일)
-        initialNumToRender={10}
-        windowSize={10}
-        maxToRenderPerBatch={10}
-        removeClippedSubviews={false}
-        ListEmptyComponent={resolvedEmpty}
-        ListFooterComponent={
-          loadingMore ? (
-            <View style={styles.footerWrap}>
-              <ActivityIndicator color={COLORS.text} />
-            </View>
-          ) : null
-        }
       />
 
-      {/* ✅ Animated Top Button */}
       {!isHorizontal && useTopButton && (
         <Animated.View
           style={[
             styles.scrollTopButton,
             topButtonStyle,
             {
-              transform: [{ translateY: slideAnim }],
-              opacity: opacityAnim,
+              transform: [
+                { translateY: new Animated.Value(showButton ? 0 : 100) },
+              ],
+              opacity: new Animated.Value(showButton ? 1 : 0),
             },
           ]}
         >
-          <TouchableOpacity
-            accessibilityLabel="Scroll to top"
-            onPress={() =>
-              listRef.current?.scrollToOffset({ offset: 0, animated: true })
-            }
-          >
+          <TouchableOpacity onPress={handleScrollToTop}>
             <AppIcon type="ion" name="arrow-up" size={20} color={COLORS.text} />
           </TouchableOpacity>
         </Animated.View>

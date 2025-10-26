@@ -10,8 +10,6 @@ type Props = {
   currentMemberId: string;
   threadId: string;
   currentPoint?: number;
-  bankType: string; // ✅ 추가 (예: 'SHINHAN')
-  accountNo: string; // ✅ 추가 (예: '1002233756246')
 };
 
 const DonateContainer: React.FC<Props> = ({

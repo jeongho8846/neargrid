@@ -1,5 +1,5 @@
 // src/features/thread/sheets/openThreadCommentListSheet.tsx
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
 import { memberStorage } from '@/features/member/utils/memberStorage';
@@ -11,10 +11,6 @@ import AppText from '@/common/components/AppText';
 import { SPACING } from '@/common/styles/spacing';
 import { updateThreadCommentCountCache } from '../utils/updateThreadCommentCountCache';
 
-/**
- * ✅ Hook 금지 구역
- * Hook(useRef, useState 등) 대신 일반 객체로 ref 관리
- */
 export const openThreadCommentListSheet = async ({
   threadId,
 }: {
@@ -33,22 +29,21 @@ export const openThreadCommentListSheet = async ({
     return;
   }
 
-  // ✅ 시트 열기
   open(
-    <View style={styles.container}>
+    <>
       <AppText style={styles.title}>댓글</AppText>
-
-      {/* ref 연결 */}
       <ThreadCommentList
         ref={r => {
           listRef.current = r;
         }}
         threadId={threadId}
       />
-    </View>,
+    </>,
     {
-      snapPoints: ['90%'],
-      initialIndex: 1,
+      snapPoints: ['90%'], // ✅ 2개 이상으로 설정
+      initialIndex: 1, // ✅ 유효 인덱스
+      enableHandlePanningGesture: true,
+      enableContentPanningGesture: true,
       onCloseCallback: closeInputBar,
     },
   );

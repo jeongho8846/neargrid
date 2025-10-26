@@ -29,13 +29,7 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
   }
 
   return (
-    <View
-      style={[
-        styles.container,
-        isChild && { marginLeft: SPACING.lg + 4 }, // 대댓글 들여쓰기
-      ]}
-    >
-      {/* LEFT: 프로필 */}
+    <View style={[styles.container, isChild && { marginLeft: SPACING.lg + 4 }]}>
       <View style={styles.left}>
         <AppProfileImage
           imageUrl={comment.memberProfileImageUrl}
@@ -44,7 +38,6 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
         />
       </View>
 
-      {/* CENTER: 본문 */}
       <View style={styles.center}>
         <View style={styles.headerRow}>
           <AppText style={styles.nick}>{comment.memberNickName}</AppText>
@@ -63,7 +56,6 @@ const ThreadCommentItem: React.FC<Props> = ({ comment, onPressReply }) => {
         </TouchableOpacity>
       </View>
 
-      {/* RIGHT: 좋아요 */}
       <View style={styles.right}>
         <ContentsHeartButton
           liked={!!comment.reactedByCurrentMember}
