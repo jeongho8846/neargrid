@@ -76,7 +76,7 @@ const App = () => {
             <BottomSheetModalProvider>
               <StatusBar
                 translucent={false}
-                backgroundColor={COLORS.background}
+                backgroundColor="transparent"
                 barStyle="light-content"
               />
 

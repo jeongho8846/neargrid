@@ -12,7 +12,7 @@ import ThreadList from '@/features/thread/lists/ThreadList';
 const FeedScreen = () => {
   const navigation = useNavigation();
   const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
-    useCollapsibleHeader(56);
+    useCollapsibleHeader(0);
   const { member, loading: memberLoading } = useCurrentMember();
 
   const { data, isLoading, isFetchingNextPage, fetchNextPage } =

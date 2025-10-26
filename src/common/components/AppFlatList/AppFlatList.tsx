@@ -120,7 +120,7 @@ function AppFlatList<T>({
     onScroll?.(event);
   };
 
-  // ✅ Skeleton 처리
+  // ✅ Skeleton 처리 (수정 버전)
   if (isLoading && renderSkeletonItem) {
     const skeletonItems = Array.from({ length: skeletonCount }).map((_, i) =>
       React.cloneElement(renderSkeletonItem({ index: i }), {
@@ -128,7 +128,18 @@ function AppFlatList<T>({
       }),
     );
 
-    return <View style={[{ flex: 1 }, containerStyle]}>{skeletonItems}</View>;
+    return (
+      <View
+        style={[
+          { flex: 1 },
+          containerStyle,
+          // ✅ contentContainerStyle의 padding도 반영
+          contentContainerStyle as ViewStyle,
+        ]}
+      >
+        {skeletonItems}
+      </View>
+    );
   }
 
   return (

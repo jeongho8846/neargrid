@@ -1,6 +1,5 @@
 import React from 'react';
 import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import AppText from '../AppText';
@@ -31,12 +30,11 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   isAtTop,
   showBorder = true,
 }) => {
-  const insets = useSafeAreaInsets();
   const navigation = useNavigation();
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
 
-  const HEADER_TOTAL = headerHeight + insets.top;
+  const HEADER_TOTAL = headerHeight; // ✅ insets.top 제거
 
   // ✅ 특정 스택의 루트 스크린에서는 강제 숨김
   const hideBackButton =
@@ -47,11 +45,10 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       style={[
         styles.header,
         {
-          height: HEADER_TOTAL,
-          paddingTop: insets.top,
+          height: HEADER_TOTAL, // ✅ safe area 제외
+          paddingTop: 0, // ✅ 제거
           backgroundColor,
           transform: [{ translateY: headerOffset }],
-          // ✅ 최상단일 때는 보더 숨김
           borderBottomWidth: !isAtTop && showBorder ? 0.5 : 0,
         },
       ]}
