@@ -26,5 +26,6 @@ export const fetchThreadComments = async ({
     },
   });
 
+  console.log('Fetched thread comments:', response.data);
   return response.data;
 };
