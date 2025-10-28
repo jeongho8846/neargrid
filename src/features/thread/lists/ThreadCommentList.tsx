@@ -70,57 +70,59 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
     const isEmpty = !isLoading && mergedComments.length === 0;
 
     return (
-      <AppFlatList
-        data={mergedComments}
-        style={style} // ✅ 전달
-        keyExtractor={item => item.commentThreadId}
-        renderItem={({ item }) => (
-          <ThreadCommentItem comment={item} listType="commentList" />
-        )}
-        isLoading={isLoading}
-        renderSkeletonItem={({ index }) => (
-          <ThreadCommentItem
-            comment={{
-              commentThreadId: `skeleton-${index}`,
-              description: '',
-              memberNickName: '',
-              memberProfileImageUrl: '',
-              createDatetime: '',
-              isSkeleton: true,
-            }}
-          />
-        )}
-        skeletonCount={5}
-        refreshing={isFetching}
-        onRefresh={() =>
-          queryClient.invalidateQueries({
-            queryKey: ['threadComments', threadId],
-          })
-        }
-        ListHeaderComponent={
-          headerThread ? (
-            <View>
-              <ThreadItemDetail item={headerThread} />
+      <View style={styles.container}>
+        <AppFlatList
+          data={mergedComments}
+          style={style} // ✅ 전달
+          keyExtractor={item => item.commentThreadId}
+          renderItem={({ item }) => (
+            <ThreadCommentItem comment={item} listType="commentList" />
+          )}
+          isLoading={isLoading}
+          renderSkeletonItem={({ index }) => (
+            <ThreadCommentItem
+              comment={{
+                commentThreadId: `skeleton-${index}`,
+                description: '',
+                memberNickName: '',
+                memberProfileImageUrl: '',
+                createDatetime: '',
+                isSkeleton: true,
+              }}
+            />
+          )}
+          skeletonCount={5}
+          refreshing={isFetching}
+          onRefresh={() =>
+            queryClient.invalidateQueries({
+              queryKey: ['threadComments', threadId],
+            })
+          }
+          ListHeaderComponent={
+            headerThread ? (
+              <View>
+                <ThreadItemDetail item={headerThread} />
 
-              {/* ✅ 구분선 + 댓글 개수 표시 */}
-              <View style={styles.headerDivider}>
-                <AppText style={styles.commentCount}>
-                  댓글 {mergedComments.length}개
-                </AppText>
+                {/* ✅ 구분선 + 댓글 개수 표시 */}
+                <View style={styles.headerDivider}>
+                  <AppText style={styles.commentCount}>
+                    댓글 {mergedComments.length}개
+                  </AppText>
+                </View>
               </View>
-            </View>
-          ) : null
-        }
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          isEmpty ? (
-            <View style={styles.empty}>
-              <AppText>아직 댓글이 없습니다.</AppText>
-            </View>
-          ) : null
-        }
-      />
+            ) : null
+          }
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            isEmpty ? (
+              <View style={styles.empty}>
+                <AppText>아직 댓글이 없습니다.</AppText>
+              </View>
+            ) : null
+          }
+        />
+      </View>
     );
   },
 );
@@ -128,10 +130,10 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
 export default ThreadCommentList;
 
 const styles = StyleSheet.create({
+  container: { flex: 1, paddingTop: 60 },
   empty: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 40,
     width: '100%',
   },
   listContent: {

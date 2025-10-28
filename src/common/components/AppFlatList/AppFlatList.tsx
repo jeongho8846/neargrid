@@ -1,4 +1,3 @@
-// src/common/components/AppFlatList/AppFlatList.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import {
   FlatList,
@@ -74,14 +73,13 @@ function AppFlatList<T>({
   const [showButton, setShowButton] = useState(false);
   const [lastOffset, setLastOffset] = useState(0);
   const screenHeight = Dimensions.get('window').height;
-  const fadeAnim = useRef(new Animated.Value(0)).current; // ✅ 애니메이션 상태
+  const fadeAnim = useRef(new Animated.Value(0)); // ✅ ref 기반으로 변경
 
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
-  // ✅ 키보드/안전영역 대응
+  // ✅ 키보드 / 안전영역 대응
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
-  const bottomPadding = isVisible ? height + bottom + 100 : bottom + 100;
 
   // ✅ BottomSheet 내부 감지
   let isInsideBottomSheet = false;
@@ -119,7 +117,7 @@ function AppFlatList<T>({
 
   // ✅ 버튼 등장 애니메이션
   useEffect(() => {
-    Animated.timing(fadeAnim, {
+    Animated.timing(fadeAnim.current, {
       toValue: showButton ? 1 : 0,
       duration: 250,
       useNativeDriver: true,
@@ -148,6 +146,8 @@ function AppFlatList<T>({
   }
 
   // ✅ 공통 속성
+  const bottomPadding = isVisible ? height + bottom + 100 : bottom + 100;
+
   const baseListProps = {
     horizontal: isHorizontal,
     showsVerticalScrollIndicator: !isHorizontal && showsVerticalScrollIndicator,
@@ -209,16 +209,17 @@ function AppFlatList<T>({
         style={containerStyle}
       />
 
-      {/* ✅ 스크롤 위로가기 버튼 (전역 적용) */}
+      {/* ✅ 스크롤 위로가기 버튼 */}
       {!isHorizontal && (
         <Animated.View
           style={[
             styles.scrollTopButton,
             {
-              opacity: fadeAnim,
+              bottom: isVisible ? height + bottom + 20 : bottom + 80, // ✅ 키보드 대응
+              opacity: fadeAnim.current,
               transform: [
                 {
-                  translateY: fadeAnim.interpolate({
+                  translateY: fadeAnim.current.interpolate({
                     inputRange: [0, 1],
                     outputRange: [50, 0],
                   }),
@@ -245,7 +246,6 @@ export default AppFlatList;
 const styles = StyleSheet.create({
   scrollTopButton: {
     position: 'absolute',
-    bottom: 30,
     right: 20,
   },
   topButtonInner: {
