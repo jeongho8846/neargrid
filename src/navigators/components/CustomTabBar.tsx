@@ -88,10 +88,11 @@ const CustomTabBar = ({
     getFocusedRouteNameFromRoute(descriptors[activeRouteKey]?.route) ??
     state.routes[state.index].name;
 
-  /** ✅ DetailThread일 때 숨김 */
-  const shouldHide = focusedRouteName === 'DetailThread';
+  /** ✅ 특정 화면에서 탭바 숨김 */
+  const hiddenRoutes = ['DetailThread', 'DetailThreadComment'];
+  const shouldHide = hiddenRoutes.includes(focusedRouteName);
   if (shouldHide) {
-    return <Animated.View style={{ height: 0 }} />; // 완전 숨기기: return null;
+    return <Animated.View style={{ height: 0 }} />; // 또는 return null;
   }
 
   return (

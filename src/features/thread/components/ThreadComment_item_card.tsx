@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import AppText from '@/common/components/AppText';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import { ThreadComment } from '../model/ThreadCommentModel';
@@ -8,19 +9,20 @@ import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
+import ThreadReplyItem from './ThreadComment_Reply_Item_card';
 
 type Props = {
   comment: ThreadComment;
   onPressReply?: (comment: ThreadComment) => void;
-  onPressMoreReplies?: (parentId: string) => void; // ✅ “댓글 더보기” 버튼 클릭용
+  listType?: 'commentList' | 'replyList';
 };
 
 const ThreadCommentItem: React.FC<Props> = ({
   comment,
   onPressReply,
-  onPressMoreReplies,
+  listType = 'commentList',
 }) => {
-  const isChild = comment.depth > 0;
+  const navigation = useNavigation<any>();
   const isSkeleton = comment.isSkeleton === true;
   const replies = comment.initialChildCommentThreadResponseDtos ?? [];
 
@@ -32,15 +34,33 @@ const ThreadCommentItem: React.FC<Props> = ({
     );
   }
 
+  const handlePressComment = () => {
+    navigation.navigate('DetailThreadComment', { comment });
+  };
+
+  const handlePressMoreReplies = () => {
+    navigation.navigate('DetailThreadComment', { comment });
+  };
+
+  const showReplyButton = listType === 'commentList';
+  const childCount = comment.childCommentThreadCount ?? 0;
+  const showMoreButton =
+    listType === 'commentList' && childCount > replies.length;
+  const profileSize = listType === 'replyList' ? 32 : 36;
+
   return (
     <View>
       {/* ✅ 부모 댓글 */}
-      <View style={[styles.container]}>
+      <TouchableOpacity
+        activeOpacity={0.8}
+        onPress={handlePressComment}
+        style={[styles.container]}
+      >
         <View style={styles.left}>
           <AppProfileImage
             imageUrl={comment.memberProfileImageUrl}
             memberId={comment.memberId}
-            size={36}
+            size={profileSize}
           />
         </View>
 
@@ -54,14 +74,14 @@ const ThreadCommentItem: React.FC<Props> = ({
 
           <AppText style={styles.desc}>{comment.description}</AppText>
 
-          <TouchableOpacity
-            activeOpacity={0.6}
-            onPress={() => onPressReply?.(comment)}
-          >
-            {isChild ? null : (
+          {showReplyButton && (
+            <TouchableOpacity
+              activeOpacity={0.6}
+              onPress={() => onPressReply?.(comment)}
+            >
               <AppText style={styles.replyBtn}>답글 달기</AppText>
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.right}>
@@ -74,32 +94,31 @@ const ThreadCommentItem: React.FC<Props> = ({
             <AppText style={styles.likeCount}>{comment.reactionCount}</AppText>
           )}
         </View>
-      </View>
+      </TouchableOpacity>
 
-      {/* ✅ 대댓글 목록 (최대 3개 표시) */}
-      {replies.length > 0 && (
+      {/* ✅ 내부 대댓글 표시 */}
+      {listType === 'commentList' && replies.length > 0 && (
         <View style={styles.childContainer}>
-          {/* 🔹 대댓글 개수 표시 */}
           <AppText
             color="text_secondary"
-            style={{ marginBottom: SPACING.sm, marginLeft: SPACING.sm }}
+            style={{ marginBottom: SPACING.sm, marginLeft: SPACING.lg }}
           >
             대댓글 {comment.childCommentThreadCount ?? replies.length}개
           </AppText>
 
           {replies.map(reply => (
-            <ThreadCommentItem
+            <ThreadReplyItem
               key={reply.commentThreadId}
-              comment={{ ...reply, depth: 1 }}
+              comment={reply}
+              listType="replyList"
               onPressReply={onPressReply}
             />
           ))}
 
-          {/* ✅ “댓글 더보기 (n)” */}
-          {comment.childCommentThreadCount > replies.length && (
+          {showMoreButton && (
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => onPressMoreReplies?.(comment.commentThreadId)}
+              onPress={handlePressMoreReplies}
             >
               <AppText style={styles.moreReplies}>댓글 더보기</AppText>
             </TouchableOpacity>
@@ -119,14 +138,12 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.sm,
   },
-
   left: {
     width: 40,
     alignItems: 'center',
     marginRight: SPACING.xs,
     top: SPACING.xs,
   },
-
   center: {
     flex: 1,
     marginLeft: SPACING.sm,
@@ -155,31 +172,27 @@ const styles = StyleSheet.create({
     color: COLORS.text_secondary,
     marginTop: 4,
   },
-
   right: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-end',
+    justifyContent: 'center', // ✅ 위쪽 정렬에서 아래쪽으로 바꾸기
     marginLeft: SPACING.sm,
+    paddingTop: 2, // ✅ 약간 아래로 내려줌
+    alignSelf: 'stretch', // ✅ 부모 높이 100%
   },
+
   likeCount: {
     ...FONT.caption,
     color: COLORS.text,
     marginLeft: 4,
   },
-
-  /** ✅ 대댓글 부분 */
   childContainer: {
     marginTop: SPACING.xs,
     marginBottom: SPACING.sm,
-    borderLeftWidth: 1,
-    borderLeftColor: COLORS.border,
-    marginLeft: SPACING.lg,
-    paddingLeft: -20,
   },
   moreReplies: {
-    ...FONT.caption,
+    ...FONT.body,
     color: COLORS.text_secondary,
     marginTop: 6,
-    paddingLeft: SPACING.sm,
+    marginLeft: SPACING.lg,
   },
 });

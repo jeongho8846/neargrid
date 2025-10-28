@@ -74,7 +74,9 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
         data={mergedComments}
         style={style} // ✅ 전달
         keyExtractor={item => item.commentThreadId}
-        renderItem={({ item }) => <ThreadCommentItem comment={item} />}
+        renderItem={({ item }) => (
+          <ThreadCommentItem comment={item} listType="commentList" />
+        )}
         isLoading={isLoading}
         renderSkeletonItem={({ index }) => (
           <ThreadCommentItem

@@ -1,7 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
 import MapStack from './stackNavigator/main/MapStack';
 import FeedStack from './stackNavigator/main/FeedStack';
@@ -12,7 +11,7 @@ import { FONT } from '@/common/styles/typography';
 
 const Tab = createBottomTabNavigator();
 
-// ✅ 아이콘 렌더러
+/** ✅ 아이콘 렌더러 */
 function renderTabIcon(routeName: string, color: string, size: number) {
   let iconName: string = 'ellipse';
   switch (routeName) {
@@ -35,13 +34,7 @@ function renderTabIcon(routeName: string, color: string, size: number) {
   return <Ionicons name={iconName} size={size} color={color} />;
 }
 
-// ✅ FeedStack 내부 특정 화면(DetailThread)에서 탭 숨김
-function getTabBarDisplay(route: any) {
-  const routeName = getFocusedRouteNameFromRoute(route) ?? '';
-  if (routeName === 'DetailThread') return 'none';
-  return 'flex';
-}
-
+/** ✅ 메인 탭 네비게이터 */
 const MainTabNavigator = () => {
   return (
     <Tab.Navigator
@@ -65,10 +58,7 @@ const MainTabNavigator = () => {
       <Tab.Screen
         name="FeedStack"
         component={FeedStack}
-        options={({ route }) => ({
-          tabBarLabel: '피드',
-          tabBarStyle: { display: getTabBarDisplay(route) }, // 👈 여기서 제어
-        })}
+        options={{ tabBarLabel: '피드' }}
       />
       <Tab.Screen
         name="Add"
