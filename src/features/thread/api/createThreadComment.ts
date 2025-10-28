@@ -1,7 +1,8 @@
 // src/features/thread/api/createThreadComment.ts
 import { apiContents } from '@/services/apiService';
-import { useLocationStore } from '@/features/location/state/locationStore';
 import { memberStorage } from '@/features/member/utils/memberStorage';
+import { Platform } from 'react-native';
+import { useLocationStore } from '@/features/location/state/locationStore';
 
 export async function createThreadComment({
   threadId,
@@ -14,14 +15,16 @@ export async function createThreadComment({
   parentCommentThreadId?: string | null;
   file?: { uri: string; type: string; name: string } | null;
 }) {
-  const member = await memberStorage.getMember(); // ✅ AsyncStorage에서 멤버 읽기
+  const member = await memberStorage.getMember();
   if (!member) throw new Error('로그인 정보 없음');
 
-  const { latitude, longitude, altitude } = useLocationStore.getState(); // ✅ 스토어에서 좌표 읽기
-  if (latitude == null || longitude == null) throw new Error('위치 정보 없음');
+  // ✅ 위치 정보: store에서 직접 가져옴
+  const { latitude, longitude, altitude } = useLocationStore.getState();
+  if (latitude == null || longitude == null)
+    throw new Error('위치 정보 없음 (GPS 초기화 필요)');
 
   const formData = new FormData();
-  formData.append('current_member_id', member.id); // ✅ 멤버 ID 자동 삽입
+  formData.append('current_member_id', member.id);
   formData.append('thread_id', threadId);
   formData.append('description', description);
   formData.append(
@@ -34,7 +37,7 @@ export async function createThreadComment({
 
   if (file) {
     formData.append('file_image', {
-      uri: file.uri,
+      uri: Platform.OS === 'ios' ? file.uri.replace('file://', '') : file.uri,
       type: file.type,
       name: file.name,
     } as any);

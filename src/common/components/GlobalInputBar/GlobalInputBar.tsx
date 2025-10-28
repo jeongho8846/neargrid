@@ -1,3 +1,4 @@
+// src/common/components/GlobalInputBar.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -24,7 +25,7 @@ const MAX_LINES = 3;
 const LINE_HEIGHT = FONT.body.fontSize ?? 20;
 
 const GlobalInputBar = () => {
-  const { isVisible, text, placeholder, setText, onSubmit } =
+  const { isVisible, text, placeholder, setText, onSubmit, isFocusing } =
     useGlobalInputBarStore();
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
@@ -41,18 +42,19 @@ const GlobalInputBar = () => {
     };
   });
 
-  // ✅ 자동 포커스
+  // ✅ 옵션 기반 포커싱 (isFocusing === true일 때만)
   useEffect(() => {
-    if (isVisible && inputRef.current) {
-      setTimeout(() => inputRef.current?.focus(), 100);
+    if (isVisible && isFocusing && inputRef.current) {
+      const t = setTimeout(() => inputRef.current?.focus(), 100);
+      return () => clearTimeout(t);
     }
-  }, [isVisible]);
+  }, [isVisible, isFocusing]);
 
   if (!isVisible) return null;
 
   const handleSend = () => {
     if (!text.trim()) return;
-    onSubmit?.(text.trim()); // ✅ 도메인에 따라 다른 로직 실행됨
+    onSubmit?.(text.trim());
     setText('');
     Keyboard.dismiss();
   };
@@ -90,14 +92,14 @@ const GlobalInputBar = () => {
           value={text}
           onChangeText={setText}
           multiline
-          autoFocus
+          autoFocus={false}
           scrollEnabled={inputHeight >= LINE_HEIGHT * MAX_LINES}
           onContentSizeChange={handleContentSizeChange}
           textAlignVertical="top"
           underlineColorAndroid="transparent"
-          blurOnSubmit={false} // ✅ 엔터 누를 때 포커스 유지
-          onSubmitEditing={() => {}} // ✅ 엔터키로 submit 막기
-          returnKeyType="default" // ✅ "전송" 키 대신 줄바꿈용
+          blurOnSubmit={false}
+          onSubmitEditing={() => {}}
+          returnKeyType="default"
         />
 
         <TouchableOpacity onPress={handleSend} style={styles.sendBtn}>
@@ -108,23 +110,39 @@ const GlobalInputBar = () => {
   );
 };
 
+// ✅ 스타일 수정본
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: COLORS.sheet_background,
+
+    // 핵심: 부모를 풀폭으로 두고, 내부 자식을 가운데 정렬
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    backgroundColor: 'transparent',
     borderColor: COLORS.border,
     zIndex: 9999,
     elevation: 10,
-    borderTopWidth: 1,
+    // ⛔️ width / alignSelf / alignContent 제거!
   },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.md,
     paddingVertical: SPACING.xs,
+    backgroundColor: COLORS.sheet_background,
+    borderRadius: 18,
+
+    // 핵심: 자식 자체의 너비와 중앙 배치
+    width: '96%',
+    maxWidth: 720,
+    alignSelf: 'center',
+
+    // 살짝 띄우고 싶으면 bottom 대신 marginBottom 사용 권장
+    marginBottom: 6,
   },
   input: {
     flex: 1,
