@@ -1,3 +1,4 @@
+// src/features/thread/components/ThreadComment_item_card.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -46,15 +47,17 @@ const ThreadCommentItem: React.FC<Props> = ({
   const childCount = comment.childCommentThreadCount ?? 0;
   const showMoreButton =
     listType === 'commentList' && childCount > replies.length;
-  const profileSize = listType === 'replyList' ? 32 : 36;
+
+  // ✅ 동일한 레이아웃 유지 — replyList에서도 동일한 사이즈/마진
+  const profileSize = 36;
 
   return (
     <View>
-      {/* ✅ 부모 댓글 */}
+      {/* ✅ 댓글 본문 */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handlePressComment}
-        style={[styles.container]}
+        style={styles.container}
       >
         <View style={styles.left}>
           <AppProfileImage
@@ -67,9 +70,6 @@ const ThreadCommentItem: React.FC<Props> = ({
         <View style={styles.center}>
           <View style={styles.headerRow}>
             <AppText style={styles.nick}>{comment.memberNickName}</AppText>
-            <AppText style={styles.date}>
-              {comment.createDatetime?.split('T')[0] ?? ''}
-            </AppText>
           </View>
 
           <AppText style={styles.desc}>{comment.description}</AppText>
@@ -96,7 +96,7 @@ const ThreadCommentItem: React.FC<Props> = ({
         </View>
       </TouchableOpacity>
 
-      {/* ✅ 내부 대댓글 표시 */}
+      {/* ✅ 내부 대댓글 미리보기 (commentList일 때만 표시) */}
       {listType === 'commentList' && replies.length > 0 && (
         <View style={styles.childContainer}>
           <AppText
@@ -174,12 +174,11 @@ const styles = StyleSheet.create({
   },
   right: {
     alignItems: 'flex-end',
-    justifyContent: 'center', // ✅ 위쪽 정렬에서 아래쪽으로 바꾸기
+    justifyContent: 'center',
     marginLeft: SPACING.sm,
-    paddingTop: 2, // ✅ 약간 아래로 내려줌
-    alignSelf: 'stretch', // ✅ 부모 높이 100%
+    paddingTop: 2,
+    alignSelf: 'stretch',
   },
-
   likeCount: {
     ...FONT.caption,
     color: COLORS.text,

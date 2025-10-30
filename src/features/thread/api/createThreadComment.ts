@@ -18,7 +18,6 @@ export async function createThreadComment({
   const member = await memberStorage.getMember();
   if (!member) throw new Error('로그인 정보 없음');
 
-  // ✅ 위치 정보: store에서 직접 가져옴
   const { latitude, longitude, altitude } = useLocationStore.getState();
   if (latitude == null || longitude == null)
     throw new Error('위치 정보 없음 (GPS 초기화 필요)');
@@ -27,10 +26,13 @@ export async function createThreadComment({
   formData.append('current_member_id', member.id);
   formData.append('thread_id', threadId);
   formData.append('description', description);
+
+  // ✅ 여기! 서버가 기대하는 그대로 보낸다
   formData.append(
     'Nullable_parent_comment_thread_id',
-    parentCommentThreadId ?? '',
+    parentCommentThreadId ? parentCommentThreadId : '',
   );
+
   formData.append('latitude', String(latitude));
   formData.append('longitude', String(longitude));
   if (altitude != null) formData.append('altitude', String(altitude));
@@ -47,27 +49,19 @@ export async function createThreadComment({
     memberId: member.id,
     threadId,
     description,
+    parentCommentThreadId: parentCommentThreadId ?? '',
     latitude,
     longitude,
     altitude,
     file: file ? file.name : null,
   });
 
-  try {
-    const res = await apiContents.post(
-      '/commentThread/createCommentThread',
-      formData,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
-    );
+  const res = await apiContents.post(
+    '/commentThread/createCommentThread',
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  );
 
-    console.log('✅ [createThreadComment] Response:', res.status, res.data);
-    return res.data;
-  } catch (error: any) {
-    console.error('❌ [createThreadComment] Error:', {
-      status: error?.response?.status,
-      data: error?.response?.data,
-      message: error?.message,
-    });
-    throw error;
-  }
+  console.log('✅ [createThreadComment] Response:', res.status, res.data);
+  return res.data;
 }

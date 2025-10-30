@@ -1,79 +1,161 @@
-import React, { useEffect, useState, useCallback } from 'react';
+// src/features/thread/lists/ThreadCommentReplyList.tsx
+import React, {
+  useEffect,
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+} from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
+import { fetchChildCommentThreads } from '../api/fetchChildCommentThreads';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
-import ThreadReplyItem from '../components/ThreadComment_Reply_Item_card';
+import ThreadCommentReplyItem from '../components/ThreadComment_Reply_Item_card';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
-import { SPACING } from '@/common/styles/spacing';
-import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
-import AppText from '@/common/components/AppText';
-import { fetchChildCommentThreads } from '../api/fetchChildCommentThreads';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
+import { useCreateThreadCommentReplyWithOptimistic } from '../hooks/useCreateThreadCommentReplyWithOptimistic';
+import { COLORS } from '@/common/styles/colors';
+import { SPACING } from '@/common/styles/spacing';
+import AppText from '@/common/components/AppText';
+import { FONT } from '@/common/styles/typography';
+
+export type ThreadCommentReplyListRef = {
+  addOptimisticComment: (comment: ThreadComment) => void;
+  replaceTempComment: (tempId: string, newComment: ThreadComment) => void;
+  removeTempComment: (tempId: string) => void;
+};
 
 type Props = {
   parentComment: ThreadComment;
 };
 
-const ThreadReplyList: React.FC<Props> = ({ parentComment }) => {
-  const { member } = useCurrentMember();
-  const [replies, setReplies] = useState<ThreadComment[]>([]);
-  const [loading, setLoading] = useState(false);
+const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
+  ({ parentComment }, ref) => {
+    const { member } = useCurrentMember();
+    const openInputBar = useGlobalInputBarStore(s => s.open);
+    const closeInputBar = useGlobalInputBarStore(s => s.close);
 
-  /** ✅ API 호출 함수 */
-  const loadReplies = useCallback(async () => {
-    if (!member?.id) return; // member.id 없으면 skip
-    try {
-      setLoading(true);
-      const res = await fetchChildCommentThreads({
-        threadId: parentComment.threadId!,
-        commentThreadId: parentComment.commentThreadId,
-        currentMemberId: member.id,
+    // ✅ 내부 ref
+    const selfRef = useRef<ThreadCommentReplyListRef>(null);
+
+    // ✅ Optimistic state
+    const [optimisticReplies, setOptimisticReplies] = useState<ThreadComment[]>(
+      [],
+    );
+
+    // ✅ 서버 데이터
+    const { data, isLoading, isFetching, refetch } = useQuery({
+      queryKey: ['childCommentThreads', parentComment.commentThreadId ?? ''],
+      queryFn: () =>
+        fetchChildCommentThreads({
+          threadId: parentComment.threadId ?? '',
+          commentThreadId: parentComment.commentThreadId ?? '',
+          currentMemberId: member?.id ?? '',
+        }),
+      enabled: !!member?.id && !!parentComment.commentThreadId,
+      staleTime: 0,
+    });
+
+    const serverReplies = Array.isArray(data) ? data : [];
+
+    // ✅ 병합
+    const mergedReplies = [
+      ...optimisticReplies.filter(
+        temp =>
+          !serverReplies.some(s => s.commentThreadId === temp.commentThreadId),
+      ),
+      ...serverReplies,
+    ];
+
+    // ✅ ref 동작 연결
+    useImperativeHandle(ref ?? selfRef, () => ({
+      addOptimisticComment: comment => {
+        console.log('🟣 addOptimisticComment', comment);
+        setOptimisticReplies(prev => [comment, ...prev]);
+      },
+      replaceTempComment: (tempId, newComment) => {
+        console.log('🟣 replaceTempComment', tempId, newComment);
+        setOptimisticReplies(prev =>
+          prev.map(c => (c.commentThreadId === tempId ? newComment : c)),
+        );
+      },
+      removeTempComment: tempId => {
+        console.log('🟣 removeTempComment', tempId);
+        setOptimisticReplies(prev =>
+          prev.filter(c => c.commentThreadId !== tempId),
+        );
+      },
+    }));
+
+    // ✅ Optimistic 훅
+    const { handleSubmit } = useCreateThreadCommentReplyWithOptimistic(
+      parentComment.threadId ?? '',
+      selfRef,
+    );
+
+    // ✅ 입력창
+    useEffect(() => {
+      openInputBar({
+        placeholder: '답글을 입력하세요…',
+        isFocusing: false,
+        onSubmit: text =>
+          handleSubmit(text, parentComment.commentThreadId ?? ''),
       });
-      setReplies(res.childCommentThreadResponseDtos ?? []);
-    } catch (err) {
-      console.warn('❌ 대댓글 불러오기 실패:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [member?.id, parentComment]);
+      return () => closeInputBar();
+    }, [
+      openInputBar,
+      closeInputBar,
+      handleSubmit,
+      parentComment.commentThreadId,
+    ]);
 
-  /** ✅ 최초 실행 */
-  useEffect(() => {
-    loadReplies();
-  }, [loadReplies]);
+    return (
+      <View style={styles.container}>
+        <AppFlatList
+          data={mergedReplies}
+          keyExtractor={(item, index) =>
+            item.commentThreadId ?? `temp-${index}`
+          }
+          renderItem={({ item }) => (
+            <ThreadCommentReplyItem comment={item} listType="replyList" />
+          )}
+          onRefresh={refetch}
+          isLoading={isLoading}
+          refreshing={isFetching}
+          contentContainerStyle={styles.content}
+          /** ✅ 부모 댓글 + 대댓글 수 표시 */
+          ListHeaderComponent={
+            <View>
+              {/* ✅ 부모 댓글 */}
+              <View style={styles.parentBox}>
+                <ThreadCommentItem
+                  comment={parentComment}
+                  listType="replyList"
+                />
+              </View>
 
-  return (
-    <View style={styles.container}>
-      <AppFlatList
-        data={replies}
-        keyExtractor={item => String(item.commentThreadId)}
-        renderItem={({ item }) => <ThreadReplyItem comment={item} />}
-        refreshing={loading}
-        onRefresh={loadReplies}
-        /** ✅ 부모 댓글 + 대댓글 수량 표시 */
-        ListHeaderComponent={
-          <View>
-            <View style={styles.parentBox}>
-              <ThreadCommentItem comment={parentComment} listType="replyList" />
+              {/* ✅ 구분선 + 대댓글 개수 */}
+              <View style={styles.headerDivider}>
+                <AppText style={styles.replyCount}>
+                  대댓글 {mergedReplies.length}개
+                </AppText>
+              </View>
             </View>
-            <View style={styles.headerDivider}>
-              <AppText style={styles.replyCount}>
-                대댓글 {replies.length}개
-              </AppText>
-            </View>
-          </View>
-        }
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
-  );
-};
+          }
+        />
+      </View>
+    );
+  },
+);
 
-export default ThreadReplyList;
+ThreadCommentReplyList.displayName = 'ThreadCommentReplyList';
+export default ThreadCommentReplyList;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 60 },
+  parentBox: {},
   headerDivider: {
     marginTop: SPACING.md,
     marginBottom: SPACING.md,
@@ -90,6 +172,5 @@ const styles = StyleSheet.create({
     ...FONT.body,
     color: COLORS.text,
   },
-  parentBox: {},
-  listContent: { paddingBottom: SPACING.xl * 2 },
+  content: { paddingBottom: SPACING.xl * 3 },
 });

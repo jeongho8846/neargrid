@@ -5,7 +5,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import { COLORS } from '@/common/styles/colors';
 import { ThreadComment } from '@/features/thread/model/ThreadCommentModel';
-import ThreadReplyList from '@/features/thread/lists/ThreadCommnetReplyList';
+import ThreadCommentReplyList from '@/features/thread/lists/ThreadCommnetReplyList';
 
 type RouteParams = {
   DetailThreadComment: {
@@ -25,7 +25,7 @@ const DetailThreadCommentScreen = () => {
         isAtTop={false}
         onBackPress={() => navigation.goBack()}
       />
-      <ThreadReplyList parentComment={comment} />
+      <ThreadCommentReplyList parentComment={comment} />
     </View>
   );
 };

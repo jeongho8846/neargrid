@@ -22,7 +22,7 @@ export const fetchChildCommentThreads = async ({
   commentThreadId,
   currentMemberId,
   pagingState,
-}: FetchChildCommentThreadsParams) => {
+}: FetchChildCommentThreadsParams): Promise<ThreadComment[]> => {
   console.log(
     '📤 [fetchChildCommentThreads:REQUEST]',
     '\n currentMemberId:',
@@ -52,17 +52,14 @@ export const fetchChildCommentThreads = async ({
 
     console.log(
       '✅ [fetchChildCommentThreads:RESPONSE]',
-      '\n nextPagingState:',
-      res.nextPagingState,
-      '\n count:',
-      res.childCommentThreadResponseDtos?.length ?? 0,
+      '\n parentCommentThreadId:',
+      res.parentCommentThreadId,
+      '\n res:',
+      res.childCommentThreadResponseDtos,
     );
 
-    // ✅ React Query에서 flatMap할 수 있도록 일관된 구조로 리턴
-    return {
-      childCommentThreadResponseDtos: res.childCommentThreadResponseDtos ?? [],
-      nextPagingState: res.nextPagingState ?? null,
-    };
+    // ✅ 배열만 반환
+    return res.childCommentThreadResponseDtos ?? [];
   } catch (error: any) {
     console.error(
       '❌ [fetchChildCommentThreads:ERROR]',

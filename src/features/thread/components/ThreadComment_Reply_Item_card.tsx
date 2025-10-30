@@ -48,7 +48,7 @@ const ThreadReplyItem: React.FC<Props> = ({
         <View style={styles.headerRow}>
           <AppText style={styles.nick}>{comment.memberNickName}</AppText>
           <AppText style={styles.date}>
-            {comment.createDatetime?.split('T')[0] ?? ''}
+            {comment.createDatetime ? comment.createDatetime.split('T')[0] : ''}
           </AppText>
         </View>
 
