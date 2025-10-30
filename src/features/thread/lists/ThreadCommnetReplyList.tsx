@@ -7,7 +7,6 @@ import React, {
   useRef,
 } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useQuery } from '@tanstack/react-query';
 import { fetchChildCommentThreads } from '../api/fetchChildCommentThreads';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
@@ -37,30 +36,48 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
     const openInputBar = useGlobalInputBarStore(s => s.open);
     const closeInputBar = useGlobalInputBarStore(s => s.close);
 
-    // ✅ 내부 ref
     const selfRef = useRef<ThreadCommentReplyListRef>(null);
 
-    // ✅ Optimistic state
+    /** ✅ Optimistic 로컬 상태 */
     const [optimisticReplies, setOptimisticReplies] = useState<ThreadComment[]>(
       [],
     );
+    const [serverReplies, setServerReplies] = useState<ThreadComment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    // ✅ 서버 데이터
-    const { data, isLoading, isFetching, refetch } = useQuery({
-      queryKey: ['childCommentThreads', parentComment.commentThreadId ?? ''],
-      queryFn: () =>
-        fetchChildCommentThreads({
+    /** ✅ 서버 데이터 직접 fetch */
+    const loadReplies = async () => {
+      if (!member?.id || !parentComment.commentThreadId) return;
+      try {
+        setIsLoading(true);
+        const data = await fetchChildCommentThreads({
           threadId: parentComment.threadId ?? '',
           commentThreadId: parentComment.commentThreadId ?? '',
-          currentMemberId: member?.id ?? '',
-        }),
-      enabled: !!member?.id && !!parentComment.commentThreadId,
-      staleTime: 0,
-    });
+          currentMemberId: member.id,
+        });
+        setServerReplies(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.warn('❌ [ThreadCommentReplyList] 대댓글 불러오기 실패:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    const serverReplies = Array.isArray(data) ? data : [];
+    /** ✅ 새로고침 */
+    const handleRefresh = async () => {
+      if (isRefreshing) return;
+      setIsRefreshing(true);
+      await loadReplies();
+      setIsRefreshing(false);
+    };
 
-    // ✅ 병합
+    /** ✅ 초기 로드 */
+    useEffect(() => {
+      loadReplies();
+    }, [parentComment.commentThreadId, member?.id]);
+
+    /** ✅ 병합된 리스트 */
     const mergedReplies = [
       ...optimisticReplies.filter(
         temp =>
@@ -69,33 +86,30 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
       ...serverReplies,
     ];
 
-    // ✅ ref 동작 연결
+    /** ✅ Ref 제어 메서드 */
     useImperativeHandle(ref ?? selfRef, () => ({
       addOptimisticComment: comment => {
-        console.log('🟣 addOptimisticComment', comment);
         setOptimisticReplies(prev => [comment, ...prev]);
       },
       replaceTempComment: (tempId, newComment) => {
-        console.log('🟣 replaceTempComment', tempId, newComment);
         setOptimisticReplies(prev =>
           prev.map(c => (c.commentThreadId === tempId ? newComment : c)),
         );
       },
       removeTempComment: tempId => {
-        console.log('🟣 removeTempComment', tempId);
         setOptimisticReplies(prev =>
           prev.filter(c => c.commentThreadId !== tempId),
         );
       },
     }));
 
-    // ✅ Optimistic 훅
+    /** ✅ Optimistic 훅 */
     const { handleSubmit } = useCreateThreadCommentReplyWithOptimistic(
       parentComment.threadId ?? '',
       selfRef,
     );
 
-    // ✅ 입력창
+    /** ✅ 입력창 */
     useEffect(() => {
       openInputBar({
         placeholder: '답글을 입력하세요…',
@@ -121,11 +135,10 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
           renderItem={({ item }) => (
             <ThreadCommentReplyItem comment={item} listType="replyList" />
           )}
-          onRefresh={refetch}
+          onRefresh={handleRefresh}
           isLoading={isLoading}
-          refreshing={isFetching}
+          refreshing={isRefreshing}
           contentContainerStyle={styles.content}
-          /** ✅ 부모 댓글 + 대댓글 수 표시 */
           ListHeaderComponent={
             <View>
               {/* ✅ 부모 댓글 */}

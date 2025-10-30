@@ -1,6 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+// src/features/thread/lists/ThreadCommentList.tsx
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useState,
+  useEffect,
+} from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
 import ThreadItemDetail from '../components/thread_item_detail';
 import { fetchThreadComments } from '../api/fetchThreadComments';
@@ -28,28 +33,44 @@ type Props = {
 const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
   ({ threadId, headerThread, style }, ref) => {
     const { member } = useCurrentMember();
-    const queryClient = useQueryClient();
-
-    const {
-      data: comments = [],
-      isLoading,
-      isFetching,
-    } = useQuery({
-      queryKey: ['threadComments', threadId],
-      queryFn: () =>
-        fetchThreadComments({
-          threadId,
-          currentMemberId: member?.id ?? '',
-        }).then(res => res.commentThreadResponseDtos || []),
-      enabled: !!member?.id && !!threadId,
-      staleTime: 0,
-      gcTime: 1000 * 60 * 10,
-    });
-
+    const [comments, setComments] = useState<ThreadComment[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [optimisticComments, setOptimisticComments] = useState<
       ThreadComment[]
     >([]);
 
+    /** ✅ 초기 댓글 불러오기 */
+    const loadComments = async () => {
+      if (!member?.id || !threadId) return;
+      try {
+        setIsLoading(true);
+        const res = await fetchThreadComments({
+          threadId,
+          currentMemberId: member.id,
+        });
+        setComments(res.commentThreadResponseDtos || []);
+      } catch (e) {
+        console.warn('❌ [ThreadCommentList] 댓글 불러오기 실패:', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    /** ✅ 새로고침 */
+    const handleRefresh = async () => {
+      if (isRefreshing) return;
+      setIsRefreshing(true);
+      await loadComments();
+      setIsRefreshing(false);
+    };
+
+    /** ✅ 초기 로드 */
+    useEffect(() => {
+      loadComments();
+    }, [threadId, member?.id]);
+
+    /** ✅ Optimistic 핸들러들 */
     useImperativeHandle(ref, () => ({
       addOptimisticComment: comment => {
         setOptimisticComments(prev => [comment, ...prev]);
@@ -66,14 +87,14 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
       },
     }));
 
-    const mergedComments = [...optimisticComments, ...(comments ?? [])];
+    const mergedComments = [...optimisticComments, ...comments];
     const isEmpty = !isLoading && mergedComments.length === 0;
 
     return (
       <View style={styles.container}>
         <AppFlatList
           data={mergedComments}
-          style={style} // ✅ 전달
+          style={style}
           keyExtractor={item => item.commentThreadId}
           renderItem={({ item }) => (
             <ThreadCommentItem comment={item} listType="commentList" />
@@ -92,18 +113,12 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
             />
           )}
           skeletonCount={5}
-          refreshing={isFetching}
-          onRefresh={() =>
-            queryClient.invalidateQueries({
-              queryKey: ['threadComments', threadId],
-            })
-          }
+          refreshing={isRefreshing}
+          onRefresh={handleRefresh}
           ListHeaderComponent={
             headerThread ? (
               <View>
                 <ThreadItemDetail item={headerThread} />
-
-                {/* ✅ 구분선 + 댓글 개수 표시 */}
                 <View style={styles.headerDivider}>
                   <AppText style={styles.commentCount}>
                     댓글 {mergedComments.length}개
@@ -139,7 +154,6 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: SPACING.xl * 3,
   },
-
   headerDivider: {
     marginTop: SPACING.md,
     marginBottom: SPACING.md,
@@ -151,7 +165,6 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-
   commentCount: {
     marginVertical: 6,
     ...FONT.body,

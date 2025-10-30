@@ -1,6 +1,5 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
+// src/features/thread/hooks/useFetchFeedThreads.ts
 import { fetchFeedThreads } from '../api/fetchFeedThreads';
-import { THREAD_KEYS } from '../keys/threadKeys';
 import { Thread } from '../model/ThreadModel';
 
 type FetchFeedThreadsResult = {
@@ -10,7 +9,9 @@ type FetchFeedThreadsResult = {
 };
 
 /**
- * 🪄 피드 전용 쓰레드 목록 무한스크롤 훅
+ * 🪄 피드 전용 쓰레드 목록 불러오기 (쿼리 구조 제거 버전)
+ * - React Query 제거
+ * - 단순 서버 데이터 요청 함수로 변경
  */
 type Params = {
   memberId: string;
@@ -18,66 +19,43 @@ type Params = {
   latitude?: number;
   longitude?: number;
   searchType: 'POPULARITY' | 'RECOMMENDED' | 'MOSTRECENT';
+  cursorMark?: string; // 무한스크롤용 커서
 };
 
-type Options = {
-  enabled?: boolean;
-};
+/**
+ * 서버에서 피드 쓰레드 목록을 직접 fetch하는 함수
+ * (React Query 훅 제거 버전)
+ */
+export const fetchFeedThreadsDirect = async ({
+  memberId,
+  distance,
+  latitude,
+  longitude,
+  searchType,
+  cursorMark = '',
+}: Params): Promise<FetchFeedThreadsResult> => {
+  if (!memberId) {
+    console.warn('⚠️ [fetchFeedThreadsDirect] memberId 없음 → 요청 스킵');
+    return { threads: [], threadIds: [], nextCursorMark: null };
+  }
 
-export const useFetchFeedThreads = (
-  { memberId, distance, latitude, longitude, searchType }: Params,
-  { enabled = true }: Options = {},
-) => {
-  return useInfiniteQuery<
-    FetchFeedThreadsResult,
-    Error,
-    Thread[],
-    ReturnType<typeof THREAD_KEYS.list>,
-    string
-  >({
-    queryKey: THREAD_KEYS.list(searchType, memberId, distance),
-    initialPageParam: '',
-
-    // ✅ 페이지 호출 함수
-    queryFn: ({ pageParam }) => {
-      // ⬇️⬇️⬇️ 여기 추가 ⬇️⬇️⬇️
-      if (!memberId) {
-        console.warn('⚠️ [useFetchFeedThreads] memberId 없음 → 요청 스킵');
-        return Promise.resolve({
-          threads: [],
-          threadIds: [],
-          nextCursorMark: null,
-        });
-      }
-
-      console.log('📡 [useFetchFeedThreads] 요청 파라미터', {
-        memberId,
-        distance,
-        latitude,
-        longitude,
-        searchType,
-        pageParam,
-      });
-      // ⬆️⬆️⬆️ 여기 추가 끝 ⬆️⬆️⬆️
-
-      return fetchFeedThreads(
-        memberId,
-        distance,
-        pageParam,
-        latitude,
-        longitude,
-        searchType,
-      );
-    },
-
-    // ✅ 다음 페이지 커서
-    getNextPageParam: lastPage =>
-      lastPage.nextCursorMark ? lastPage.nextCursorMark : undefined,
-
-    // ✅ 모든 페이지 평탄화
-    select: data => data.pages.flatMap(page => page.threads),
-
-    // ✅ member가 아직 로드 안됐으면 호출 안함
-    enabled,
+  console.log('📡 [fetchFeedThreadsDirect] 요청 파라미터', {
+    memberId,
+    distance,
+    latitude,
+    longitude,
+    searchType,
+    cursorMark,
   });
+
+  const result = await fetchFeedThreads(
+    memberId,
+    distance,
+    cursorMark,
+    latitude,
+    longitude,
+    searchType,
+  );
+
+  return result;
 };
