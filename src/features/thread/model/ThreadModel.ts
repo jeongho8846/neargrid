@@ -1,4 +1,6 @@
-// 서버에서 오는 원본 DTO
+/**
+ * 🛰️ 서버에서 오는 원본 DTO
+ */
 export type ServerThreadDto = {
   threadId: string;
   threadType: string;
@@ -43,7 +45,10 @@ export type ServerThreadDto = {
   remainDateTime: string | null;
 };
 
-// 앱 내부에서 쓰는 정규화된 도메인 모델 (캐시에 넣는 타입)
+/**
+ * 🧩 앱 내부에서 사용하는 정규화된 Thread 모델
+ * (React Query 캐시에 이 형태로 저장)
+ */
 export type Thread = {
   threadId: string;
   threadType: string;
@@ -84,13 +89,17 @@ export type Thread = {
   childThreadWritableByOthers: boolean;
 };
 
-// 페치 응답
+/**
+ * 📦 피드 API 응답 타입
+ */
 export type FetchThreadsResponse = {
   threadResponseSingleDtos: ServerThreadDto[];
   nextCursorMark: string | null;
 };
 
-// 스켈레톤/플레이스홀더용
+/**
+ * 🪄 스켈레톤/플레이스홀더용 Thread 생성 함수
+ */
 export const createEmptyThread = (id: string): Thread => ({
   threadId: id,
   threadType: 'GENERAL_THREAD',

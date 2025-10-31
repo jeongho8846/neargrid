@@ -1,61 +1,66 @@
-// src/features/thread/hooks/useFetchFeedThreads.ts
+import {
+  useInfiniteQuery,
+  useQueryClient,
+  type UseInfiniteQueryResult,
+  type InfiniteData, // ✅ 추가
+} from '@tanstack/react-query';
 import { fetchFeedThreads } from '../api/fetchFeedThreads';
+import { THREAD_KEYS } from '../keys/threadKeys';
 import { Thread } from '../model/ThreadModel';
 
-type FetchFeedThreadsResult = {
+export type FetchFeedThreadsResult = {
   threads: Thread[];
   threadIds: string[];
   nextCursorMark: string | null;
 };
 
-/**
- * 🪄 피드 전용 쓰레드 목록 불러오기 (쿼리 구조 제거 버전)
- * - React Query 제거
- * - 단순 서버 데이터 요청 함수로 변경
- */
 type Params = {
   memberId: string;
   distance: number | '100000000';
   latitude?: number;
   longitude?: number;
   searchType: 'POPULARITY' | 'RECOMMENDED' | 'MOSTRECENT';
-  cursorMark?: string; // 무한스크롤용 커서
 };
 
-/**
- * 서버에서 피드 쓰레드 목록을 직접 fetch하는 함수
- * (React Query 훅 제거 버전)
- */
-export const fetchFeedThreadsDirect = async ({
-  memberId,
-  distance,
-  latitude,
-  longitude,
-  searchType,
-  cursorMark = '',
-}: Params): Promise<FetchFeedThreadsResult> => {
-  if (!memberId) {
-    console.warn('⚠️ [fetchFeedThreadsDirect] memberId 없음 → 요청 스킵');
-    return { threads: [], threadIds: [], nextCursorMark: null };
-  }
+type Options = {
+  enabled?: boolean;
+};
 
-  console.log('📡 [fetchFeedThreadsDirect] 요청 파라미터', {
-    memberId,
-    distance,
-    latitude,
-    longitude,
-    searchType,
-    cursorMark,
+export function useFetchFeedThreads(
+  { memberId, distance, latitude, longitude, searchType }: Params,
+  { enabled = true }: Options = {},
+): UseInfiniteQueryResult<InfiniteData<FetchFeedThreadsResult>, Error> {
+  const queryClient = useQueryClient();
+
+  return useInfiniteQuery<
+    FetchFeedThreadsResult, // 각 페이지의 데이터 구조
+    Error,
+    InfiniteData<FetchFeedThreadsResult>, // ✅ select 이후 data 타입
+    ReturnType<typeof THREAD_KEYS.list>,
+    string
+  >({
+    queryKey: THREAD_KEYS.list(),
+    enabled: Boolean(memberId) && enabled,
+    initialPageParam: '',
+    queryFn: async ({ pageParam }) => {
+      const cursor = typeof pageParam === 'string' ? pageParam : '';
+
+      const data = await fetchFeedThreads(
+        memberId,
+        distance,
+        cursor,
+        latitude,
+        longitude,
+        searchType,
+      );
+
+      // ✅ Thread 단위 캐시 주입
+      data.threads.forEach((thread: Thread) => {
+        queryClient.setQueryData(THREAD_KEYS.detail(thread.threadId), thread);
+      });
+
+      return data;
+    },
+    getNextPageParam: lastPage => lastPage.nextCursorMark ?? undefined,
   });
-
-  const result = await fetchFeedThreads(
-    memberId,
-    distance,
-    cursorMark,
-    latitude,
-    longitude,
-    searchType,
-  );
-
-  return result;
-};
+}

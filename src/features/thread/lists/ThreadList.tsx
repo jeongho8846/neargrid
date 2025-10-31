@@ -5,16 +5,21 @@ import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
+import ThreadListItem from './ThreadListItem';
 import ThreadItemDetail from '../components/thread_item_detail';
-import { Thread, createEmptyThread } from '../model/ThreadModel';
+import { createEmptyThread } from '../model/ThreadModel';
 
 type Props = {
-  data?: Thread[];
+  data?: string[];
   isLoading?: boolean;
   loadingMore?: boolean;
   onEndReached?: () => void;
   onScroll?: (e: any) => void;
   contentPaddingTop?: number;
+
+  /** ✅ 추가 */
+  onRefresh?: () => void;
+  refreshing?: boolean;
 };
 
 const ThreadList: React.FC<Props> = ({
@@ -24,20 +29,17 @@ const ThreadList: React.FC<Props> = ({
   onEndReached,
   onScroll,
   contentPaddingTop = 0,
+  /** ✅ 추가 */
+  onRefresh,
+  refreshing,
 }) => {
   const isEmpty = !isLoading && (data?.length ?? 0) === 0;
 
   return (
     <AppFlatList
       data={data ?? []}
-      keyExtractor={item => item.threadId.toString()}
-      renderItem={({ item }) => (
-        <ThreadItemDetail
-          item={item}
-          isLoading={false}
-          onPress={id => console.log('📄 상세보기:', id)}
-        />
-      )}
+      keyExtractor={(id, index) => id?.toString?.() ?? `fallback-${index}`}
+      renderItem={({ item }) => <ThreadListItem threadId={item} />}
       isLoading={isLoading || !data}
       renderSkeletonItem={({ index }) => (
         <ThreadItemDetail
@@ -47,6 +49,9 @@ const ThreadList: React.FC<Props> = ({
       )}
       skeletonCount={5}
       onScroll={onScroll}
+      /** ✅ 여기 전달 */
+      onRefresh={onRefresh}
+      refreshing={refreshing}
       onEndReached={() => onEndReached?.()}
       onEndReachedThreshold={0.2}
       loadingMore={loadingMore}

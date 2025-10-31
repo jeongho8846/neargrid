@@ -1,5 +1,4 @@
-// src/features/thread/screens/FeedScreen.tsx
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
@@ -8,66 +7,48 @@ import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import ThreadList from '@/features/thread/lists/ThreadList';
-import { fetchFeedThreadsDirect } from '@/features/thread/hooks/useFetchFeedThreads'; // ✅ 쿼리 제거 버전 사용
-import { Thread } from '@/features/thread/model/ThreadModel';
+import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads';
 
+/**
+ * ✅ 피드 화면 (React Query 기반)
+ * - useFetchFeedThreads 훅으로 피드 로드
+ * - Thread 단위 캐싱 자동 처리
+ * - 무한 스크롤 지원
+ */
 const FeedScreen = () => {
   const navigation = useNavigation();
   const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
     useCollapsibleHeader(0);
   const { member, loading: memberLoading } = useCurrentMember();
 
-  const [threads, setThreads] = useState<Thread[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isFetchingNext, setIsFetchingNext] = useState(false);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  /** 🧭 React Query 피드 훅 */
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    isLoading,
+    refetch,
+  } = useFetchFeedThreads(
+    {
+      memberId: member?.id ?? '',
+      distance: 100000000, // 기본 거리
+      latitude: 37.5,
+      longitude: 127.0,
+      searchType: 'MOSTRECENT',
+    },
+    { enabled: !memberLoading && Boolean(member?.id) },
+  );
 
-  /** ✅ 초기 피드 로드 */
-  const loadFeed = async () => {
-    if (!member?.id) return;
-    try {
-      setIsLoading(true);
-      const res = await fetchFeedThreadsDirect({
-        memberId: member.id,
-        distance: 10000000000000000,
-        latitude: 37.5,
-        longitude: 127.0,
-        searchType: 'MOSTRECENT',
-      });
-      setThreads(res.threads);
-      setNextCursor(res.nextCursorMark);
-    } catch (e) {
-      console.warn('❌ [FeedScreen] 피드 로드 실패:', e);
-    } finally {
-      setIsLoading(false);
+  /** 🧩 threadIds 배열 평탄화 */
+  const threadIds = data?.pages.flatMap(page => page.threadIds) ?? [];
+  /** 🚀 다음 페이지 로드 */
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
     }
   };
-
-  /** ✅ 무한 스크롤 추가 로드 */
-  const loadMoreFeed = async () => {
-    if (isFetchingNext || !nextCursor || !member?.id) return;
-    try {
-      setIsFetchingNext(true);
-      const res = await fetchFeedThreadsDirect({
-        memberId: member.id,
-        distance: 10000000000000000,
-        latitude: 37.5,
-        longitude: 127.0,
-        searchType: 'MOSTRECENT',
-        cursorMark: nextCursor,
-      });
-      setThreads(prev => [...prev, ...res.threads]);
-      setNextCursor(res.nextCursorMark);
-    } catch (e) {
-      console.warn('❌ [FeedScreen] 추가 피드 로드 실패:', e);
-    } finally {
-      setIsFetchingNext(false);
-    }
-  };
-
-  useEffect(() => {
-    if (member?.id && !memberLoading) loadFeed();
-  }, [member?.id, memberLoading]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -84,11 +65,13 @@ const FeedScreen = () => {
       />
 
       <ThreadList
-        data={threads}
+        data={threadIds}
         isLoading={isLoading}
-        loadingMore={isFetchingNext}
-        onEndReached={loadMoreFeed}
+        loadingMore={isFetchingNextPage}
+        onEndReached={handleLoadMore}
         onScroll={handleScroll}
+        onRefresh={refetch}
+        refreshing={isFetching}
         contentPaddingTop={HEADER_TOTAL}
       />
     </View>
