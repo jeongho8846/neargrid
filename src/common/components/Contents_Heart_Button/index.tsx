@@ -19,7 +19,7 @@ type Props = {
   accessibilityLabel?: string;
 };
 
-const ContentsHeartButton: React.FC<Props> = ({
+const ContentsHeartButtonComponent: React.FC<Props> = ({
   liked,
   onToggle,
   size = 22,
@@ -64,5 +64,14 @@ const ContentsHeartButton: React.FC<Props> = ({
     </TouchableOpacity>
   );
 };
+
+// ✅ props가 실제로 바뀌지 않으면 리렌더 차단
+export const ContentsHeartButton = React.memo(
+  ContentsHeartButtonComponent,
+  (prev, next) =>
+    prev.liked === next.liked &&
+    prev.disabled === next.disabled &&
+    prev.isLoading === next.isLoading,
+);
 
 export default ContentsHeartButton;

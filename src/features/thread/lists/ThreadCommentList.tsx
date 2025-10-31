@@ -1,17 +1,12 @@
-// src/features/thread/lists/ThreadCommentList.tsx
-import React, {
-  forwardRef,
-  useImperativeHandle,
-  useState,
-  useEffect,
-} from 'react';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
 import ThreadItemDetail from '../components/thread_item_detail';
-import { fetchThreadComments } from '../api/fetchThreadComments';
 import { Thread } from '../model/ThreadModel';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useThreadQuery } from '../hooks/useThreadQuery';
+import { useFetchThreadComments } from '../hooks/useFetchThreadComments';
 import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import { SPACING } from '@/common/styles/spacing';
@@ -33,44 +28,22 @@ type Props = {
 const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
   ({ threadId, headerThread, style }, ref) => {
     const { member } = useCurrentMember();
-    const [comments, setComments] = useState<ThreadComment[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const { data: thread } = useThreadQuery(threadId);
+
+    /** ✅ React Query 기반 댓글 캐시 */
+    const {
+      data: comments = [],
+      isLoading,
+      refetch,
+      isFetching,
+    } = useFetchThreadComments(threadId, member?.id);
+
+    /** ✅ Optimistic 전용 로컬 리스트 */
     const [optimisticComments, setOptimisticComments] = useState<
       ThreadComment[]
     >([]);
 
-    /** ✅ 초기 댓글 불러오기 */
-    const loadComments = async () => {
-      if (!member?.id || !threadId) return;
-      try {
-        setIsLoading(true);
-        const res = await fetchThreadComments({
-          threadId,
-          currentMemberId: member.id,
-        });
-        setComments(res.commentThreadResponseDtos || []);
-      } catch (e) {
-        console.warn('❌ [ThreadCommentList] 댓글 불러오기 실패:', e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    /** ✅ 새로고침 */
-    const handleRefresh = async () => {
-      if (isRefreshing) return;
-      setIsRefreshing(true);
-      await loadComments();
-      setIsRefreshing(false);
-    };
-
-    /** ✅ 초기 로드 */
-    useEffect(() => {
-      loadComments();
-    }, [threadId, member?.id]);
-
-    /** ✅ Optimistic 핸들러들 */
+    /** ✅ Imperative 핸들러 등록 */
     useImperativeHandle(ref, () => ({
       addOptimisticComment: comment => {
         setOptimisticComments(prev => [comment, ...prev]);
@@ -89,6 +62,7 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
 
     const mergedComments = [...optimisticComments, ...comments];
     const isEmpty = !isLoading && mergedComments.length === 0;
+    const displayCount = thread?.commentThreadCount ?? mergedComments.length;
 
     return (
       <View style={styles.container}>
@@ -100,6 +74,8 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
             <ThreadCommentItem comment={item} listType="commentList" />
           )}
           isLoading={isLoading}
+          refreshing={isFetching}
+          onRefresh={refetch}
           renderSkeletonItem={({ index }) => (
             <ThreadCommentItem
               comment={{
@@ -113,15 +89,13 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
             />
           )}
           skeletonCount={5}
-          refreshing={isRefreshing}
-          onRefresh={handleRefresh}
           ListHeaderComponent={
             headerThread ? (
               <View>
                 <ThreadItemDetail item={headerThread} />
                 <View style={styles.headerDivider}>
                   <AppText style={styles.commentCount}>
-                    댓글 {mergedComments.length}개
+                    댓글 {displayCount}개
                   </AppText>
                 </View>
               </View>
@@ -146,14 +120,8 @@ export default ThreadCommentList;
 
 const styles = StyleSheet.create({
   container: { flex: 1, paddingTop: 60 },
-  empty: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '100%',
-  },
-  listContent: {
-    paddingBottom: SPACING.xl * 3,
-  },
+  empty: { alignItems: 'center', justifyContent: 'center', width: '100%' },
+  listContent: { paddingBottom: SPACING.xl * 3 },
   headerDivider: {
     marginTop: SPACING.md,
     marginBottom: SPACING.md,

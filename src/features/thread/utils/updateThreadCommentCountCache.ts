@@ -1,13 +1,60 @@
 // src/features/thread/utils/updateThreadCommentCountCache.ts
+import { QueryClient } from '@tanstack/react-query';
+import { THREAD_KEYS } from '../keys/threadKeys';
+import { Thread } from '../model/ThreadModel';
+
 /**
- * ✅ 댓글 수 갱신 유틸 (쿼리 구조 제거 버전)
- * - React Query 캐시 조작 제거
- * - 필요 시 상위 컴포넌트에서 직접 상태 갱신하도록 변경
+ * ✅ 댓글 수 캐시 갱신 유틸
+ * - THREAD_KEYS 구조에 맞게 리스트(detail) 캐시 모두 수정
  */
-export const updateThreadCommentCountCache = (_threadId: string) => {
-  // React Query 제거 버전에서는 캐시를 직접 수정하지 않음.
-  // 대신 필요 시 상위 상태나 리스트 ref에서 직접 처리하세요.
-  console.log(
-    'ℹ️ [updateThreadCommentCountCache] 캐시 업데이트 로직 제거됨 (쿼리 비활성화 상태)',
-  );
-};
+export function updateThreadCommentCountCache(
+  queryClient: QueryClient,
+  threadId: string,
+  delta: number,
+) {
+  if (!threadId) return;
+
+  console.log('🧠 [updateThreadCommentCountCache] 시작', { threadId, delta });
+
+  // ✅ 1️⃣ 리스트 캐시 갱신
+  const listKey = THREAD_KEYS.list();
+  const listData = queryClient.getQueryData<any>(listKey);
+
+  if (listData?.pages) {
+    const newListData = {
+      ...listData,
+      pages: listData.pages.map((page: any) => ({
+        ...page,
+        threads: page.threads.map((t: Thread) =>
+          t.threadId === threadId
+            ? {
+                ...t,
+                commentThreadCount: Math.max(
+                  (t.commentThreadCount ?? 0) + delta,
+                  0,
+                ),
+              }
+            : t,
+        ),
+      })),
+    };
+    queryClient.setQueryData(listKey, newListData);
+    console.log('✅ [updateThreadCommentCountCache] 리스트 캐시 갱신 완료');
+  }
+
+  // ✅ 2️⃣ 단일 thread 캐시 갱신
+  const detailKey = THREAD_KEYS.detail(threadId);
+  const detailData = queryClient.getQueryData<Thread>(detailKey);
+
+  if (detailData) {
+    const newDetailData = {
+      ...detailData,
+      commentThreadCount: Math.max(
+        (detailData.commentThreadCount ?? 0) + delta,
+        0,
+      ),
+    };
+    queryClient.setQueryData(detailKey, newDetailData);
+    console.log('✅ [updateThreadCommentCountCache] 디테일 캐시 갱신 완료');
+  }
+}
