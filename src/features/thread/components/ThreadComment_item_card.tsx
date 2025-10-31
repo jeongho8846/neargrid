@@ -151,7 +151,6 @@ const styles = StyleSheet.create({
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 2,
   },
   nick: {
     ...FONT.body,
@@ -168,9 +167,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   replyBtn: {
-    ...FONT.caption,
+    ...FONT.body,
     color: COLORS.text_secondary,
-    marginTop: 4,
   },
   right: {
     alignItems: 'flex-end',

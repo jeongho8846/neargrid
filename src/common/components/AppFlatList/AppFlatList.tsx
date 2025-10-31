@@ -215,7 +215,7 @@ function AppFlatList<T>({
           style={[
             styles.scrollTopButton,
             {
-              bottom: isVisible ? height + bottom + 20 : bottom + 80, // ✅ 키보드 대응
+              bottom: isVisible ? height + bottom + 20 : bottom + 20, // ✅ 키보드 대응
               opacity: fadeAnim.current,
               transform: [
                 {
@@ -246,10 +246,10 @@ export default AppFlatList;
 const styles = StyleSheet.create({
   scrollTopButton: {
     position: 'absolute',
-    right: 20,
+    right: 10,
   },
   topButtonInner: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.sheet_background,
     padding: 12,
     borderRadius: 24,
     elevation: 5,

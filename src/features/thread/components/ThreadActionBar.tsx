@@ -1,6 +1,7 @@
 // 📄 src/features/thread/components/ThreadActionBar.tsx
 import React, { useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 
 import ContentsHeartButton from '@/common/components/Contents_Heart_Button';
 import ContentsIconCountButton from '@/common/components/Contents_IconCount_Button';
@@ -11,7 +12,6 @@ import { SPACING } from '@/common/styles/spacing';
 import { useThreadQuery } from '../hooks/useThreadQuery';
 import { useThreadLike } from '../hooks/useThreadLike';
 import { openThreadLikeListSheet } from '../sheets/openThreadLikeListSheet';
-import { openThreadCommentListSheet } from '../sheets/openThreadCommentListSheet';
 import { openThreadShareSheet } from '../sheets/openThreadShareSheet';
 import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
@@ -24,36 +24,40 @@ type Props = {
 /**
  * ✅ ThreadActionBar
  * - React Query 캐시 기반 구조
- * - 캐시가 갱신되면 자동으로 리렌더됨
  * - 좋아요 / 댓글 / 공유 / 도네이션 액션 제공
  */
 const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
+  const navigation = useNavigation<any>();
+
+  const route = useRoute();
   const { data: thread } = useThreadQuery(threadId);
   const { member } = useCurrentMember();
 
-  // ✅ 좋아요 관련 훅 (캐시 자동 동기화)
+  // ✅ 좋아요 훅 (캐시 자동 동기화)
   const { liked, likeCount, toggleLike, inflight } = useThreadLike({
     threadId,
     initialLiked: thread?.reactedByCurrentMember ?? false,
     initialCount: thread?.reactionCount ?? 0,
   });
 
-  /**
-   * ✅ 모든 useCallback은 조건문보다 위에 선언해야 함
-   * (React Hook 규칙: 항상 같은 순서로 호출)
-   */
+  /** ✅ 좋아요 수 버튼 */
   const onPressLikeCount = useCallback(() => {
     openThreadLikeListSheet({ threadId });
   }, [threadId]);
 
+  /** ✅ 댓글 버튼 → DetailThreadScreen 이동 */
   const onPressComment = useCallback(() => {
-    openThreadCommentListSheet({ threadId });
-  }, [threadId]);
+    if (!thread) return;
+    if (route.name === 'DetailThread') return; // 이미 DetailThread면 무시
+    navigation.navigate('DetailThread', { thread });
+  }, [thread, route.name, navigation]);
 
+  /** ✅ 공유 버튼 */
   const onPressShare = useCallback(() => {
     openThreadShareSheet({ threadId });
   }, [threadId]);
 
+  /** ✅ 도네이션 버튼 */
   const onPressDonate = useCallback(() => {
     if (!member?.id) {
       console.warn('⚠️ 로그인 정보 없음 → 도네이션 시트 열지 않음');
@@ -66,7 +70,7 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
     });
   }, [member, threadId]);
 
-  // ✅ thread 데이터가 아직 캐시에 없으면 렌더링 생략
+  // ✅ thread 데이터가 없으면 렌더링 생략
   if (!thread) return null;
 
   return (
