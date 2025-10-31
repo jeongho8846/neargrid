@@ -1,5 +1,5 @@
 // src/features/location/utils/locationWatcher.ts
-import Geolocation from 'react-native-geolocation-service';
+import Geolocation from '@react-native-community/geolocation';
 import { useLocationStore } from '@/features/location/state/locationStore';
 
 let watchId: number | null = null;
@@ -13,20 +13,19 @@ export const startWatchingLocation = () => {
   watchId = Geolocation.watchPosition(
     position => {
       const { latitude, longitude, altitude } = position.coords;
-
-      setLocation(latitude, longitude, altitude ?? null); // ✅ 고도까지 스토어에 저장
-      // console.log(
-      //   `[GPS] 위치 갱신됨 → lat: ${latitude}, lon: ${longitude}, alt: ${altitude}`,
-      // );
+      setLocation(latitude, longitude, altitude ?? null);
+      console.log(
+        `[GPS] 위치 갱신 → lat: ${latitude}, lon: ${longitude}, alt: ${altitude}`,
+      );
     },
     error => {
       console.warn('[GPS] 감시 에러:', error);
     },
     {
       enableHighAccuracy: true,
-      interval: 3000, // ✅ 3초 간격으로 위치 요청
-      fastestInterval: 2000,
       distanceFilter: 0,
+      interval: 3000,
+      fastestInterval: 2000,
     },
   );
 };
@@ -35,6 +34,7 @@ export const startWatchingLocation = () => {
 export const stopWatchingLocation = () => {
   if (watchId) {
     Geolocation.clearWatch(watchId);
+    Geolocation.stopObserving?.();
     console.log('[GPS] 위치 감시 중단됨');
     watchId = null;
   }
@@ -56,7 +56,7 @@ export const getCurrentLocation = (): Promise<{
         resolve({
           latitude,
           longitude,
-          altitude: altitude ?? null, // ✅ altitude가 undefined일 경우 null로 변환
+          altitude: altitude ?? null,
         });
       },
       err => {

@@ -7,39 +7,16 @@ import MainTabNavigator from './MainTabNavigator';
 import { useRefresh } from '@/features/member/hooks/useRefresh';
 import { memberStorage } from '@/features/member/utils/memberStorage';
 
-// 🗺 위치 추적 관련
-import {
-  startWatchingLocation,
-  stopWatchingLocation,
-  getCurrentLocation,
-} from '@/services/device/locationService';
-import { useLocationStore } from '@/features/location/state/locationStore';
-
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
   const [isAuth, setIsAuth] = useState<boolean | null>(null);
   const { refresh } = useRefresh();
-  const { setLocation } = useLocationStore();
 
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        // ✅ 1. 앱 시작 시 즉시 한 번 현재 위치 저장
-        const coords = await getCurrentLocation();
-        if (coords) {
-          setLocation(coords.latitude, coords.longitude);
-          console.log(
-            '[GPS] 초기 위치 저장:',
-            coords.latitude,
-            coords.longitude,
-          );
-        }
-
-        // ✅ 2. 이후 주기적으로 GPS 위치 감시 시작
-        startWatchingLocation();
-
-        // ✅ 3. 사용자 정보 확인 및 자동 로그인
+        // ✅ 사용자 정보 확인 및 자동 로그인
         const user = await memberStorage.getMember();
         if (user) {
           setIsAuth(true);
@@ -55,12 +32,7 @@ const RootNavigator = () => {
     };
 
     bootstrap();
-
-    // ✅ 언마운트 시 위치 감시 정리
-    return () => {
-      stopWatchingLocation();
-    };
-  }, [refresh, setLocation]);
+  }, [refresh]);
 
   if (isAuth === null) {
     return (
