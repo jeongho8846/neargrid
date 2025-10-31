@@ -29,7 +29,7 @@ export function useThreadQuery(threadId: string) {
       );
       return createEmptyThread(threadId);
     },
-    staleTime: Infinity,
+    staleTime: 1, // ✅ 반드시 0으로 (즉시 리렌더 트리거)
     gcTime: 1000 * 60 * 30,
   });
 }

@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -27,12 +27,12 @@ const ContentsHeartButton: React.FC<Props> = ({
   isLoading,
   accessibilityLabel = '좋아요',
 }) => {
+  console.log('❤️ [HeartButton] render, liked:', liked);
+
   const scale = useSharedValue(1);
 
   const handlePress = useCallback(() => {
-    if (disabled || isLoading) return; // ✅ 중복 방지
-
-    // 팝 애니메이션
+    if (disabled || isLoading) return;
     scale.value = withSequence(
       withSpring(1.2),
       withTiming(1, { duration: 120 }),
@@ -65,4 +65,4 @@ const ContentsHeartButton: React.FC<Props> = ({
   );
 };
 
-export default memo(ContentsHeartButton);
+export default ContentsHeartButton;

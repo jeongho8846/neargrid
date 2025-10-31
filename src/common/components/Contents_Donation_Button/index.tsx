@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
@@ -30,4 +30,4 @@ const ContentsDonationButton: React.FC<Props> = ({
   </TouchableOpacity>
 );
 
-export default memo(ContentsDonationButton);
+export default ContentsDonationButton;

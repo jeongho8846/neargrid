@@ -1,59 +1,116 @@
-// src/features/thread/hooks/useThreadLike.ts
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { THREAD_KEYS } from '../keys/threadKeys';
+import { updateThreadCache } from '../utils/updateThreadCache';
 import { updateThreadReaction } from '../api/updateThreadReaction';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { Thread } from '../model/ThreadModel';
 
-/**
- * ✅ 좋아요 훅 (쿼리 캐시 제거 버전)
- * - React Query 제거
- * - 로컬 상태(liked, count)와 서버 호출만 관리
- */
-type UseThreadLikeParams = {
+type Params = {
   threadId: string;
-  currentMemberId?: string;
-  initialLiked: boolean;
-  initialCount: number;
+  initialLiked: boolean | null;
+  initialCount: number | null;
+  listParams?: Parameters<typeof THREAD_KEYS.list>;
 };
 
+/**
+ * 🧠 좋아요 토글 훅 (Optimistic + 로컬 반응 + 캐시 동기화 + 서버 통신)
+ */
 export function useThreadLike({
   threadId,
-  currentMemberId,
   initialLiked,
   initialCount,
-}: UseThreadLikeParams) {
-  const [liked, setLiked] = useState(initialLiked);
-  const [likeCount, setLikeCount] = useState(initialCount);
-  const [inflight, setInflight] = useState(false);
+}: Params) {
+  const queryClient = useQueryClient();
   const { member } = useCurrentMember();
-  const resolvedMemberId = currentMemberId || member?.id;
 
-  const toggleLike = useCallback(async () => {
-    if (!resolvedMemberId) {
-      console.warn('⚠️ [useThreadLike] 로그인 정보 없음 → 좋아요 불가');
-      return;
+  const [liked, setLiked] = useState(initialLiked ?? false);
+  const [likeCount, setLikeCount] = useState(initialCount ?? 0);
+
+  /**
+   * ✅ ① 캐시 변경 자동 감시
+   * - React Query 캐시(detail)가 갱신되면, 내부 상태를 동기화함
+   */
+  useEffect(() => {
+    const cached = queryClient.getQueryData<Thread>(
+      THREAD_KEYS.detail(threadId),
+    );
+    if (cached) {
+      setLiked(cached.reactedByCurrentMember ?? false);
+      setLikeCount(cached.reactionCount ?? 0);
     }
-    if (inflight) return;
 
-    const nextLiked = !liked;
-    setLiked(nextLiked);
-    setLikeCount(prev => Math.max(0, prev + (nextLiked ? 1 : -1)));
+    // ✅ 캐시 업데이트 시 자동 반영
+    const unsubscribe = queryClient.getQueryCache().subscribe(event => {
+      if (
+        event?.query?.queryKey &&
+        JSON.stringify(event.query.queryKey) ===
+          JSON.stringify(THREAD_KEYS.detail(threadId))
+      ) {
+        const updated = event.query.state.data as Thread | undefined;
+        if (updated) {
+          setLiked(updated.reactedByCurrentMember ?? false);
+          setLikeCount(updated.reactionCount ?? 0);
+        }
+      }
+    });
 
-    try {
-      setInflight(true);
-      await updateThreadReaction({
+    return unsubscribe;
+  }, [queryClient, threadId]);
+
+  /**
+   * ✅ ② 좋아요 토글 mutation
+   */
+  const { mutate: toggleLike, isPending: inflight } = useMutation({
+    mutationFn: async (nextLiked: boolean) =>
+      updateThreadReaction({
         threadId,
-        currentMemberId: resolvedMemberId,
+        currentMemberId: member?.id ?? '',
         nextLiked,
-      });
-    } catch (e) {
-      console.warn('❌ [useThreadLike] 좋아요 요청 실패:', e);
-      // 실패 시 롤백
-      setLiked(liked);
-      setLikeCount(initialCount);
-    } finally {
-      setInflight(false);
-    }
-  }, [resolvedMemberId, liked, inflight, threadId, initialCount]);
+      }),
 
-  return { liked, likeCount, toggleLike, inflight };
+    onMutate: async () => {
+      const nextLiked = !liked;
+      const nextCount = nextLiked ? likeCount + 1 : likeCount - 1;
+
+      // 1️⃣ 로컬 상태 즉시 반영
+      setLiked(nextLiked);
+      setLikeCount(nextCount);
+
+      // 2️⃣ 캐시 반영
+      updateThreadCache(queryClient, threadId, {
+        reactedByCurrentMember: nextLiked,
+        reactionCount: nextCount,
+      });
+
+      return { prevLiked: liked, prevCount: likeCount, nextLiked };
+    },
+
+    onSuccess: () => {
+      // ✅ 서버 성공 시 캐시 최신화 (서버 데이터가 다를 수 있으므로)
+      queryClient.invalidateQueries({
+        queryKey: THREAD_KEYS.detail(threadId),
+        exact: true,
+      });
+    },
+
+    onError: (_err, _vars, context) => {
+      if (context) {
+        console.warn('❌ 서버 요청 실패 → 롤백');
+        setLiked(context.prevLiked);
+        setLikeCount(context.prevCount);
+        updateThreadCache(queryClient, threadId, {
+          reactedByCurrentMember: context.prevLiked,
+          reactionCount: context.prevCount,
+        });
+      }
+    },
+  });
+
+  // ✅ toggleLike 호출 시 nextLiked 넘겨줌
+  const handleToggle = () => {
+    toggleLike(!liked);
+  };
+
+  return { liked, likeCount, toggleLike: handleToggle, inflight };
 }

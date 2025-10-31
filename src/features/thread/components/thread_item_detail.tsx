@@ -105,7 +105,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
       </TouchableOpacity>
 
       {/* ACTION BAR */}
-      <ThreadActionBar thread={item} />
+      <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
     </View>
   );
 };
