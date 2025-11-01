@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 import MapViewContainer from '@/features/map/components/MapViewContainer';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { fetchMapThreads } from '@/features/map/api/fetchMapThreads';
+import { COLORS } from '@/common/styles';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
@@ -33,11 +34,7 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
-      {member?.id ? (
-        <MapViewContainer memberId={member.id} />
-      ) : (
-        <View style={styles.placeholder} />
-      )}
+      <MapViewContainer memberId={member?.id} />
     </View>
   );
 };
@@ -45,6 +42,6 @@ const MapScreen = () => {
 export default MapScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff' },
-  placeholder: { flex: 1, backgroundColor: '#f8f8f8' },
+  container: { flex: 1, backgroundColor: COLORS.background },
+  placeholder: { flex: 1, backgroundColor: COLORS.background },
 });

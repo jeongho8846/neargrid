@@ -1,14 +1,9 @@
 import { apiContents } from '@/services/apiService';
-import {
-  Thread,
-  ServerThreadDto,
-  mapServerThread,
-} from '@/features/thread/model/ThreadModel';
 
 /**
  * ✅ 지도 중심 좌표 기준 Thread 목록 조회
- * - 모든 Nullable_* 파라미터는 반드시 포함 (빈 문자열로 처리)
- * - ThreadModel.ts 의 mapServerThread()로 통일된 변환 적용
+ * - 서버 DTO를 그대로 돌려보낸다 (좌표 보존용)
+ * - 여기서는 mapServerThread() 하지 않는다 ❗
  */
 type FetchMapThreadsParams = {
   latitude: number;
@@ -33,7 +28,7 @@ export const fetchMapThreads = async ({
   isIncludeHubThread = '',
   isIncludePastRemainDateTime = '',
 }: FetchMapThreadsParams): Promise<{
-  threads: Thread[];
+  threadResponseSingleDtos: any[];
   nextCursorMark: string | null;
 }> => {
   const params = {
@@ -44,8 +39,6 @@ export const fetchMapThreads = async ({
     distance_m: distance,
     current_member_id: memberId,
     sort_type: 'RECENT',
-
-    // ✅ 서버 명세에 맞춰 모든 Nullable_* 필드는 항상 포함 (빈 문자열 허용)
     Nullable_recent_time_minute: timeFilter || '',
     Nullable_remain_time_minute: remainTime || '',
     Nullable_thread_types: threadTypes.length ? threadTypes.join(',') : '',
@@ -59,25 +52,15 @@ export const fetchMapThreads = async ({
 
   console.log('📡 [fetchMapThreads] 요청 params:', params);
 
-  try {
-    const res = await apiContents.get(
-      '/search/getThreadByDescriptionAndDistance',
-      { params },
-    );
+  const res = await apiContents.get(
+    '/search/getThreadByDescriptionAndDistance',
+    { params },
+  );
 
-    console.log('📥 [fetchMapThreads] raw response:', res.data);
+  console.log('📥 [fetchMapThreads] raw response:', res.data);
 
-    // ✅ 서버 DTO → Thread 변환 (공통 mapServerThread 사용)
-    const threads = (
-      res.data.threadResponseSingleDtos as ServerThreadDto[]
-    ).map(mapServerThread);
-
-    return {
-      threads,
-      nextCursorMark: res.data.nextCursorMark ?? null,
-    };
-  } catch (err) {
-    console.error('❌ [fetchMapThreads] 오류:', err);
-    throw err;
-  }
+  return {
+    threadResponseSingleDtos: res.data.threadResponseSingleDtos ?? [],
+    nextCursorMark: res.data.nextCursorMark ?? null,
+  };
 };

@@ -4,6 +4,7 @@ export const COLORS = {
   button_active: '#9E138C',
   button_disabled: '#A0CFFF',
   button_pressed: '#005BBB',
+  button_surface: '#1C1C1C',
 
   // 📝 Text (Dark Theme)
 
