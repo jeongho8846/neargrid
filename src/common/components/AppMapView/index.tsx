@@ -1,5 +1,5 @@
 // 📄 src/common/components/AppMapView/index.tsx
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useMemo } from 'react';
 import MapView, { MapViewProps, PROVIDER_GOOGLE } from 'react-native-maps';
 import { StyleSheet, View } from 'react-native';
 import { COLORS } from '@/common/styles/colors';
@@ -16,17 +16,22 @@ type Props = MapViewProps & {
 };
 
 const AppMapView = forwardRef<MapView, Props>(({ children, ...props }, ref) => {
+  /** ✅ 1. 스타일 메모이제이션 — 줌 시 깜빡임 방지 */
+  const mapStyle = useMemo(() => MAP_STYLE_DARK, []);
+
   return (
     <View style={styles.container}>
       <MapView
         ref={ref}
         provider={PROVIDER_GOOGLE}
         style={styles.map}
-        showsMyLocationButton={false} // OS 기본 버튼 비활성화
-        customMapStyle={MAP_STYLE_DARK} // ✅ 다크 스타일 적용
+        showsMyLocationButton={false}
+        customMapStyle={mapStyle} // ✅ 고정된 참조 사용
         rotateEnabled={false}
         pitchEnabled={false}
-        loadingEnabled
+        loadingEnabled={false} // ✅ 로딩시 흰색 플래시 방지
+        mapType="standard"
+        liteMode={false} // ✅ 안드로이드 타일 버그 방지
         {...props}
       >
         {children}
@@ -40,9 +45,11 @@ export default AppMapView;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    // ✅ 배경을 투명하게 만들어 타일 로딩시 하얀색 방지
+    backgroundColor: 'transparent',
   },
   map: {
     flex: 1,
+    backgroundColor: 'transparent', // ✅ 내부 MapView도 투명
   },
 });

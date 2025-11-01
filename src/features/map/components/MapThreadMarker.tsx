@@ -3,51 +3,65 @@ import React from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { COLORS } from '@/common/styles/colors';
+import AppText from '@/common/components/AppText';
 
 type Props = {
   latitude: number;
   longitude: number;
-  imageUrl?: string;
-  reactionCount?: number;
+  imageUrl?: string; // 게시글 이미지
+  profileImageUrl?: string; // 작성자 프로필 이미지
+  reactionCount?: number; // ✅ 클러스터 수
   onPress?: () => void;
 };
 
-/**
- * ✅ MapThreadMarker (Fabric-safe 버전)
- * - TouchableOpacity 제거
- * - overflow/shadow 제거
- * - RN Image 사용
- */
-const MapThreadMarker = ({ latitude, longitude, imageUrl, onPress }: Props) => {
-  const decodedUrl = imageUrl ? decodeURIComponent(imageUrl) : undefined;
+const MapThreadMarker = ({
+  latitude,
+  longitude,
+  imageUrl,
+  profileImageUrl,
+  reactionCount,
+  onPress,
+}: Props) => {
+  const [tracks, setTracks] = React.useState(true);
+
+  React.useEffect(() => {
+    setTracks(true);
+    const timer = setTimeout(() => setTracks(false), 500);
+    return () => clearTimeout(timer);
+  }, [reactionCount]);
+
+  const postImageUrl = imageUrl || undefined;
+  const profileImage = profileImageUrl || undefined;
+  const isCluster = typeof reactionCount === 'number' && reactionCount > 1;
 
   return (
     <Marker
       coordinate={{ latitude, longitude }}
       anchor={{ x: 0.5, y: 0.5 }}
       zIndex={10}
-      tracksViewChanges={true}
+      tracksViewChanges={tracks}
       onPress={onPress}
     >
       <View style={styles.container}>
-        {/* ✅ 이미지 */}
-        {decodedUrl ? (
-          <Image
-            source={{ uri: decodedUrl }}
-            style={styles.image}
-            resizeMode="cover"
-            onLoadStart={() =>
-              console.log('🟡 [Marker Image] load start', decodedUrl)
-            }
-            onLoad={() =>
-              console.log('✅ [Marker Image] load success', decodedUrl)
-            }
-            onError={e =>
-              console.log('❌ [Marker Image] load error', e.nativeEvent)
-            }
-          />
-        ) : (
-          <View style={styles.placeholder} />
+        <View style={styles.imageWrapper}>
+          {postImageUrl ? (
+            <Image source={{ uri: postImageUrl }} style={styles.image} />
+          ) : profileImage ? (
+            <Image
+              source={{ uri: profileImage }}
+              style={[styles.image, styles.profileImage]}
+            />
+          ) : (
+            <View style={styles.placeholder} />
+          )}
+        </View>
+
+        {isCluster && (
+          <View style={styles.badgeContainer}>
+            <AppText variant="body" style={styles.badgeText}>
+              {reactionCount && reactionCount > 99 ? '99+' : reactionCount}
+            </AppText>
+          </View>
         )}
       </View>
     </Marker>
@@ -58,39 +72,46 @@ export default MapThreadMarker;
 
 const styles = StyleSheet.create({
   container: {
+    width: 80, // ✅ 이미지보다 큰 투명 영역
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+  },
+  imageWrapper: {
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.background,
+  },
+  profileImage: {
+    borderRadius: 30,
   },
   placeholder: {
     width: 60,
     height: 60,
     borderRadius: 12,
-    backgroundColor: COLORS.button_active,
+    backgroundColor: COLORS.button_surface,
   },
-  badge: {
+  badgeContainer: {
     position: 'absolute',
-    bottom: 2,
-    left: 0,
+    top: 0, // ✅ 이미지 밖으로 자연스럽게
     right: 0,
+    backgroundColor: COLORS.button_surface,
+    borderRadius: 12,
+    minWidth: 22,
+    height: 22,
+    paddingHorizontal: 4,
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderBottomLeftRadius: 12,
-    borderBottomRightRadius: 12,
+    borderWidth: 2,
+    borderColor: COLORS.button_surface,
   },
-  tail: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 6,
-    borderRightWidth: 6,
-    borderTopWidth: 8,
-    borderLeftColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderTopColor: COLORS.surface,
-    alignSelf: 'center',
-  },
+  badgeText: { textAlign: 'center', justifyContent: 'center' },
 });

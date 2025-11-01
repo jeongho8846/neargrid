@@ -8,6 +8,7 @@ export type MapThreadMarkerData = {
   markerImageUrl?: string;
   reactionCount: number;
   memberNickName?: string;
+  memberProfileImageUrl?: string; // ✅ 반드시 추가
 };
 
 export const useFetchMapThreads = () => {
@@ -51,13 +52,13 @@ export const useFetchMapThreads = () => {
             markerImageUrl: t.markerImageUrl || t.contentImageUrls?.[0],
             reactionCount: t.reactionCount ?? 0,
             memberNickName: t.memberNickName,
+            memberProfileImageUrl: t.memberProfileImageUrl ?? '', // ✅ 이 한 줄 추가
           } as MapThreadMarkerData;
         })
         .filter(Boolean) as MapThreadMarkerData[];
 
       setThreads(mapped);
       setNextCursorMark(res.nextCursorMark ?? null);
-
       return mapped;
     } catch (err: any) {
       console.error('[useFetchMapThreads] error:', err);
