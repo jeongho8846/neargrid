@@ -1,4 +1,4 @@
-// src/features/thread/screens/DetailThreadScreen.tsx
+// 📄 src/features/thread/screens/DetailThreadScreen.tsx
 import React, { useCallback, useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import {
@@ -7,6 +7,7 @@ import {
   useRoute,
   useFocusEffect,
 } from '@react-navigation/native';
+
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
 import { useCreateThreadCommentWithOptimistic } from '@/features/thread/hooks/useCreateThreadCommentWithOptimistic';
 import ThreadCommentList, {
@@ -21,6 +22,11 @@ type RouteParams = {
   };
 };
 
+/**
+ * ✅ DetailThreadScreen
+ * - 스크린은 feature 조합 및 데이터 흐름만 담당
+ * - UI 및 비즈니스 로직은 feature 내부에서 처리
+ */
 const DetailThreadScreen = () => {
   const { params } = useRoute<RouteProp<RouteParams, 'DetailThread'>>();
   const { thread } = params;
@@ -30,22 +36,24 @@ const DetailThreadScreen = () => {
   const closeInputBar = useGlobalInputBarStore(s => s.close);
   const commentListRef = useRef<ThreadCommentListRef>(null);
 
-  // ✅ 댓글 작성 로직을 훅에서 받아옴
+  // ✅ 댓글 작성 훅 (Optimistic 반영)
   const { handleSubmit } = useCreateThreadCommentWithOptimistic(
     thread.threadId,
     commentListRef,
   );
 
+  // ✅ 포커스될 때 입력창 활성화
   useFocusEffect(
     useCallback(() => {
       openInputBar({
         placeholder: '댓글을 입력하세요…',
         isFocusing: false,
-        onSubmit: (text: string) => handleSubmit(text), // ← parent 없음 = 댓글
+        onSubmit: text => handleSubmit(text),
       });
       return () => closeInputBar();
     }, [openInputBar, closeInputBar, handleSubmit]),
   );
+
   return (
     <View style={styles.container}>
       <AppCollapsibleHeader

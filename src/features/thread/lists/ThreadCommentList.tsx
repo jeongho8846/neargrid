@@ -1,3 +1,4 @@
+// 📄 src/features/thread/lists/ThreadCommentList.tsx
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
@@ -10,8 +11,7 @@ import { useFetchThreadComments } from '../hooks/useFetchThreadComments';
 import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import { SPACING } from '@/common/styles/spacing';
-import { COLORS } from '@/common/styles';
-import { FONT } from '@/common/styles';
+import { COLORS } from '@/common/styles/colors';
 
 export type ThreadCommentListRef = {
   addOptimisticComment: (comment: ThreadComment) => void;
@@ -94,9 +94,9 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
               <View>
                 <ThreadItemDetail item={headerThread} />
                 <View style={styles.headerDivider}>
-                  <AppText style={styles.commentCount}>
-                    댓글 {displayCount}개
-                  </AppText>
+                  {/* ✅ 번역 + 데이터 분리 */}
+                  <AppText i18nKey="STR_COMMENT_COUNT" variant="body" />
+                  <AppText variant="body">{displayCount}</AppText>
                 </View>
               </View>
             ) : null
@@ -106,7 +106,8 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
           ListEmptyComponent={
             isEmpty ? (
               <View style={styles.empty}>
-                <AppText>아직 댓글이 없습니다.</AppText>
+                {/* ✅ 다국어 키로 변경 */}
+                <AppText i18nKey="STR_EMPTY_COMMENT" variant="body" />
               </View>
             ) : null
           }
@@ -119,10 +120,16 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
 export default ThreadCommentList;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, paddingTop: 60 },
-  empty: { alignItems: 'center', justifyContent: 'center', width: '100%' },
+  container: { flex: 1, paddingTop: 56 },
+  empty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+  },
   listContent: { paddingBottom: SPACING.xl * 3 },
   headerDivider: {
+    flexDirection: 'row',
+    gap: SPACING.xs,
     marginTop: SPACING.md,
     marginBottom: SPACING.md,
     alignItems: 'flex-start',
@@ -132,10 +139,5 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.border,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
-  },
-  commentCount: {
-    marginVertical: 6,
-    ...FONT.body,
-    color: COLORS.text,
   },
 });

@@ -9,7 +9,6 @@ import FeedStack from './stackNavigator/main/FeedStack';
 import ProfileStack from './stackNavigator/main/ProfileStack';
 import CustomTabBar from './components/CustomTabBar';
 import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
 import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher';
 
 const Tab = createBottomTabNavigator();
@@ -83,10 +82,7 @@ const MainTabNavigator = () => {
         headerShown: false,
         tabBarActiveTintColor: COLORS.nav_active,
         tabBarInactiveTintColor: COLORS.nav_inactive,
-        tabBarLabelStyle: {
-          ...FONT.caption,
-          color: COLORS.text,
-        },
+
         tabBarIcon: ({ color, size }) => {
           let iconName: string = 'ellipse';
           switch (route.name) {

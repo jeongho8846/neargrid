@@ -1,4 +1,4 @@
-// src/common/components/GlobalInputBar.tsx
+// 📄 src/common/components/GlobalInputBar.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
@@ -33,7 +33,6 @@ const GlobalInputBar = () => {
 
   const keyboard = useAnimatedKeyboard();
 
-  // ✅ 키보드 애니메이션
   const animatedStyle = useAnimatedStyle(() => {
     const keyboardHeight = keyboard.height.value;
     const translateY = keyboardHeight > 0 ? -keyboardHeight : 0;
@@ -42,7 +41,6 @@ const GlobalInputBar = () => {
     };
   });
 
-  // ✅ 옵션 기반 포커싱 (isFocusing === true일 때만)
   useEffect(() => {
     if (isVisible && isFocusing && inputRef.current) {
       const t = setTimeout(() => inputRef.current?.focus(), 100);
@@ -59,7 +57,6 @@ const GlobalInputBar = () => {
     Keyboard.dismiss();
   };
 
-  // ✅ 높이 계산
   const handleContentSizeChange = (
     e: NativeSyntheticEvent<TextInputContentSizeChangeEventData>,
   ) => {
@@ -88,7 +85,7 @@ const GlobalInputBar = () => {
             },
           ]}
           placeholder={placeholder ?? '댓글을 입력하세요...'}
-          placeholderTextColor={COLORS.text_secondary}
+          placeholderTextColor={COLORS.input_placeholder} // ✅ 명확한 placeholder 컬러
           value={text}
           onChangeText={setText}
           multiline
@@ -98,35 +95,31 @@ const GlobalInputBar = () => {
           textAlignVertical="top"
           underlineColorAndroid="transparent"
           blurOnSubmit={false}
-          onSubmitEditing={() => {}}
           returnKeyType="default"
         />
 
         <TouchableOpacity onPress={handleSend} style={styles.sendBtn}>
-          <AppIcon type="ion" name="send" size={22} color={COLORS.text} />
+          <AppIcon type="ion" name="send" size={22} variant="primary" />
         </TouchableOpacity>
       </View>
     </Animated.View>
   );
 };
 
-// ✅ 스타일 수정본
+export default GlobalInputBar;
+
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-
-    // 핵심: 부모를 풀폭으로 두고, 내부 자식을 가운데 정렬
     alignItems: 'center',
     justifyContent: 'center',
-
     backgroundColor: 'transparent',
     borderColor: COLORS.border,
     zIndex: 9999,
     elevation: 10,
-    // ⛔️ width / alignSelf / alignContent 제거!
   },
   container: {
     flexDirection: 'row',
@@ -135,31 +128,25 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.xs,
     backgroundColor: COLORS.sheet_background,
     borderRadius: 18,
-
-    // 핵심: 자식 자체의 너비와 중앙 배치
     width: '96%',
     maxWidth: 720,
     alignSelf: 'center',
-
-    // 살짝 띄우고 싶으면 bottom 대신 marginBottom 사용 권장
     marginBottom: 6,
   },
   input: {
     flex: 1,
     flexShrink: 1,
     ...FONT.body,
-    color: COLORS.text,
+    color: COLORS.input_text,
     height: 36,
     paddingVertical: 0,
     paddingHorizontal: SPACING.md,
     borderRadius: 18,
-    backgroundColor: COLORS.sheet_background,
     paddingTop: LINE_HEIGHT * 0.5,
   },
+
   sendBtn: {
     marginLeft: SPACING.sm,
     paddingBottom: 2,
   },
 });
-
-export default GlobalInputBar;

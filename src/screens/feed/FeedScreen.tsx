@@ -1,10 +1,9 @@
+// 📄 src/features/thread/screens/FeedScreen.tsx
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
-import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import ThreadList from '@/features/thread/lists/ThreadList';
 import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads';
@@ -13,10 +12,9 @@ import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads
  * ✅ 피드 화면 (React Query 기반)
  * - useFetchFeedThreads 훅으로 피드 로드
  * - Thread 단위 캐싱 자동 처리
- * - 무한 스크롤 지원
+ * - 무한 스크롤 / 풀다운 리프레시 지원
  */
 const FeedScreen = () => {
-  const navigation = useNavigation();
   const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
     useCollapsibleHeader(0);
   const { member, loading: memberLoading } = useCurrentMember();
@@ -43,6 +41,7 @@ const FeedScreen = () => {
 
   /** 🧩 threadIds 배열 평탄화 */
   const threadIds = data?.pages.flatMap(page => page.threadIds) ?? [];
+
   /** 🚀 다음 페이지 로드 */
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -56,10 +55,10 @@ const FeedScreen = () => {
         titleKey="STR_FEED"
         headerOffset={headerOffset}
         isAtTop={isAtTop}
-        onBackPress={() => navigation.goBack()}
+        // ✅ Feed는 루트 화면이므로 onBackPress 제거
         right={
           <TouchableOpacity onPress={() => console.log('검색')}>
-            <AppIcon type="ion" name="search" size={22} color={COLORS.text} />
+            <AppIcon type="ion" name="search" size={22} variant="primary" />
           </TouchableOpacity>
         }
       />

@@ -23,17 +23,17 @@ type Props = {
 
 /**
  * ✅ ThreadActionBar
- * - React Query 캐시 기반 구조
  * - 좋아요 / 댓글 / 공유 / 도네이션 액션 제공
+ * - AppIcon / COLORS 규칙 통일
  */
 const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
   const navigation = useNavigation<any>();
-
   const route = useRoute();
+
   const { data: thread } = useThreadQuery(threadId);
   const { member } = useCurrentMember();
 
-  // ✅ 좋아요 훅 (캐시 자동 동기화)
+  // ✅ 좋아요 훅
   const { liked, likeCount, toggleLike, inflight } = useThreadLike({
     threadId,
     initialLiked: thread?.reactedByCurrentMember ?? false,
@@ -86,7 +86,7 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
         />
 
         {/* ❤️ 좋아요 수 */}
-        <View style={{ marginLeft: SPACING.sm }}>
+        <View style={styles.likeCountWrap}>
           <ContentsIconCountButton
             count={likeCount}
             onPress={onPressLikeCount}
@@ -96,9 +96,14 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
         </View>
 
         {/* 💬 댓글 수 */}
-        <View style={{ marginLeft: SPACING.md }}>
+        <View style={styles.commentCountWrap}>
           <ContentsIconCountButton
-            icon={{ type: 'ion', name: 'chatbubble-outline', size: 20 }}
+            icon={{
+              type: 'ion',
+              name: 'chatbubble-outline',
+              size: 20,
+              variant: 'primary', // ✅ AppIcon 규칙 기반
+            }}
             count={thread.commentThreadCount ?? 0}
             onPress={onPressComment}
             isLoading={isLoading}
@@ -107,7 +112,7 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
         </View>
 
         {/* 📤 공유 */}
-        <View style={{ marginLeft: SPACING.md }}>
+        <View style={styles.shareWrap}>
           <ContentsShareButton onPress={onPressShare} isLoading={isLoading} />
         </View>
       </View>
@@ -139,4 +144,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 14,
   },
+  likeCountWrap: { marginLeft: SPACING.sm },
+  commentCountWrap: { marginLeft: SPACING.md },
+  shareWrap: { marginLeft: SPACING.md },
 });

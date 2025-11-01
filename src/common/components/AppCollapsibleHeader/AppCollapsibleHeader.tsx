@@ -1,4 +1,4 @@
-// src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
+// 📄 src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React from 'react';
 import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -6,7 +6,6 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import AppText from '../AppText';
 import AppIcon from '../AppIcon';
 import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
 
 type Props = {
   title?: string;
@@ -56,7 +55,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       ]}
     >
       <View style={styles.bar}>
-        {/* 왼쪽: 뒤로가기 */}
+        {/* 🔙 왼쪽: 뒤로가기 */}
         <View style={styles.side}>
           {showBackButton && (
             <TouchableOpacity
@@ -67,24 +66,22 @@ const AppCollapsibleHeader: React.FC<Props> = ({
                 type="ion"
                 name="arrow-back"
                 size={24}
-                color={COLORS.text}
+                variant="primary" // ✅ 색상 규칙 통일
               />
             </TouchableOpacity>
           )}
         </View>
 
-        {/* 중앙(또는 왼쪽): 타이틀 */}
+        {/* 🏷️ 중앙(또는 왼쪽): 타이틀 */}
         <AppText
           i18nKey={titleKey}
-          style={[
-            styles.title,
-            showBackButton ? styles.titleLeft : styles.titleCenter,
-          ]}
+          variant="title" // ✅ 폰트 규칙 통일
+          style={showBackButton ? styles.titleLeft : styles.titleCenter}
         >
           {title}
         </AppText>
 
-        {/* 오른쪽: 커스텀 */}
+        {/* ⚙️ 오른쪽: 커스텀 영역 */}
         <View style={styles.side}>{right}</View>
       </View>
     </Animated.View>
@@ -113,14 +110,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    flex: 1,
-    ...FONT.title,
-  },
   titleCenter: {
+    flex: 1,
     textAlign: 'center',
   },
   titleLeft: {
+    flex: 1,
     textAlign: 'left',
     marginLeft: 4, // 버튼과 간격
   },

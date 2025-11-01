@@ -8,7 +8,6 @@ import AppIcon from '@/common/components/AppIcon';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
 import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
 import { Thread } from '../model/ThreadModel';
 import ThreadActionBar from './ThreadActionBar';
@@ -32,14 +31,13 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
     : '';
 
   const handlePress = () => {
-    // ✅ DetailThreadScreen 내부에서 자기 자신을 클릭하면 무시
     if (route.name === 'DetailThread') return;
     navigation.navigate('DetailThread', { thread: item });
   };
 
   return (
     <View style={styles.container}>
-      {/* HEADER */}
+      {/* 🧩 HEADER */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <AppProfileImage
@@ -48,16 +46,20 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
             canGoToProfileScreen
             size={36}
           />
+
           <View style={styles.headerTextCol}>
-            <AppText style={styles.nickName}>{item.memberNickName}</AppText>
+            <AppText variant="username" isLoading={isLoading}>
+              {item.memberNickName}
+            </AppText>
+
             <View style={styles.dateRow}>
               <AppIcon
                 type="ion"
                 name="time-outline"
                 size={12}
-                color={COLORS.text_secondary}
+                variant="secondary"
               />
-              <AppText style={styles.dateText}>{createdMMDD}</AppText>
+              <AppText variant="caption">{createdMMDD}</AppText>
             </View>
           </View>
         </View>
@@ -67,7 +69,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
         />
       </View>
 
-      {/* IMAGE */}
+      {/* 🖼️ IMAGE */}
       {hasImages && (
         <AppImageCarousel
           images={item.contentImageUrls!}
@@ -76,7 +78,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
         />
       )}
 
-      {/* CONTENT */}
+      {/* 💬 CONTENT */}
       <TouchableOpacity
         activeOpacity={0.8}
         onPress={handlePress}
@@ -104,7 +106,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
         )}
       </TouchableOpacity>
 
-      {/* ACTION BAR */}
+      {/* ⚙️ ACTION BAR */}
       <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
     </View>
   );
@@ -132,9 +134,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   headerTextCol: { flexDirection: 'column', gap: 2 },
-  nickName: { ...FONT.body, color: COLORS.text },
   dateRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  dateText: { ...FONT.caption, color: COLORS.text_secondary },
   touchArea: { flex: 1 },
   textBox: { paddingHorizontal: SPACING.sm, marginTop: SPACING.sm },
   bubbleWrap: { marginTop: SPACING.sm, position: 'relative' },

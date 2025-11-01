@@ -10,5 +10,9 @@
   "STR_COMMENT": "댓글",
   "STR_NO_DATA": "데이터가 없습니다",
   "STR_MORE": "더 보기",
-  "STR_COLLAPSE": "간단히 보기"
+  "STR_COLLAPSE": "간단히 보기",
+  "STR_COMMENT_COUNT": "댓글",
+  "STR_EMPTY_COMMENT": "아직 댓글이 없습니다.",
+  "STR_REPLY_COUNT": "대댓글",
+  "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요."
 }

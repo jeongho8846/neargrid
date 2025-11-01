@@ -1,9 +1,10 @@
-// src/features/thread/lists/ThreadCommentReplyList.tsx
+// 📄 src/features/thread/lists/ThreadCommentReplyList.tsx
 import React, {
   useEffect,
   useState,
   forwardRef,
   useImperativeHandle,
+  useCallback,
   useRef,
 } from 'react';
 import { View, StyleSheet } from 'react-native';
@@ -15,10 +16,9 @@ import ThreadCommentItem from '../components/ThreadComment_item_card';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
 import { useCreateThreadCommentReplyWithOptimistic } from '../hooks/useCreateThreadCommentReplyWithOptimistic';
+import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
-import AppText from '@/common/components/AppText';
-import { FONT } from '@/common/styles/typography';
 
 export type ThreadCommentReplyListRef = {
   addOptimisticComment: (comment: ThreadComment) => void;
@@ -36,9 +36,9 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
     const openInputBar = useGlobalInputBarStore(s => s.open);
     const closeInputBar = useGlobalInputBarStore(s => s.close);
 
-    const selfRef = useRef<ThreadCommentReplyListRef>(null);
+    /** 🔧 내부용 ref (hook에 넘겨줄 때 ForwardedRef 말고 RefObject 필요) */
+    const innerRef = useRef<ThreadCommentReplyListRef>(null);
 
-    /** ✅ Optimistic 로컬 상태 */
     const [optimisticReplies, setOptimisticReplies] = useState<ThreadComment[]>(
       [],
     );
@@ -46,8 +46,8 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    /** ✅ 서버 데이터 직접 fetch */
-    const loadReplies = async () => {
+    /** ✅ 서버 데이터 fetch (useCallback으로 감싸서 eslint 만족) */
+    const loadReplies = useCallback(async () => {
       if (!member?.id || !parentComment.commentThreadId) return;
       try {
         setIsLoading(true);
@@ -58,26 +58,26 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
         });
         setServerReplies(Array.isArray(data) ? data : []);
       } catch (e) {
-        console.warn('❌ [ThreadCommentReplyList] 대댓글 불러오기 실패:', e);
+        console.warn('❌ [ThreadCommentReplyList] fetch 실패:', e);
       } finally {
         setIsLoading(false);
       }
-    };
+    }, [member?.id, parentComment.commentThreadId, parentComment.threadId]);
 
-    /** ✅ 새로고침 */
-    const handleRefresh = async () => {
+    /** 🔄 새로고침 */
+    const handleRefresh = useCallback(async () => {
       if (isRefreshing) return;
       setIsRefreshing(true);
       await loadReplies();
       setIsRefreshing(false);
-    };
+    }, [isRefreshing, loadReplies]);
 
-    /** ✅ 초기 로드 */
+    /** ⏳ 초기 로드 */
     useEffect(() => {
       loadReplies();
-    }, [parentComment.commentThreadId, member?.id]);
+    }, [loadReplies]);
 
-    /** ✅ 병합된 리스트 */
+    /** 🧠 병합된 리스트 */
     const mergedReplies = [
       ...optimisticReplies.filter(
         temp =>
@@ -86,8 +86,8 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
       ...serverReplies,
     ];
 
-    /** ✅ Ref 제어 메서드 */
-    useImperativeHandle(ref ?? selfRef, () => ({
+    /** 🔧 외부에서 제어할 메서드 */
+    useImperativeHandle(ref, () => ({
       addOptimisticComment: comment => {
         setOptimisticReplies(prev => [comment, ...prev]);
       },
@@ -103,16 +103,23 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
       },
     }));
 
-    /** ✅ Optimistic 훅 */
+    /** 💬 Optimistic 댓글 등록 훅
+     * 이 훅이 RefObject<T>를 기대하고 있는데,
+     * forwardRef로 받은 ref는 ForwardedRef<T>라서 타입이 안 맞았던 거야.
+     * 그래서 innerRef 만들어서 이걸 넘김.
+     */
     const { handleSubmit } = useCreateThreadCommentReplyWithOptimistic(
       parentComment.threadId ?? '',
-      selfRef,
+      innerRef,
     );
 
-    /** ✅ 입력창 */
+    /** 🧭 입력창 제어 */
     useEffect(() => {
       openInputBar({
-        placeholder: '답글을 입력하세요…',
+        // NOTE: 지금 store 타입이 placeholderKey를 안 받는다 했지?
+        // 그래서 일단 i18n 키 문자열을 placeholder에 넣어두고,
+        // 내부에서 이걸 key로 처리하도록 나중에 store 쪽에서만 바꾸면 돼.
+        placeholder: 'STR_PLACEHOLDER_REPLY',
         isFocusing: false,
         onSubmit: text =>
           handleSubmit(text, parentComment.commentThreadId ?? ''),
@@ -141,7 +148,6 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
           contentContainerStyle={styles.content}
           ListHeaderComponent={
             <View>
-              {/* ✅ 부모 댓글 */}
               <View style={styles.parentBox}>
                 <ThreadCommentItem
                   comment={parentComment}
@@ -149,11 +155,11 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
                 />
               </View>
 
-              {/* ✅ 구분선 + 대댓글 개수 */}
               <View style={styles.headerDivider}>
-                <AppText style={styles.replyCount}>
-                  대댓글 {mergedReplies.length}개
-                </AppText>
+                {/* ✅ 번역 */}
+                <AppText i18nKey="STR_REPLY_COUNT" variant="body" />
+                {/* ✅ 데이터 */}
+                <AppText variant="body">{mergedReplies.length}</AppText>
               </View>
             </View>
           }
@@ -167,9 +173,15 @@ ThreadCommentReplyList.displayName = 'ThreadCommentReplyList';
 export default ThreadCommentReplyList;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.background, paddingTop: 60 },
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    paddingTop: 56, // ⚙️ 공통 헤더 높이로 통일 예정
+  },
   parentBox: {},
   headerDivider: {
+    gap: SPACING.xs,
+    flexDirection: 'row',
     marginTop: SPACING.md,
     marginBottom: SPACING.md,
     alignItems: 'flex-start',
@@ -180,10 +192,7 @@ const styles = StyleSheet.create({
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.md,
   },
-  replyCount: {
-    marginVertical: 6,
-    ...FONT.body,
-    color: COLORS.text,
+  content: {
+    paddingBottom: SPACING.xl * 3,
   },
-  content: { paddingBottom: SPACING.xl * 3 },
 });

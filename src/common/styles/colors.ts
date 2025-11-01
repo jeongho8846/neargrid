@@ -1,51 +1,69 @@
+// src/common/styles/colors.ts
 export const COLORS = {
-  // Button
-  button_active: '#9e138cff',
+  // 🟣 Button
+  button_active: '#9E138C',
   button_disabled: '#A0CFFF',
   button_pressed: '#005BBB',
 
-  // Text
-  text: '#FFFFFFFF', // 기본 본문 텍스트 (흰색)
-  text_secondary: '#919191ff', // ✅ 보조 텍스트 (연한 회색)
-  text_muted: '#8A8A8A', // ✅ 더 연한 회색 (hint/placeholder 용)
-  danger: '#FF3B30', // 경고/삭제 등
+  // 📝 Text (Dark Theme)
 
-  // Text Bubble
-  text_bubble_background: '#25054dff',
-  text_bubble_border: '#1b1b1bff',
+  title: '#FFFFFF', // 제목/섹션 타이틀 (밝은 흰색)
+  body: '#FFFFFF', // 본문 텍스트
+  username: '#EDEDED', // 닉네임 강조
+  caption: '#919191', // 보조정보 (시간, 좋아요 수)
+  link_variant: '#292ce0ff', // 링크/팔로우 등 액션 텍스트
+  button_variant: '#FFFFFF', // 버튼 텍스트
+  danger_variant: '#FF3B30', // 삭제/로그아웃 등 위험 텍스트
 
-  // Layout
-  background: '#110e03',
+  // 🧩 Icons (Dark Theme 기준)
+  icon_primary: '#EDEDED', // 기본 아이콘 (본문 대비 약간 밝음)
+  icon_secondary: '#919191', // 보조/비활성
+  icon_active: '#FFFFFF', // 선택 탭/활성 상태
+  icon_liked: '#ED4956', // 좋아요
+  icon_onDark: '#FFFFFF', // 영상/스토리 위 흰색
+  icon_badge: '#FA3E3E', // 알림 점
+  icon_brand: '#0095F6', // 팔로우/CTA
+  icon_verified: '#0095F6', // 인증 배지용
+
+  // ✏️ Input / TextField
+  input_background: '#1E1E1E', // 입력창 배경 (sheet보다 살짝 밝음)
+  input_text: '#FFFFFF', // 실제 입력 텍스트
+  input_placeholder: '#919191', // placeholder (caption 수준)
+  input_border: '#333333', // 입력창 테두리 (optional)
+
+  // 💬 Text Bubble
+  text_bubble_background: '#25054D',
+  text_bubble_border: '#1B1B1B',
+
+  // 🧱 Layout
+  background: '#110E03',
   border: '#46464665',
 
-  //bottom sheet
-  sheet_background: '#1c1c1cff',
-  sheet_handle: '#444444ff',
+  // 📱 Bottom Sheet
+  sheet_background: '#1C1C1C',
+  sheet_handle: '#444444',
   sheet_backdrop: 'rgba(0,0,0,0.7)',
 
-  // System
+  // ⚙️ System
   error: '#FF3B30',
 
-  //badge
-  badge_background: '#ff6259ff',
+  // 🎖️ Badge
+  badge_background: '#FF6259',
 
-  // Navigation
-  nav_active: '#FFFFFF', // ✅ 활성화된 아이콘/텍스트
-  nav_inactive: '#888888', // ✅ 비활성화된 아이콘/텍스트
+  // 🧭 Navigation
+  nav_active: '#FFFFFF',
+  nav_inactive: '#888888',
 
-  // Image
+  // 🖼️ Image
   emty_imageBox: '#888888',
 
-  // ✅ dot 전용 컬러 추가
-  dot_active: '#721bfdff', // 인스타그램 스타일 활성 dot
-  dot_inactive: '#ccccccd8', // 비활성 dot
+  // 🔘 Dot Indicators
+  dot_active: '#721BFD',
+  dot_inactive: '#CCCCCCD8',
 
-  // src/common/styles/colors.ts
-
-  // ✅ Skeleton 전용
-
-  skeleton_bone_light: '#181408ff',
-  skeleton_bone_dark: 'rgba(80,80,80,0.35)', // 다크모드용 회색
-  skeleton_highlight_light: 'rgba(24, 20, 8, 0.11)',
-  skeleton_highlight_dark: 'rgba(150,150,150,0.5)', // 다크모드용 하이라이트
+  // 🩶 Skeleton (Dark Mode)
+  skeleton_bone_light: '#181408',
+  skeleton_bone_dark: 'rgba(80,80,80,0.35)',
+  skeleton_highlight_light: 'rgba(24,20,8,0.11)',
+  skeleton_highlight_dark: 'rgba(150,150,150,0.5)',
 };

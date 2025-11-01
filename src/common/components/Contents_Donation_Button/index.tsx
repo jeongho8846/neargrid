@@ -1,7 +1,7 @@
+// 📄 src/common/components/Contents_Donation_Button.tsx
 import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import AppIcon from '@/common/components/AppIcon';
-import { COLORS } from '@/common/styles/colors';
 
 type Props = {
   onPress?: () => void;
@@ -11,6 +11,11 @@ type Props = {
   accessibilityLabel?: string;
 };
 
+/**
+ * ✅ ContentsDonationButton
+ * - 후원(도네이션) 아이콘 버튼
+ * - AppIcon variant 기반 컬러 적용
+ */
 const ContentsDonationButton: React.FC<Props> = ({
   onPress,
   size = 22,
@@ -26,7 +31,7 @@ const ContentsDonationButton: React.FC<Props> = ({
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel}
   >
-    <AppIcon type="ion" name="gift-outline" size={size} color={COLORS.text} />
+    <AppIcon type="ion" name="gift-outline" size={size} variant="primary" />
   </TouchableOpacity>
 );
 

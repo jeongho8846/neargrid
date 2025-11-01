@@ -1,24 +1,78 @@
 // src/common/components/AppText/index.tsx
 import React from 'react';
 import { Text, TextProps, StyleProp, TextStyle, View } from 'react-native';
-import { FONT, COLORS } from '../../styles';
 import { useTranslation } from 'react-i18next';
 import Skeleton from 'react-native-reanimated-skeleton';
+import { COLORS } from '../../styles/colors';
+
+export type AppTextVariant =
+  | 'title'
+  | 'body'
+  | 'username'
+  | 'caption'
+  | 'link'
+  | 'button'
+  | 'danger';
 
 type Props = TextProps & {
-  i18nKey?: string; // i18n 키 (예: STR_THREAD)
-  variant?: keyof typeof FONT; // typography.ts에 정의된 스타일 선택
-  color?: keyof typeof COLORS; // colors.ts에 정의된 색상 선택
+  i18nKey?: string;
+  variant?: AppTextVariant;
+  color?: keyof typeof COLORS;
   style?: StyleProp<TextStyle>;
-  values?: Record<string, any>; // i18n interpolation 지원
+  values?: Record<string, any>;
   isLoading?: boolean;
   skeletonWidth?: number;
+};
+
+const variantStyles: Record<AppTextVariant, TextStyle> = {
+  title: {
+    fontFamily: 'Pretendard-Bold',
+    fontSize: 18,
+    lineHeight: 24,
+    color: COLORS.title,
+  },
+  body: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.body,
+  },
+  username: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.username,
+  },
+  caption: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.caption,
+  },
+  link: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.link_variant,
+  },
+  button: {
+    fontFamily: 'Pretendard-SemiBold',
+    fontSize: 15,
+    lineHeight: 20,
+    color: COLORS.button_variant,
+  },
+  danger: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 15,
+    lineHeight: 20,
+    color: COLORS.danger_variant,
+  },
 };
 
 export default function AppText({
   i18nKey,
   variant = 'body',
-  color = 'text',
+  color,
   style,
   children,
   values,
@@ -27,12 +81,14 @@ export default function AppText({
   ...rest
 }: Props) {
   const { t } = useTranslation();
+  const baseStyle = variantStyles[variant];
+  const appliedColor = color ? { color: COLORS[color] } : {};
+
   const content = i18nKey ? t(i18nKey, values) : children;
 
-  // ✅ 로딩 중이면 skeleton 표시
   if (isLoading) {
     return (
-      <View style={[{ width: '100%', justifyContent: 'center' }]}>
+      <View style={{ width: '100%', justifyContent: 'center' }}>
         <Skeleton
           isLoading
           hasFadeIn
@@ -44,7 +100,7 @@ export default function AppText({
             {
               key: 'textSkeleton',
               width: `${skeletonWidth * 100}%`,
-              height: FONT[variant]?.fontSize ?? 14,
+              height: baseStyle.fontSize ?? 14,
               borderRadius: 4,
             },
           ]}
@@ -53,9 +109,12 @@ export default function AppText({
     );
   }
 
-  // ✅ 일반 텍스트 렌더링
   return (
-    <Text style={[FONT[variant], { color: COLORS[color] }, style]} {...rest}>
+    <Text
+      style={[baseStyle, appliedColor, style]}
+      allowFontScaling={false}
+      {...rest}
+    >
       {content}
     </Text>
   );

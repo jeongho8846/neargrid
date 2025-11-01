@@ -1,3 +1,4 @@
+// 📄 src/common/components/AppFlatList/AppFlatList.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import {
   FlatList,
@@ -18,6 +19,7 @@ import {
   useBottomSheetInternal,
 } from '@gorhom/bottom-sheet';
 import { COLORS } from '@/common/styles/colors';
+import { SPACING } from '@/common/styles/spacing';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppIcon from '../AppIcon';
@@ -32,16 +34,15 @@ export type AppFlatListProps<T> = FlatListProps<T> & {
   emptyComponent?: EmptyType;
   loadingMore?: boolean;
   isHorizontal?: boolean;
-
-  /** ✅ Skeleton 렌더링 관련 */
   isLoading?: boolean;
   skeletonCount?: number;
   renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
 };
 
+// ✅ 기본 Empty 컴포넌트 (번역/스켈레톤 일관)
 const DefaultEmpty: React.FC = () => (
   <View style={styles.emptyWrap}>
-    <AppText i18nKey="STR_NO_DATA" style={styles.emptyText} />
+    <AppText i18nKey="STR_NO_DATA" variant="caption" />
   </View>
 );
 
@@ -73,11 +74,11 @@ function AppFlatList<T>({
   const [showButton, setShowButton] = useState(false);
   const [lastOffset, setLastOffset] = useState(0);
   const screenHeight = Dimensions.get('window').height;
-  const fadeAnim = useRef(new Animated.Value(0)); // ✅ ref 기반으로 변경
+  const fadeAnim = useRef(new Animated.Value(0));
 
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
-  // ✅ 키보드 / 안전영역 대응
+  // ✅ 키보드 & safe area 대응
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
 
@@ -98,7 +99,6 @@ function AppFlatList<T>({
 
     if (!isHorizontal) {
       if (offsetY >= screenHeight * 1) {
-        // 화면 한 개 높이 이상 내려갔을 때
         if (dy < 0 && !showButton) setShowButton(true);
         if (dy > 10 && showButton) setShowButton(false);
       } else {
@@ -145,8 +145,10 @@ function AppFlatList<T>({
     );
   }
 
-  // ✅ 공통 속성
-  const bottomPadding = isVisible ? height + bottom + 100 : bottom + 100;
+  // ✅ 리스트 공통 속성
+  const bottomPadding = isVisible
+    ? height + bottom + SPACING.xl
+    : bottom + SPACING.xl;
 
   const baseListProps = {
     horizontal: isHorizontal,
@@ -171,7 +173,7 @@ function AppFlatList<T>({
     ListEmptyComponent: resolvedEmpty,
     ListFooterComponent: loadingMore ? (
       <View style={styles.footerWrap}>
-        <ActivityIndicator color={COLORS.text} />
+        <ActivityIndicator color={COLORS.icon_primary} />
       </View>
     ) : null,
   };
@@ -180,8 +182,8 @@ function AppFlatList<T>({
     <RefreshControl
       refreshing={refreshing}
       onRefresh={onRefresh}
-      tintColor={COLORS.text}
-      colors={[COLORS.text]}
+      tintColor={COLORS.icon_primary}
+      colors={[COLORS.icon_primary]}
     />
   ) : undefined;
 
@@ -215,7 +217,7 @@ function AppFlatList<T>({
           style={[
             styles.scrollTopButton,
             {
-              bottom: isVisible ? height + bottom + 20 : bottom + 20, // ✅ 키보드 대응
+              bottom: isVisible ? height + bottom + 20 : bottom + 20,
               opacity: fadeAnim.current,
               transform: [
                 {
@@ -233,7 +235,7 @@ function AppFlatList<T>({
             activeOpacity={0.8}
             style={styles.topButtonInner}
           >
-            <AppIcon type="ion" name="arrow-up" size={18} color={COLORS.text} />
+            <AppIcon type="ion" name="arrow-up" size={18} variant="primary" />
           </TouchableOpacity>
         </Animated.View>
       )}
@@ -258,10 +260,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
-  },
-  emptyText: {
-    color: COLORS.text,
+    padding: SPACING.lg,
   },
   footerWrap: {
     paddingVertical: 16,

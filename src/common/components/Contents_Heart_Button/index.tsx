@@ -1,3 +1,4 @@
+// 📄 src/common/components/Contents_Heart_Button.tsx
 import React, { useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import Animated, {
@@ -8,7 +9,6 @@ import Animated, {
   useAnimatedStyle,
 } from 'react-native-reanimated';
 import AppIcon from '@/common/components/AppIcon';
-import { COLORS } from '@/common/styles/colors';
 
 type Props = {
   liked: boolean;
@@ -19,6 +19,11 @@ type Props = {
   accessibilityLabel?: string;
 };
 
+/**
+ * ✅ ContentsHeartButton
+ * - 좋아요 버튼 (애니메이션 포함)
+ * - AppIcon variant로 색상 자동 처리
+ */
 const ContentsHeartButtonComponent: React.FC<Props> = ({
   liked,
   onToggle,
@@ -27,8 +32,6 @@ const ContentsHeartButtonComponent: React.FC<Props> = ({
   isLoading,
   accessibilityLabel = '좋아요',
 }) => {
-  console.log('❤️ [HeartButton] render, liked:', liked);
-
   const scale = useSharedValue(1);
 
   const handlePress = useCallback(() => {
@@ -58,7 +61,7 @@ const ContentsHeartButtonComponent: React.FC<Props> = ({
           type="ion"
           name={liked ? 'heart' : 'heart-outline'}
           size={size}
-          color={liked ? COLORS.error : COLORS.text}
+          variant={liked ? 'liked' : 'primary'} // ✅ variant 기반 통일
         />
       </Animated.View>
     </TouchableOpacity>

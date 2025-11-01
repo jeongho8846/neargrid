@@ -1,3 +1,4 @@
+// 📄 src/common/components/AppTextField.tsx
 import React, { useState } from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Skeleton from 'react-native-reanimated-skeleton';
@@ -24,7 +25,7 @@ const AppTextField: React.FC<Props> = ({
         isLoading={isLoading}
         hasFadeIn
         duration={1200}
-        animationType="pulse" // ✅ shiver → pulse로 테스트
+        animationType="pulse"
         boneColor={COLORS.skeleton_bone_light}
         highlightColor={COLORS.skeleton_highlight_light}
         containerStyle={styles.skeletonContainer}
@@ -32,7 +33,7 @@ const AppTextField: React.FC<Props> = ({
           {
             key: 'l1',
             width: '95%',
-            height: 16, // ✅ 확실한 높이 부여
+            height: 16,
             borderRadius: 6,
             marginBottom: 8,
           },
@@ -43,12 +44,7 @@ const AppTextField: React.FC<Props> = ({
             borderRadius: 6,
             marginBottom: 8,
           },
-          {
-            key: 'l3',
-            width: '80%',
-            height: 16,
-            borderRadius: 6,
-          },
+          { key: 'l3', width: '80%', height: 16, borderRadius: 6 },
         ]}
       >
         {/* ✅ 실제 텍스트 콘텐츠 */}
@@ -59,11 +55,11 @@ const AppTextField: React.FC<Props> = ({
           {text}
         </AppText>
 
+        {/* ✅ 더보기 / 접기 버튼 */}
         {showMoreButton && (
           <TouchableOpacity onPress={() => setExpanded(!expanded)}>
             <AppText
-              variant="body"
-              color="text_secondary"
+              variant="link" // ✅ 액션성 있는 텍스트이므로 link variant 사용
               i18nKey={expanded ? 'STR_COLLAPSE' : 'STR_MORE'}
             />
           </TouchableOpacity>
@@ -82,6 +78,6 @@ const styles = StyleSheet.create({
   },
   skeletonContainer: {
     width: '100%',
-    backgroundColor: 'transparent', // ✅ Skeleton이 영역만 차지하도록
+    backgroundColor: 'transparent',
   },
 });

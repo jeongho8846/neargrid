@@ -1,16 +1,14 @@
-// src/features/thread/components/ThreadComment_item_card.tsx
+// 📄 src/features/thread/components/ThreadComment_item_card.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AppText from '@/common/components/AppText';
 import AppProfileImage from '@/common/components/AppProfileImage';
-import { ThreadComment } from '../model/ThreadCommentModel';
 import ContentsHeartButton from '@/common/components/Contents_Heart_Button';
-import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
 import ThreadReplyItem from './ThreadComment_Reply_Item_card';
+import { ThreadComment } from '../model/ThreadCommentModel';
 
 type Props = {
   comment: ThreadComment;
@@ -48,7 +46,6 @@ const ThreadCommentItem: React.FC<Props> = ({
   const showMoreButton =
     listType === 'commentList' && childCount > replies.length;
 
-  // ✅ 동일한 레이아웃 유지 — replyList에서도 동일한 사이즈/마진
   const profileSize = 36;
 
   return (
@@ -59,6 +56,7 @@ const ThreadCommentItem: React.FC<Props> = ({
         onPress={handlePressComment}
         style={styles.container}
       >
+        {/* 프로필 */}
         <View style={styles.left}>
           <AppProfileImage
             imageUrl={comment.memberProfileImageUrl}
@@ -67,23 +65,25 @@ const ThreadCommentItem: React.FC<Props> = ({
           />
         </View>
 
+        {/* 텍스트 */}
         <View style={styles.center}>
           <View style={styles.headerRow}>
-            <AppText style={styles.nick}>{comment.memberNickName}</AppText>
+            <AppText variant="username">{comment.memberNickName}</AppText>
           </View>
 
-          <AppText style={styles.desc}>{comment.description}</AppText>
+          <AppText variant="body">{comment.description}</AppText>
 
           {showReplyButton && (
             <TouchableOpacity
               activeOpacity={0.6}
               onPress={() => onPressReply?.(comment)}
             >
-              <AppText style={styles.replyBtn}>답글 달기</AppText>
+              <AppText variant="link">답글 달기</AppText>
             </TouchableOpacity>
           )}
         </View>
 
+        {/* 좋아요 */}
         <View style={styles.right}>
           <ContentsHeartButton
             liked={!!comment.reactedByCurrentMember}
@@ -91,16 +91,16 @@ const ThreadCommentItem: React.FC<Props> = ({
             size={18}
           />
           {!!comment.reactionCount && (
-            <AppText style={styles.likeCount}>{comment.reactionCount}</AppText>
+            <AppText variant="caption">{comment.reactionCount}</AppText>
           )}
         </View>
       </TouchableOpacity>
 
-      {/* ✅ 내부 대댓글 미리보기 (commentList일 때만 표시) */}
+      {/* ✅ 내부 대댓글 미리보기 */}
       {listType === 'commentList' && replies.length > 0 && (
         <View style={styles.childContainer}>
           <AppText
-            color="text_secondary"
+            variant="caption"
             style={{ marginBottom: SPACING.sm, marginLeft: SPACING.lg }}
           >
             대댓글 {comment.childCommentThreadCount ?? replies.length}개
@@ -120,7 +120,12 @@ const ThreadCommentItem: React.FC<Props> = ({
               activeOpacity={0.7}
               onPress={handlePressMoreReplies}
             >
-              <AppText style={styles.moreReplies}>댓글 더보기</AppText>
+              <AppText
+                variant="link"
+                style={{ marginTop: 6, marginLeft: SPACING.lg }}
+              >
+                댓글 더보기
+              </AppText>
             </TouchableOpacity>
           )}
         </View>
@@ -152,24 +157,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  nick: {
-    ...FONT.body,
-    color: COLORS.text,
-    marginRight: 6,
-  },
-  date: {
-    ...FONT.caption,
-    color: COLORS.text_secondary,
-  },
-  desc: {
-    ...FONT.body,
-    color: COLORS.text,
-    lineHeight: 20,
-  },
-  replyBtn: {
-    ...FONT.body,
-    color: COLORS.text_secondary,
-  },
   right: {
     alignItems: 'flex-end',
     justifyContent: 'center',
@@ -177,19 +164,8 @@ const styles = StyleSheet.create({
     paddingTop: 2,
     alignSelf: 'stretch',
   },
-  likeCount: {
-    ...FONT.caption,
-    color: COLORS.text,
-    marginLeft: 4,
-  },
   childContainer: {
     marginTop: SPACING.xs,
     marginBottom: SPACING.sm,
-  },
-  moreReplies: {
-    ...FONT.body,
-    color: COLORS.text_secondary,
-    marginTop: 6,
-    marginLeft: SPACING.lg,
   },
 });

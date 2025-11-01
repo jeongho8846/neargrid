@@ -1,19 +1,19 @@
+// 📄 src/common/components/Contents_IconCount_Button.tsx
 import React, { memo } from 'react';
-import { TouchableOpacity, StyleSheet, View } from 'react-native';
+import { TouchableOpacity, StyleSheet } from 'react-native';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
-import { COLORS } from '@/common/styles/colors';
-import { FONT } from '@/common/styles/typography';
+import { SPACING } from '@/common/styles/spacing';
 
 type IconSpec = {
-  type: 'ion' | 'mat' | string;
+  type?: 'ion' | 'material';
   name: string;
   size?: number;
-  color?: string;
+  variant?: 'primary' | 'secondary' | 'active' | 'liked';
 };
 
 type Props = {
-  icon?: IconSpec; // ⬅️ optional 로 변경
+  icon?: IconSpec;
   count?: number;
   onPress?: () => void;
   isLoading?: boolean;
@@ -21,6 +21,11 @@ type Props = {
   accessibilityLabel: string;
 };
 
+/**
+ * ✅ ContentsIconCountButton
+ * - 아이콘 + 숫자 조합 버튼
+ * - AppIcon / AppText variant 통일
+ */
 const ContentsIconCountButton: React.FC<Props> = ({
   icon,
   count = 0,
@@ -29,11 +34,9 @@ const ContentsIconCountButton: React.FC<Props> = ({
   disabled,
   accessibilityLabel,
 }) => {
-  const iconColor = icon?.color ?? COLORS.text;
-
   return (
     <TouchableOpacity
-      style={[styles.wrap, !icon && styles.wrapNoIcon]} // ⬅️ 아이콘 없을 때 여백 조정
+      style={[styles.wrap, !icon && styles.wrapNoIcon]}
       activeOpacity={0.7}
       onPress={onPress}
       disabled={disabled || isLoading}
@@ -41,26 +44,18 @@ const ContentsIconCountButton: React.FC<Props> = ({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
-      {icon ? (
-        <>
-          <AppIcon
-            type={icon.type as any}
-            name={icon.name}
-            size={icon.size ?? 22}
-            color={iconColor}
-          />
-          <AppText style={styles.count} isLoading={isLoading}>
-            {count}
-          </AppText>
-        </>
-      ) : (
-        // 아이콘 없이 숫자만
-        <View>
-          <AppText style={styles.countOnly} isLoading={isLoading}>
-            {count}
-          </AppText>
-        </View>
+      {icon && (
+        <AppIcon
+          type={icon.type ?? 'ion'}
+          name={icon.name}
+          size={icon.size ?? 22}
+          variant={icon.variant ?? 'primary'}
+        />
       )}
+
+      <AppText variant="body" isLoading={isLoading}>
+        {count}
+      </AppText>
     </TouchableOpacity>
   );
 };
@@ -68,8 +63,12 @@ const ContentsIconCountButton: React.FC<Props> = ({
 export default memo(ContentsIconCountButton);
 
 const styles = StyleSheet.create({
-  wrap: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  wrapNoIcon: { gap: 0 }, // ⬅️ 숫자만일 때 gap 제거
-  count: { ...FONT.body, color: COLORS.text },
-  countOnly: { ...FONT.body, color: COLORS.text }, // ⬅️ 동일 스타일또렷하게
+  wrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.xs,
+  },
+  wrapNoIcon: {
+    gap: 0,
+  },
 });

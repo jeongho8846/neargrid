@@ -1,13 +1,13 @@
-// src/features/thread/lists/ThreadList.tsx
+// 📄 src/features/thread/lists/ThreadList.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
-import { COLORS } from '@/common/styles/colors';
 import ThreadListItem from './ThreadListItem';
 import ThreadItemDetail from '../components/thread_item_detail';
 import { createEmptyThread } from '../model/ThreadModel';
+import { SPACING } from '@/common/styles/spacing';
 
 type Props = {
   data?: string[];
@@ -16,12 +16,15 @@ type Props = {
   onEndReached?: () => void;
   onScroll?: (e: any) => void;
   contentPaddingTop?: number;
-
-  /** ✅ 추가 */
   onRefresh?: () => void;
   refreshing?: boolean;
 };
 
+/**
+ * ✅ ThreadList
+ * - ThreadItem 목록을 렌더링하는 공용 리스트
+ * - Skeleton, Refresh, Empty 상태 일관 처리
+ */
 const ThreadList: React.FC<Props> = ({
   data,
   isLoading,
@@ -29,7 +32,6 @@ const ThreadList: React.FC<Props> = ({
   onEndReached,
   onScroll,
   contentPaddingTop = 0,
-  /** ✅ 추가 */
   onRefresh,
   refreshing,
 }) => {
@@ -49,7 +51,6 @@ const ThreadList: React.FC<Props> = ({
       )}
       skeletonCount={5}
       onScroll={onScroll}
-      /** ✅ 여기 전달 */
       onRefresh={onRefresh}
       refreshing={refreshing}
       onEndReached={() => onEndReached?.()}
@@ -57,7 +58,7 @@ const ThreadList: React.FC<Props> = ({
       loadingMore={loadingMore}
       contentContainerStyle={{
         paddingTop: contentPaddingTop,
-        paddingBottom: 40,
+        paddingBottom: SPACING.xl * 2,
       }}
       ListEmptyComponent={
         isEmpty ? (
@@ -66,15 +67,13 @@ const ThreadList: React.FC<Props> = ({
               type="ion"
               name="chatbubble-ellipses-outline"
               size={40}
-              color={COLORS.text_secondary}
+              variant="secondary"
             />
             <AppText
-              variant="body"
-              color="text_secondary"
+              i18nKey="STR_EMPTY_THREAD_LIST"
+              variant="caption"
               style={styles.emptyText}
-            >
-              표시할 쓰레드가 없습니다.
-            </AppText>
+            />
           </View>
         ) : null
       }
@@ -92,6 +91,6 @@ const styles = StyleSheet.create({
     paddingVertical: 120,
   },
   emptyText: {
-    marginTop: 12,
+    marginTop: 12, // ✅ 단순 레이아웃만
   },
 });

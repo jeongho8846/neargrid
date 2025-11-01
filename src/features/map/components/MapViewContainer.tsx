@@ -1,45 +1,73 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import MapView, { Region } from 'react-native-maps';
-import { useMapRegion } from '../hooks/useMapRegion';
+import { View, ActivityIndicator, StyleSheet, Text } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import { useLocationStore } from '@/features/location/state/locationStore';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useFetchMapThreads } from '@/features/map/hooks/useFetchMapThreads';
 
-/**
- * 🧭 MapViewContainer
- * - 지도 렌더링 및 중심 좌표 관리
- * - useMapRegion 훅과 연동 (Zustand 위치 스토어 기반)
- */
 const MapViewContainer = () => {
-  const { region, handleRegionChange } = useMapRegion();
+  const { latitude, longitude } = useLocationStore();
+  const { member } = useCurrentMember();
 
-  //   useEffect(() => {
-  //     if (center) {
-  //       console.log('[MapViewContainer] 중심 좌표:', center);
-  //     }
-  //   }, [center]);
+  // ✅ 훅은 무조건 호출
+  const { data: threads, isLoading } = useFetchMapThreads({
+    latitude,
+    longitude,
+    memberId: member?.id,
+    enabled: true, // 기본값이 true라 생략도 가능
+  });
 
-  // 📍 아직 region이 초기화되지 않았다면 렌더링 지연
-  if (!region) return null;
+  // ✅ 위치 미확인 or 로딩 중일 때 UI 처리
+  if (!latitude || !longitude) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+        <Text style={styles.text}>현재 위치를 불러오는 중...</Text>
+      </View>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator />
+        <Text style={styles.text}>지도 데이터를 불러오는 중...</Text>
+      </View>
+    );
+  }
 
   return (
-    <View style={styles.container}>
-      <MapView
-        style={styles.map}
-        region={region}
-        onRegionChangeComplete={(r: Region) => handleRegionChange(r)}
-        showsUserLocation
-        showsMyLocationButton
-      />
-    </View>
+    <MapView
+      style={styles.map}
+      initialRegion={{
+        latitude,
+        longitude,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      }}
+    >
+      {threads?.map(thread => (
+        <Marker
+          key={thread.threadId}
+          coordinate={{
+            latitude: thread.latitude,
+            longitude: thread.longitude,
+          }}
+          title={thread.description || '(내용 없음)'}
+        />
+      ))}
+    </MapView>
   );
 };
 
 export default MapViewContainer;
 
 const styles = StyleSheet.create({
-  container: {
+  map: { flex: 1 },
+  center: {
     flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  map: {
-    flex: 1,
-  },
+  text: { marginTop: 8, color: '#888' },
 });
