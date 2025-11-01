@@ -90,7 +90,7 @@ export type Thread = {
 };
 
 /**
- * 📦 피드 API 응답 타입
+ * 📦 피드/지도/검색 공용 Thread API 응답 타입
  */
 export type FetchThreadsResponse = {
   threadResponseSingleDtos: ServerThreadDto[];
@@ -138,4 +138,48 @@ export const createEmptyThread = (id: string): Thread => ({
   childThreadCount: 0,
   childThreadDirectCount: 0,
   childThreadWritableByOthers: false,
+});
+
+/**
+ * 🧭 서버 DTO → 앱 Thread 모델 변환기
+ * 모든 fetch 계열 API에서 공용으로 사용 (Feed, Map, Search 등)
+ */
+export const mapServerThread = (dto: ServerThreadDto): Thread => ({
+  threadId: dto.threadId,
+  threadType: dto.threadType,
+  description: dto.description ?? '',
+  contentImageUrls: dto.contentImageUrls ?? [],
+  videoUrls: dto.videoUrls ?? [],
+
+  memberId: dto.memberId,
+  memberNickName: dto.memberNickName,
+  memberProfileImageUrl: dto.memberProfileImageUrl ?? '',
+
+  createDatetime: dto.createDatetime,
+  updateDatetime: dto.updateDatetime,
+  distanceFromCurrentMember: dto.distanceFromCurrentMember ?? 0,
+
+  popularityScore: dto.popularityScore ?? 0,
+  popularityScoreRecent: dto.popularityScoreRecent ?? 0,
+
+  latitude: dto.gpsLocationResponseDto?.latitude ?? 0,
+  longitude: dto.gpsLocationResponseDto?.longitude ?? 0,
+
+  reactedByCurrentMember: dto.reactedByCurrentMember ?? false,
+  reactionCount: dto.reactionCount ?? 0,
+  commentThreadCount: dto.commentThreadCount ?? 0,
+
+  available: dto.available ?? true,
+  private: dto.private ?? false,
+  hiddenDueToReport: dto.hiddenDueToReport ?? false,
+
+  markerImageUrl: dto.markerImageUrl ?? '',
+
+  bountyPoint: dto.bountyPoint ?? null,
+  expireDateTime: dto.expireDateTime ?? null,
+  remainDateTime: dto.remainDateTime ?? null,
+
+  childThreadCount: dto.childThreadCount ?? 0,
+  childThreadDirectCount: dto.childThreadDirectCount ?? 0,
+  childThreadWritableByOthers: dto.childThreadWritableByOthers ?? false,
 });

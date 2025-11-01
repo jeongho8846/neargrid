@@ -1,49 +1,43 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
-import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import AppText from '@/common/components/AppText';
-import { COLORS } from '@/common/styles/colors';
-import { useLocationStore } from '@/features/location/state/locationStore';
+import MapViewContainer from '@/features/map/components/MapViewContainer';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { fetchMapThreads } from '@/features/map/api/fetchMapThreads';
 
 const MapScreen = () => {
-  const navigation = useNavigation();
-  const { headerOffset, isAtTop } = useCollapsibleHeader(56);
+  const { member } = useCurrentMember();
 
-  // ✅ 전역 위치 값 가져오기
-  const { latitude, longitude, altitude } = useLocationStore();
+  useEffect(() => {
+    const testFetch = async () => {
+      if (!member?.id) {
+        console.log('⚠️ [MapScreen] memberId 없음 → API 테스트 생략');
+        return;
+      }
+
+      try {
+        console.log('🧭 [MapScreen] 지도 API 테스트 시작');
+        const res = await fetchMapThreads({
+          latitude: 37.5665,
+          longitude: 126.978,
+          distance: 90000000,
+          memberId: member.id, // ✅ store에서 가져온 memberId 사용
+        });
+        console.log('✅ [MapScreen] fetchMapThreads 결과:', res);
+      } catch (err) {
+        console.error('❌ [MapScreen] fetchMapThreads 오류:', err);
+      }
+    };
+
+    testFetch();
+  }, [member?.id]);
 
   return (
     <View style={styles.container}>
-      {/* ✅ 상단 헤더 */}
-      <AppCollapsibleHeader
-        titleKey="STR_MAP"
-        headerOffset={headerOffset}
-        isAtTop={isAtTop}
-        onBackPress={() => navigation.goBack()}
-      />
-
-      {/* ✅ 위치 값 표시 */}
-      <View style={styles.content}>
-        <AppText style={styles.label}>현재 위치</AppText>
-
-        {latitude && longitude ? (
-          <>
-            <AppText style={styles.value}>
-              위도 (lat): {latitude.toFixed(6)}
-            </AppText>
-            <AppText style={styles.value}>
-              경도 (lon): {longitude.toFixed(6)}
-            </AppText>
-            <AppText style={styles.value}>
-              고도 (alt): {altitude ?? '정보 없음'}
-            </AppText>
-          </>
-        ) : (
-          <AppText style={styles.value}>📍 위치 정보를 불러오는 중...</AppText>
-        )}
-      </View>
+      {member?.id ? (
+        <MapViewContainer memberId={member.id} />
+      ) : (
+        <View style={styles.placeholder} />
+      )}
     </View>
   );
 };
@@ -51,24 +45,6 @@ const MapScreen = () => {
 export default MapScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
-  content: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: COLORS.text,
-    marginBottom: 12,
-  },
-  value: {
-    fontSize: 16,
-    color: COLORS.text,
-    marginVertical: 4,
-  },
+  container: { flex: 1, backgroundColor: '#fff' },
+  placeholder: { flex: 1, backgroundColor: '#f8f8f8' },
 });

@@ -33,6 +33,8 @@
         </activity>
 
         <!-- Firebase가 자동으로 Messaging 서비스를 추가하므로 중복 정의 불필요 -->
-
+        <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="@string/google_maps_api_key" />
     </application>
 </manifest>
