@@ -1,4 +1,3 @@
-// src/common/components/GlobalBottomSheet.tsx
 import React, { useEffect, useRef } from 'react';
 import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import type {
@@ -10,18 +9,23 @@ import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles';
 
-const SheetBackdrop = React.memo((props: BottomSheetBackdropProps) => (
-  <BottomSheetBackdrop
-    {...props}
-    appearsOnIndex={0}
-    disappearsOnIndex={-1}
-    pressBehavior="close"
-    style={[props.style, styles.backdrop]}
-  />
-));
+/** ✅ 커스텀 백드롭 (시트별 동적 설정 반영) */
+const SheetBackdrop = React.memo(
+  ({
+    pressBehavior,
+    ...props
+  }: BottomSheetBackdropProps & { pressBehavior: 'close' | 'none' }) => (
+    <BottomSheetBackdrop
+      {...props}
+      appearsOnIndex={0}
+      disappearsOnIndex={-1}
+      pressBehavior={pressBehavior}
+      style={[props.style, styles.backdrop]}
+    />
+  ),
+);
 
 const GlobalBottomSheet = () => {
-  // ✅ ref 타입 올바르게 지정
   const ref = useRef<BottomSheetModalType>(null);
 
   const {
@@ -32,11 +36,19 @@ const GlobalBottomSheet = () => {
     initialIndex,
     enableHandlePanningGesture,
     enableContentPanningGesture,
+    enablePanDownToClose,
+    autoCloseOnIndexZero,
+    backdropPressToClose,
+    useBackdrop, // ✅ 추가됨
   } = useBottomSheetStore();
 
+  /** ✅ ref 등록 */
   useEffect(() => {
     setRef(ref);
   }, [setRef]);
+
+  /** ✅ content가 없을 경우 렌더링 자체 제거 → 맵 터치 문제 방지 */
+  if (!content) return null;
 
   const safeSnapPoints =
     Array.isArray(snapPoints) && snapPoints.length > 0 ? snapPoints : ['50%'];
@@ -49,14 +61,16 @@ const GlobalBottomSheet = () => {
       index={resolvedInitialIndex}
       snapPoints={safeSnapPoints}
       onDismiss={close}
+      /** ✅ index=0 내려갔을 때 자동 닫기 */
       onChange={idx => {
-        if (idx === 0) {
+        if (autoCloseOnIndexZero && idx === 0) {
           ref.current?.dismiss();
           close();
         }
       }}
       enableDismissOnClose
-      enablePanDownToClose
+      containerStyle={styles.containerGap} // ← 탭 높이 + 여유 공간
+      enablePanDownToClose={enablePanDownToClose ?? true}
       enableHandlePanningGesture={enableHandlePanningGesture ?? true}
       enableContentPanningGesture={enableContentPanningGesture ?? true}
       keyboardBehavior="interactive"
@@ -64,7 +78,17 @@ const GlobalBottomSheet = () => {
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.handle}
       handleIndicatorStyle={styles.handleIndicator}
-      backdropComponent={SheetBackdrop}
+      /** ✅ 시트별로 백드롭을 켜거나 끔 */
+      backdropComponent={
+        useBackdrop
+          ? props => (
+              <SheetBackdrop
+                {...props}
+                pressBehavior={backdropPressToClose ? 'close' : 'none'}
+              />
+            )
+          : null
+      }
     >
       {content}
     </BottomSheetModal>
@@ -73,7 +97,9 @@ const GlobalBottomSheet = () => {
 
 export default GlobalBottomSheet;
 
+/** ✅ 스타일 정의 */
 const styles = StyleSheet.create({
+  /** 시트 배경 */
   sheetBackground: {
     backgroundColor: COLORS.sheet_background,
     borderTopLeftRadius: 18,
@@ -82,9 +108,16 @@ const styles = StyleSheet.create({
   handle: { backgroundColor: 'transparent' },
   handleIndicator: { backgroundColor: COLORS.sheet_handle },
   backdrop: { backgroundColor: COLORS.sheet_backdrop },
+
+  /** 내부 콘텐츠 스타일 */
   content: {
     flex: 1,
     backgroundColor: 'transparent',
     paddingHorizontal: SPACING.xs,
+  },
+
+  /** ✅ 탭바 높이만큼 띄우기 */
+  containerGap: {
+    marginBottom: 60, // 탭바 높이 or SafeAreaInsets.bottom + margin
   },
 });
