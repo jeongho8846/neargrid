@@ -172,7 +172,7 @@ const MapScreen = () => {
       <View style={styles.searchBar}>
         <TouchableOpacity
           style={styles.searchArea}
-          activeOpacity={0.9}
+          activeOpacity={0.5}
           onPress={() => navigation.navigate('MapSearch')}
         >
           <AppIcon name="search" type="ion" size={18} variant="secondary" />
@@ -254,10 +254,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: SPACING.sm,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 4,
   },
   searchArea: {
     flexDirection: 'row',
