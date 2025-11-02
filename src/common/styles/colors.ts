@@ -67,4 +67,9 @@ export const COLORS = {
   skeleton_bone_dark: 'rgba(80,80,80,0.35)',
   skeleton_highlight_light: 'rgba(24,20,8,0.11)',
   skeleton_highlight_dark: 'rgba(150,150,150,0.5)',
+
+  // 🔹 Overlay / Transparency
+  overlay_light: 'rgba(255,255,255,0.25)', // 밝은 배경용 오버레이
+  overlay_dark: 'rgba(0,0,0,0.35)', // 어두운 배경용 오버레이 ✅
+  overlay_strong: 'rgba(0,0,0,0.55)', // 강조용 (이미지 어둡게)
 };

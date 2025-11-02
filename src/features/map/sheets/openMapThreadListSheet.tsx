@@ -1,42 +1,81 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { BottomSheetView } from '@gorhom/bottom-sheet';
-import AppText from '@/common/components/AppText';
+import { StyleSheet, View } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
+import AppText from '@/common/components/AppText';
+import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
+import { useMapThreadStore } from '../state/mapThreadStore';
+import ThreadItemCard from '@/features/thread/components/thread_item_card';
 
 /**
- * ✅ openMapThreadListSheet
- * - 지도에서 보이는 쓰레드 목록을 바텀시트로 표시
- * - ThreadList와 유사 구조 (향후 실제 리스트 연결 예정)
+ * ✅ 지도용 스레드 리스트 시트
+ * - Zustand store에서 threads 구독 → 자동 갱신
+ * - ThreadItemCard로 렌더링 (3열 그리드)
  */
 export const openMapThreadListSheet = () => {
   const { open } = useBottomSheetStore.getState();
 
-  open(
-    <BottomSheetView style={styles.container}>
-      <AppText i18nKey="STR_MAP_THREAD_LIST_TITLE" variant="title" />
-      <AppText i18nKey="STR_MAP_THREAD_LIST_DESC" variant="caption" />
-    </BottomSheetView>,
-    {
-      snapPoints: ['35%', '90%'],
-      initialIndex: 1,
-      enableHandlePanningGesture: true,
-      enableContentPanningGesture: true,
-      autoCloseOnIndexZero: false, // index 내려가도 닫히지 않음
-      enablePanDownToClose: false, // 아래로 내려도 닫히지 않음
-      backdropPressToClose: false, // 바깥 눌러도 닫히지 않음 ✅
-      useBackdrop: false, // ✅ 완전히 투명, 맵 터치 가능
-    },
-  );
+  const SheetContent = () => {
+    const { threads } = useMapThreadStore();
+
+    return (
+      <View style={styles.container}>
+        <AppText i18nKey="STR_MAP_THREAD_LIST_TITLE" variant="title" />
+        <AppText i18nKey="STR_MAP_THREAD_LIST_DESC" variant="caption" />
+
+        <AppFlatList
+          data={threads}
+          numColumns={2} // ✅ 3열 자동 분할
+          keyExtractor={item => item.threadId}
+          renderItem={({ item }) => (
+            <ThreadItemCard
+              thread={item}
+              onPress={() => {
+                console.log('🧭 thread clicked:', item.threadId);
+              }}
+            />
+          )}
+          contentContainerStyle={styles.listContent}
+          columnWrapperStyle={styles.row} // ✅ 3열 간격 조정
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <AppText
+              i18nKey="STR_MAP_THREAD_LIST_EMPTY"
+              variant="caption"
+              style={styles.empty}
+            />
+          }
+        />
+      </View>
+    );
+  };
+
+  open(<SheetContent />, {
+    snapPoints: ['35%', '90%'],
+    initialIndex: 1,
+    enableHandlePanningGesture: true,
+    enableContentPanningGesture: true,
+    autoCloseOnIndexZero: false,
+    enablePanDownToClose: false,
+    backdropPressToClose: false,
+    useBackdrop: false,
+  });
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: COLORS.sheet_background,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     paddingVertical: SPACING.sm,
+    flex: 1,
+  },
+  listContent: {},
+  row: {
+    justifyContent: 'space-between',
+  },
+  empty: {
+    textAlign: 'center',
+    marginTop: SPACING.lg,
   },
 });

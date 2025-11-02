@@ -156,7 +156,11 @@ function AppFlatList<T>({
     showsHorizontalScrollIndicator: isHorizontal ? false : undefined,
     keyboardShouldPersistTaps,
     contentContainerStyle: [
-      { flexGrow: 1, paddingBottom: bottomPadding },
+      {
+        flexGrow: 1,
+        minHeight: '100%',
+        paddingBottom: bottomPadding + SPACING.xs * 2, // ✅ 하단 여유 동적 계산
+      },
       contentContainerStyle,
     ],
     onEndReached,
@@ -190,13 +194,15 @@ function AppFlatList<T>({
   // ✅ BottomSheet 내부라면 BottomSheetFlatList 사용
   if (isInsideBottomSheet) {
     return (
-      <BottomSheetFlatList
-        ref={bottomRef}
-        {...rest}
-        {...baseListProps}
-        refreshControl={refreshControl}
-        style={containerStyle}
-      />
+      <>
+        <BottomSheetFlatList
+          ref={bottomRef}
+          {...rest}
+          {...baseListProps}
+          refreshControl={refreshControl}
+          style={containerStyle}
+        />
+      </>
     );
   }
 

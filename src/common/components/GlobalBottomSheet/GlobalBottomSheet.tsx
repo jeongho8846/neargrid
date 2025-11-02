@@ -8,6 +8,7 @@ import { StyleSheet } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /** ✅ 커스텀 백드롭 (시트별 동적 설정 반영) */
 const SheetBackdrop = React.memo(
@@ -26,7 +27,8 @@ const SheetBackdrop = React.memo(
 );
 
 const GlobalBottomSheet = () => {
-  const ref = useRef<BottomSheetModalType>(null);
+  const ref = useRef<BottomSheetModal>(null);
+  const { top, bottom } = useSafeAreaInsets(); // ✅ 안전영역 가져오기
 
   const {
     setRef,
@@ -39,20 +41,17 @@ const GlobalBottomSheet = () => {
     enablePanDownToClose,
     autoCloseOnIndexZero,
     backdropPressToClose,
-    useBackdrop, // ✅ 추가됨
+    useBackdrop,
   } = useBottomSheetStore();
 
-  /** ✅ ref 등록 */
   useEffect(() => {
     setRef(ref);
   }, [setRef]);
 
-  /** ✅ content가 없을 경우 렌더링 자체 제거 → 맵 터치 문제 방지 */
   if (!content) return null;
 
   const safeSnapPoints =
     Array.isArray(snapPoints) && snapPoints.length > 0 ? snapPoints : ['50%'];
-
   const resolvedInitialIndex = initialIndex === 0 ? -1 : initialIndex;
 
   return (
@@ -61,7 +60,6 @@ const GlobalBottomSheet = () => {
       index={resolvedInitialIndex}
       snapPoints={safeSnapPoints}
       onDismiss={close}
-      /** ✅ index=0 내려갔을 때 자동 닫기 */
       onChange={idx => {
         if (autoCloseOnIndexZero && idx === 0) {
           ref.current?.dismiss();
@@ -69,7 +67,7 @@ const GlobalBottomSheet = () => {
         }
       }}
       enableDismissOnClose
-      containerStyle={styles.containerGap} // ← 탭 높이 + 여유 공간
+      containerStyle={styles.containerGap}
       enablePanDownToClose={enablePanDownToClose ?? true}
       enableHandlePanningGesture={enableHandlePanningGesture ?? true}
       enableContentPanningGesture={enableContentPanningGesture ?? true}
@@ -78,7 +76,7 @@ const GlobalBottomSheet = () => {
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.handle}
       handleIndicatorStyle={styles.handleIndicator}
-      /** ✅ 시트별로 백드롭을 켜거나 끔 */
+      topInset={top} // ✅ 추가된 핵심 라인
       backdropComponent={
         useBackdrop
           ? props => (

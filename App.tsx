@@ -71,28 +71,26 @@ const App = () => {
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
-        <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-          <QueryClientProvider client={queryClient}>
-            <BottomSheetModalProvider>
-              <StatusBar
-                translucent={false}
-                backgroundColor="transparent"
-                barStyle="light-content"
-              />
+        <QueryClientProvider client={queryClient}>
+          <BottomSheetModalProvider>
+            <StatusBar
+              translucent={false}
+              backgroundColor="transparent"
+              barStyle="light-content"
+            />
 
-              {/* ✅ 네비게이션 */}
+            {/* ✅ 네비게이션 (SafeAreaView는 여기서만 적용) */}
+            <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
               <NavigationContainer theme={MyTheme}>
                 <RootNavigator />
               </NavigationContainer>
+            </SafeAreaView>
 
-              {/* ✅ 전역 바텀시트 */}
-              <GlobalBottomSheet />
-
-              {/* ✅ 전역 인풋바 */}
-              <GlobalInputBar />
-            </BottomSheetModalProvider>
-          </QueryClientProvider>
-        </SafeAreaView>
+            {/* ✅ 전역 컴포넌트들은 SafeAreaView 밖으로 뺀다 */}
+            <GlobalBottomSheet />
+            <GlobalInputBar />
+          </BottomSheetModalProvider>
+        </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );
