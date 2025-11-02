@@ -1,16 +1,16 @@
+// 📄 src/common/components/GlobalBottomSheet/index.tsx
 import React, { useEffect, useRef } from 'react';
 import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import type {
   BottomSheetModal as BottomSheetModalType,
   BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform, View } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-/** ✅ 커스텀 백드롭 (시트별 동적 설정 반영) */
 const SheetBackdrop = React.memo(
   ({
     pressBehavior,
@@ -24,11 +24,12 @@ const SheetBackdrop = React.memo(
       style={[props.style, styles.backdrop]}
     />
   ),
+  (prev, next) => prev.pressBehavior === next.pressBehavior,
 );
 
 const GlobalBottomSheet = () => {
-  const ref = useRef<BottomSheetModal>(null);
-  const { top, bottom } = useSafeAreaInsets(); // ✅ 안전영역 가져오기
+  const ref = useRef<BottomSheetModalType>(null);
+  const { top, bottom } = useSafeAreaInsets();
 
   const {
     setRef,
@@ -48,8 +49,6 @@ const GlobalBottomSheet = () => {
     setRef(ref);
   }, [setRef]);
 
-  if (!content) return null;
-
   const safeSnapPoints =
     Array.isArray(snapPoints) && snapPoints.length > 0 ? snapPoints : ['50%'];
   const resolvedInitialIndex = initialIndex === 0 ? -1 : initialIndex;
@@ -67,16 +66,16 @@ const GlobalBottomSheet = () => {
         }
       }}
       enableDismissOnClose
-      containerStyle={styles.containerGap}
+      containerStyle={[styles.containerGap, { marginBottom: bottom + 10 }]}
       enablePanDownToClose={enablePanDownToClose ?? true}
       enableHandlePanningGesture={enableHandlePanningGesture ?? true}
       enableContentPanningGesture={enableContentPanningGesture ?? true}
-      keyboardBehavior="interactive"
+      keyboardBehavior={Platform.OS === 'ios' ? 'extend' : 'interactive'}
       keyboardBlurBehavior="restore"
       backgroundStyle={styles.sheetBackground}
       handleStyle={styles.handle}
       handleIndicatorStyle={styles.handleIndicator}
-      topInset={top} // ✅ 추가된 핵심 라인
+      topInset={top}
       backdropComponent={
         useBackdrop
           ? props => (
@@ -88,16 +87,14 @@ const GlobalBottomSheet = () => {
           : null
       }
     >
-      {content}
+      {content ?? <View style={{ height: 1 }} />}
     </BottomSheetModal>
   );
 };
 
 export default GlobalBottomSheet;
 
-/** ✅ 스타일 정의 */
 const styles = StyleSheet.create({
-  /** 시트 배경 */
   sheetBackground: {
     backgroundColor: COLORS.sheet_background,
     borderTopLeftRadius: 18,
@@ -106,16 +103,12 @@ const styles = StyleSheet.create({
   handle: { backgroundColor: 'transparent' },
   handleIndicator: { backgroundColor: COLORS.sheet_handle },
   backdrop: { backgroundColor: COLORS.sheet_backdrop },
-
-  /** 내부 콘텐츠 스타일 */
   content: {
     flex: 1,
     backgroundColor: 'transparent',
     paddingHorizontal: SPACING.xs,
   },
-
-  /** ✅ 탭바 높이만큼 띄우기 */
   containerGap: {
-    marginBottom: 60, // 탭바 높이 or SafeAreaInsets.bottom + margin
+    marginBottom: 60,
   },
 });

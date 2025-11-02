@@ -15,5 +15,7 @@
   "STR_EMPTY_COMMENT": "아직 댓글이 없습니다.",
   "STR_REPLY_COUNT": "대댓글",
   "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요.",
-  "STR_MAP_SEARCH_HERE": "현 지도에서 검색"
+  "STR_MAP_SEARCH_HERE": "현 지도에서 검색",
+  "STR_MAP_THREAD_LIST": "쓰레드 리스트",
+  "STR_CLEAR_FILTER": "필터 해제"
 }

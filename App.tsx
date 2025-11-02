@@ -1,3 +1,4 @@
+// 📄 App.tsx
 import React, { useEffect } from 'react';
 import { StyleSheet, StatusBar, Platform, Keyboard } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,14 +8,15 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClientProvider } from '@tanstack/react-query';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
-import RootNavigator from './src/navigators/RootNavigator';
+import RootNavigator from '@/navigators/RootNavigator';
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 import { COLORS } from '@/common/styles/colors';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
-import { queryClient } from '@/services/reactQuery/reactQueryClient'; // ✅ 전역 클라이언트 import
-import './src/i18n';
+import { queryClient } from '@/services/reactQuery/reactQueryClient';
+import '@/i18n';
 
+/* 🎨 네비게이션 테마 */
 const MyTheme = {
   ...DefaultTheme,
   colors: {
@@ -29,7 +31,7 @@ const MyTheme = {
 };
 
 const App = () => {
-  // ✅ 시스템 바, FCM 초기화
+  /* 🧩 시스템바 및 FCM 초기화 */
   useEffect(() => {
     try {
       changeNavigationBarColor(COLORS.background, true);
@@ -39,7 +41,7 @@ const App = () => {
         StatusBar.setBackgroundColor(COLORS.background, true);
       }
 
-      // Firebase 네이티브 초기화 완료 후 FCM 시작
+      // Firebase 초기화 후 FCM 시작
       const timer = setTimeout(() => {
         // initFCM();
       }, 800);
@@ -50,14 +52,13 @@ const App = () => {
     }
   }, []);
 
-  // ✅ 전역 키보드 감지 → store 업데이트
+  /* ⌨️ 전역 키보드 상태 감지 */
   useEffect(() => {
     const { setKeyboard } = useKeyboardStore.getState();
 
     const showSub = Keyboard.addListener('keyboardDidShow', e => {
       setKeyboard(true, e.endCoordinates.height);
     });
-
     const hideSub = Keyboard.addListener('keyboardDidHide', () => {
       setKeyboard(false, 0);
     });
@@ -67,6 +68,14 @@ const App = () => {
       hideSub.remove();
     };
   }, []);
+
+  /* ✅ 구조 설명:
+     GestureHandlerRootView —> SafeAreaProvider —> QueryClientProvider
+       —> BottomSheetModalProvider —> SafeAreaView —> NavigationContainer
+         ├─ RootNavigator
+         ├─ GlobalBottomSheet (navigation context 공유)
+         └─ GlobalInputBar
+  */
 
   return (
     <GestureHandlerRootView style={styles.container}>
@@ -78,17 +87,15 @@ const App = () => {
               backgroundColor="transparent"
               barStyle="light-content"
             />
-
-            {/* ✅ 네비게이션 (SafeAreaView는 여기서만 적용) */}
             <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
               <NavigationContainer theme={MyTheme}>
                 <RootNavigator />
+
+                {/* ✅ Navigation Context 안쪽으로 이동 */}
+                <GlobalBottomSheet />
+                <GlobalInputBar />
               </NavigationContainer>
             </SafeAreaView>
-
-            {/* ✅ 전역 컴포넌트들은 SafeAreaView 밖으로 뺀다 */}
-            <GlobalBottomSheet />
-            <GlobalInputBar />
           </BottomSheetModalProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
@@ -97,7 +104,10 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, width: '100%' },
+  container: {
+    flex: 1,
+    width: '100%',
+  },
   safeArea: {
     flex: 1,
     backgroundColor: COLORS.background,
