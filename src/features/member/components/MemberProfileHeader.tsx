@@ -8,6 +8,7 @@ import { MemberProfile } from '../model/MemberProfileModel';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import AppTextField from '@/common/components/AppTextField'; // ✅ 추가
+import FastImage from '@d11/react-native-fast-image';
 
 const { width } = Dimensions.get('window');
 
@@ -31,10 +32,10 @@ const MemberProfileHeader: React.FC<Props> = ({ profile, isLoading }) => {
       {/* 🔹 Top - Cover */}
       <View style={styles.coverContainer}>
         {coverImage ? (
-          <AppImageCarousel
-            images={[coverImage]}
-            height={width * 1}
-            isLoading={isLoading}
+          <FastImage
+            source={{ uri: coverImage }}
+            style={styles.coverImage}
+            resizeMode={FastImage.resizeMode.cover}
           />
         ) : (
           <View style={[styles.coverImage, styles.coverPlaceholder]} />
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.sm,
     marginBottom: SPACING.md,
   },
   nameArea: {

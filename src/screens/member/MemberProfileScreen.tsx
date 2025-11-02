@@ -113,7 +113,6 @@ export default function MemberProfileScreen({ route }) {
         }
         contentContainerStyle={{
           paddingBottom: 80,
-          paddingHorizontal: SPACING.sm,
         }}
       />
     </View>
