@@ -12,7 +12,7 @@ export const COLORS = {
   body: '#FFFFFF', // 본문 텍스트
   username: '#EDEDED', // 닉네임 강조
   caption: '#919191', // 보조정보 (시간, 좋아요 수)
-  link_variant: '#292ce0ff', // 링크/팔로우 등 액션 텍스트
+  link_variant: '#b3b4ecff', // 링크/팔로우 등 액션 텍스트
   button_variant: '#FFFFFF', // 버튼 텍스트
   danger_variant: '#FF3B30', // 삭제/로그아웃 등 위험 텍스트
 

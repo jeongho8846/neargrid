@@ -1,20 +1,35 @@
 {
   "STR_THREAD": "쓰레드",
+  "STR_THREADS": "쓰레드",
+  "STR_COMMENT": "댓글",
+  "STR_COMMENTS": "댓글",
+  "STR_MENTIONS": "멘션",
+
+  "STR_RECEIVED_DONATION": "받은 도네이션",
+  "STR_GIVEN_DONATION": "준 도네이션",
+
+  "STR_FOLLOWERS": "팔로워",
+  "STR_FOLLOWINGS": "팔로잉",
+  "STR_CHATBOTS": "챗봇",
+
   "STR_LOGIN": "로그인",
   "STR_SIGNUP": "회원가입",
   "STR_EMAIL": "이메일",
   "STR_PASSWORD": "비밀번호",
+
   "STR_MAP": "지도",
   "STR_FEED": "피드",
   "STR_PROFILE": "프로필",
-  "STR_COMMENT": "댓글",
+
   "STR_NO_DATA": "데이터가 없습니다",
   "STR_MORE": "더 보기",
   "STR_COLLAPSE": "간단히 보기",
+
   "STR_COMMENT_COUNT": "댓글",
   "STR_EMPTY_COMMENT": "아직 댓글이 없습니다.",
   "STR_REPLY_COUNT": "대댓글",
   "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요.",
+
   "STR_MAP_SEARCH_HERE": "현 지도에서 검색",
   "STR_MAP_THREAD_LIST": "쓰레드 리스트",
   "STR_CLEAR_FILTER": "필터 해제",
