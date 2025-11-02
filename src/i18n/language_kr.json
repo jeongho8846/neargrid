@@ -17,5 +17,21 @@
   "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요.",
   "STR_MAP_SEARCH_HERE": "현 지도에서 검색",
   "STR_MAP_THREAD_LIST": "쓰레드 리스트",
-  "STR_CLEAR_FILTER": "필터 해제"
+  "STR_CLEAR_FILTER": "필터 해제",
+
+  "STR_SEARCH": "검색",
+  "STR_THREAD_TYPES": "쓰레드 유형",
+  "STR_RECENT_TIME": "최신 작성 시간",
+  "STR_REMAIN_TIME": "남은 시간",
+  "STR_INCLUDE_EXPIRED": "만료 포함",
+
+  "STR_5MIN": "5분",
+  "STR_30MIN": "30분",
+  "STR_4HOURS": "4시간",
+  "STR_1DAY": "1일",
+  "STR_1WEEK": "1주일",
+  "STR_1MONTH": "1개월",
+  "STR_6MONTHS": "6개월",
+  "STR_1YEAR": "1년",
+  "STR_UNLIMITED": "제한없음"
 }

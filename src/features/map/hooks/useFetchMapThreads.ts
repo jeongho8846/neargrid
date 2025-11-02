@@ -7,7 +7,7 @@ export type MapThreadMarkerData = {
   latitude: number;
   longitude: number;
   markerImageUrl?: string;
-  contentImageUrls?: string[]; // ✅ 추가된 배열 필드
+  contentImageUrls?: string[];
   reactionCount: number;
   memberNickName?: string;
   memberProfileImageUrl?: string;
@@ -26,11 +26,21 @@ export const useFetchMapThreads = () => {
     longitude,
     distance = 3000,
     memberId,
+    keyword = '',
+    threadTypes = [],
+    recentTimeMinute = 0,
+    remainTimeMinute = '',
+    includePastRemainTime = '',
   }: {
     latitude: number;
     longitude: number;
     distance?: number;
     memberId: string;
+    keyword?: string;
+    threadTypes?: string[];
+    recentTimeMinute?: number;
+    remainTimeMinute?: number | string;
+    includePastRemainTime?: boolean | string;
   }) => {
     try {
       setLoading(true);
@@ -41,6 +51,11 @@ export const useFetchMapThreads = () => {
         longitude,
         distance,
         memberId,
+        keyword, // ✅ 전달
+        timeFilter: recentTimeMinute,
+        remainTime: remainTimeMinute,
+        threadTypes,
+        isIncludePastRemainDateTime: includePastRemainTime,
       });
 
       const mapped = (res.threadResponseSingleDtos ?? [])
@@ -54,7 +69,7 @@ export const useFetchMapThreads = () => {
             latitude: lat,
             longitude: lon,
             markerImageUrl: t.markerImageUrl || t.contentImageUrls?.[0],
-            contentImageUrls: t.contentImageUrls ?? [], // ✅ 추가
+            contentImageUrls: t.contentImageUrls ?? [],
             reactionCount: t.reactionCount ?? 0,
             memberNickName: t.memberNickName,
             memberProfileImageUrl: t.memberProfileImageUrl ?? '',
@@ -66,6 +81,7 @@ export const useFetchMapThreads = () => {
       setStoreThreads(mapped);
       setNextCursorMark(res.nextCursorMark ?? null);
 
+      console.log('📍 [useFetchMapThreads] 반환된 threads:', mapped.length);
       return mapped;
     } catch (err: any) {
       console.error('[useFetchMapThreads] error:', err);

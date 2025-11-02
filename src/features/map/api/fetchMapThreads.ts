@@ -2,6 +2,7 @@ import { apiContents } from '@/services/apiService';
 
 /**
  * ✅ 지도 중심 좌표 기준 Thread 목록 조회
+ * - keyword 포함 (검색어 필터)
  * - 서버 DTO를 그대로 돌려보낸다 (좌표 보존용)
  * - 여기서는 mapServerThread() 하지 않는다 ❗
  */
@@ -10,11 +11,12 @@ type FetchMapThreadsParams = {
   longitude: number;
   distance?: number;
   memberId: string;
+  keyword?: string;
   timeFilter?: number;
-  remainTime?: number;
+  remainTime?: number | string;
   threadTypes?: string[];
-  isIncludeHubThread?: boolean;
-  isIncludePastRemainDateTime?: boolean;
+  isIncludeHubThread?: boolean | string;
+  isIncludePastRemainDateTime?: boolean | string;
 };
 
 export const fetchMapThreads = async ({
@@ -22,6 +24,7 @@ export const fetchMapThreads = async ({
   longitude,
   distance = 3000,
   memberId,
+  keyword = '',
   timeFilter = 0,
   remainTime = '',
   threadTypes = [],
@@ -34,7 +37,7 @@ export const fetchMapThreads = async ({
   const params = {
     latitude,
     longitude,
-    keyword: '',
+    keyword, // ✅ 이제 동적으로 전달됨
     cursor_mark: '',
     distance_m: distance,
     current_member_id: memberId,

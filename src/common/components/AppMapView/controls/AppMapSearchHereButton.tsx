@@ -34,9 +34,9 @@ export default AppMapSearchHereButton;
 const styles = StyleSheet.create({
   container: {
     position: 'absolute',
-    top: SPACING.xl * 1.5,
+    top: SPACING.xl * 2,
     alignSelf: 'center',
-    backgroundColor: COLORS.button_surface,
+    backgroundColor: COLORS.sheet_backdrop,
     borderRadius: 24,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
