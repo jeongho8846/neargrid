@@ -1,4 +1,4 @@
-// 📄 src/screens/map/MapScreen.tsx
+// 📄 src/screens/footprint/FootPrintScreen.tsx
 import React, {
   useCallback,
   useEffect,
@@ -8,112 +8,86 @@ import React, {
 } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import AppText from '@/common/components/AppText';
-import MapViewContainer, {
-  MapViewContainerRef,
-} from '@/features/map/components/MapViewContainer';
+import FootPrintMapViewContainer from '@/features/footprint/components/FootPrintMapViewContainer';
 import ThreadItemCard from '@/features/thread/components/thread_item_card';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
-import { useFetchMapThreads } from '@/features/map/hooks/useFetchMapThreads';
 import { useMapThreadStore } from '@/features/map/state/mapThreadStore';
 import AppMapZoomControls from '@/common/components/AppMapView/controls/AppMapZoomControls';
 import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import AppIcon from '@/common/components/AppIcon';
+import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFootPrintContents';
+import AppDateRangePicker from '@/common/components/AppDateRangePicker';
 
-const MapScreen = () => {
+const FootPrintScreen = () => {
   const { member } = useCurrentMember();
   const { threads, setThreads, clearThreads } = useMapThreadStore();
-  const { fetchThreads, loading } = useFetchMapThreads();
-  const sheetRef = useRef<BottomSheet>(null);
-  const mapRef = useRef<MapViewContainerRef>(null);
+  const { fetchContents, loading } = useFetchFootPrintContents();
+
   const navigation = useNavigation();
-  const route = useRoute();
-  const snapPoints = useMemo(() => [60, '50%', '90%'], []);
+  const sheetRef = useRef<BottomSheet>(null);
+  const mapRef = useRef(null);
+  const snapPoints = useMemo(() => [60, '50%', '90%'], []); // ✅ MapScreen 동일
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
-  const [searchParams, setSearchParams] = useState({
-    keyword: '',
-    threadTypes: [
-      'GENERAL_THREAD',
-      'MOMENT_THREAD',
-      'PLAN_TO_VISIT_THREAD',
-      'ROUTE_THREAD',
-    ],
-    recentTimeMinute: 60 * 24 * 365 * 999,
-    remainTimeMinute: 60 * 24 * 365,
-    includePastRemainTime: false,
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date('2025-01-01T00:00:00'),
+    endDate: new Date(),
   });
 
-  /** ✅ 스레드 데이터 로드 */
-  const loadThreads = useCallback(
-    async (params = searchParams) => {
-      if (!member?.id) return;
-      try {
-        const res = await fetchThreads({
-          latitude: 37.5665,
-          longitude: 126.978,
-          distance: 90000000,
-          memberId: member.id,
-          keyword: params.keyword,
-          threadTypes: params.threadTypes,
-          recentTimeMinute: params.recentTimeMinute,
-          remainTimeMinute: params.remainTimeMinute,
-          includePastRemainTime: params.includePastRemainTime,
-        });
-        setThreads(res);
-      } catch (err) {
-        console.error('❌ fetchThreads 실패:', err);
-      }
-    },
-    [member?.id, fetchThreads, setThreads, searchParams],
-  );
+  /** ✅ 발자국 데이터 로드 */
+  const loadFootPrints = useCallback(async () => {
+    if (!member?.id) return;
 
-  /** ✅ 첫 진입 시 로드 */
+    const toIso = (d: Date) => d.toISOString().slice(0, 19);
+
+    try {
+      const res = await fetchContents({
+        memberId: member.id,
+        startDateTime: toIso(dateRange.startDate),
+        endDateTime: toIso(dateRange.endDate),
+      });
+
+      const converted = res
+        .filter((item: any) => !!item.gpsLocationResponseDto)
+        .map((item: any, index: number) => {
+          const markerImage =
+            item.markerImageUrl ??
+            item.contentImageUrls?.[0] ??
+            item.memberProfileImageUrl ??
+            null;
+
+          return {
+            threadId: item.threadId || String(index),
+            latitude: item.gpsLocationResponseDto.latitude,
+            longitude: item.gpsLocationResponseDto.longitude,
+            description: item.description ?? '',
+            memberNickName: item.memberNickName,
+            memberProfileImageUrl: item.memberProfileImageUrl,
+            contentImageUrls: item.contentImageUrls ?? [],
+            markerImageUrl: markerImage,
+            reactionCount: item.reactionCount ?? 0,
+            commentCount: item.commentThreadCount ?? 0,
+            createDatetime: item.createDatetime,
+          };
+        });
+
+      setThreads(converted);
+    } catch (err: any) {
+      console.error('❌ FootPrint 데이터 로드 실패:', err.message);
+      console.error('📛 서버 응답:', err.response?.data || '(서버 응답 없음)');
+    }
+  }, [member?.id, dateRange, fetchContents, setThreads]);
+
   useEffect(() => {
-    loadThreads();
+    loadFootPrints();
     return () => clearThreads();
   }, [member?.id]);
 
-  /** ✅ 필터 옵션이 변경됐을 때 (MapSearch 등에서 돌아올 때) */
-  useFocusEffect(
-    useCallback(() => {
-      if (route.params && (route.params as any).filterOptions) {
-        const { inputSearchText, filterOptions } = route.params as any;
-        const updated = {
-          keyword: inputSearchText,
-          threadTypes: filterOptions.thread_types,
-          recentTimeMinute: filterOptions.recent_time_minute,
-          remainTimeMinute: filterOptions.remain_time_minute,
-          includePastRemainTime: filterOptions.is_include_past_remain_date_time,
-        };
-        setSearchParams(updated);
-        loadThreads(updated);
-      }
-    }, [route.params, member?.id]),
-  );
-
-  /** ✅ FootPrint → Map 으로 돌아왔을 때만 새로 검색 */
-  useFocusEffect(
-    useCallback(() => {
-      if (route.params?.from === 'FootPrint') {
-        console.log('📍 FootPrint → Map 복귀 감지 → 재검색 실행');
-        loadThreads();
-
-        // ✅ 한 번만 동작하게 초기화
-        navigation.setParams({ from: undefined });
-      }
-    }, [route.params?.from, loadThreads]),
-  );
-
-  /** ✅ 마커 클릭 */
+  /** ✅ 마커 클릭 시 */
   const handleMarkerPress = (ids: string[]) => {
     setSelectedIds(ids);
     sheetRef.current?.snapToIndex(1);
@@ -149,16 +123,10 @@ const MapScreen = () => {
     </View>
   );
 
-  const handleClearKeyword = () => {
-    const reset = { ...searchParams, keyword: '' };
-    setSearchParams(reset);
-    loadThreads(reset);
-  };
-
   return (
     <View style={styles.container}>
       {/* ✅ 지도 */}
-      <MapViewContainer
+      <FootPrintMapViewContainer
         ref={mapRef}
         memberId={member?.id}
         threads={threads}
@@ -166,50 +134,29 @@ const MapScreen = () => {
         onMarkerPress={handleMarkerPress}
       />
 
-      {/* ✅ 왼쪽 상단 FootPrint 이동 버튼 */}
+      {/* ✅ 왼쪽 상단 뒤로가기 버튼 */}
       <TouchableOpacity
         style={styles.leftButton}
-        onPress={() => {
-          clearThreads(); // ✅ 기존 Map 데이터 제거
-          navigation.navigate('FootPrint' as never);
-        }}
+        onPress={() => navigation.navigate('Map', { from: 'FootPrint' })}
         activeOpacity={0.8}
       >
-        <AppIcon name="footsteps" type="ion" size={24} variant="primary" />
+        <AppIcon name="arrow-back" type="ion" size={24} variant="primary" />
       </TouchableOpacity>
 
-      {/* ✅ 상단 검색창 */}
+      {/* ✅ 상단 검색창 위치에 날짜선택기 배치 */}
       <View style={styles.searchBar}>
-        <TouchableOpacity
-          style={styles.searchArea}
-          activeOpacity={0.5}
-          onPress={() => navigation.navigate('MapSearch')}
-        >
-          <AppIcon name="search" type="ion" size={18} variant="secondary" />
-          <AppText variant="body" style={styles.searchText}>
-            {searchParams.keyword
-              ? searchParams.keyword
-              : '검색어를 입력하세요'}
-          </AppText>
-        </TouchableOpacity>
-
-        {searchParams.keyword.length > 0 && (
-          <TouchableOpacity
-            style={styles.clearButton}
-            onPress={handleClearKeyword}
-            activeOpacity={0.7}
-          >
-            <AppIcon
-              name="close-circle"
-              type="ion"
-              size={20}
-              variant="secondary"
-            />
-          </TouchableOpacity>
-        )}
+        <View style={styles.searchArea}>
+          <AppDateRangePicker
+            startDate={dateRange.startDate}
+            endDate={dateRange.endDate}
+            onChange={setDateRange}
+            showApplyButton
+            onApply={loadFootPrints}
+          />
+        </View>
       </View>
 
-      {/* ✅ 바텀시트 */}
+      {/* ✅ 바텀시트 (MapScreen과 동일) */}
       <BottomSheet
         ref={sheetRef}
         index={1}
@@ -248,10 +195,12 @@ const MapScreen = () => {
   );
 };
 
-export default MapScreen;
+export default FootPrintScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
+
+  /** ✅ 왼쪽 상단 버튼 */
   leftButton: {
     position: 'absolute',
     top: 10,
@@ -261,6 +210,8 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 10,
   },
+
+  /** ✅ MapScreen의 searchBar를 그대로 가져와서 date picker용으로 재활용 */
   searchBar: {
     position: 'absolute',
     top: 10,
@@ -278,14 +229,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flex: 1,
   },
-  searchText: {
-    marginLeft: 8,
-    flexShrink: 1,
-  },
-  clearButton: {
-    padding: 4,
-    marginLeft: 6,
-  },
+
+  /** ✅ 이하 MapScreen과 완전 동일 */
   sheetBackground: {
     backgroundColor: COLORS.background,
     borderTopLeftRadius: 18,
