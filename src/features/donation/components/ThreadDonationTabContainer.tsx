@@ -1,3 +1,4 @@
+// 📄 src/features/donation/components/ThreadDonationTabContainer.tsx
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import AppText from '@/common/components/AppText';
@@ -14,9 +15,8 @@ type Props = {
 /**
  * ✅ ThreadDonationTabContainer
  * - 후원 내역 / 랭킹 탭 전환
- * - 닫히기 전까지 데이터 유지
+ * - 닫히기 전까지 데이터 유지 (언마운트 X)
  * - AppText i18nKey 기반 번역
- * - 탭 2개: 후원 내역 / 랭킹 (명시적으로 구성)
  */
 const ThreadDonationTabContainer: React.FC<Props> = ({
   threadId,
@@ -51,7 +51,11 @@ const ThreadDonationTabContainer: React.FC<Props> = ({
           <AppText
             i18nKey="STR_DONATION_TAB_HISTORY"
             variant="button"
-            color={activeTab === 'history' ? 'body' : 'body'}
+            color={
+              activeTab === 'history'
+                ? COLORS.text_primary
+                : COLORS.text_secondary
+            }
           />
         </TouchableOpacity>
 
@@ -66,24 +70,40 @@ const ThreadDonationTabContainer: React.FC<Props> = ({
           <AppText
             i18nKey="STR_DONATION_TAB_RANKING"
             variant="button"
-            color={activeTab === 'history' ? 'body' : 'body'}
+            color={
+              activeTab === 'ranking'
+                ? COLORS.text_primary
+                : COLORS.text_secondary
+            }
           />
         </TouchableOpacity>
       </View>
 
-      {/* ✅ 탭 컨텐츠 */}
+      {/* ✅ 탭 컨텐츠 (두 컴포넌트 항상 마운트) */}
       <View style={styles.content}>
-        {activeTab === 'history' ? (
+        <View
+          style={[
+            styles.tabContent,
+            { display: activeTab === 'history' ? 'flex' : 'none' },
+          ]}
+        >
           <ThreadDonationList
             threadId={threadId}
             currentMemberId={currentMemberId}
           />
-        ) : (
+        </View>
+
+        <View
+          style={[
+            styles.tabContent,
+            { display: activeTab === 'ranking' ? 'flex' : 'none' },
+          ]}
+        >
           <ThreadDonationRankingList
             threadId={threadId}
             currentMemberId={currentMemberId}
           />
-        )}
+        </View>
       </View>
     </View>
   );
@@ -116,6 +136,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.button_active,
   },
   content: {
+    flex: 1,
+  },
+  tabContent: {
     flex: 1,
   },
 });

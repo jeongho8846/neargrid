@@ -73,8 +73,5 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
   },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
+  separator: {},
 });

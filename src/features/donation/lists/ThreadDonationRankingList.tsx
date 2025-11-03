@@ -80,8 +80,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
     paddingBottom: SPACING.lg,
   },
-  separator: {
-    height: 1,
-    backgroundColor: COLORS.border,
-  },
+  separator: {},
 });

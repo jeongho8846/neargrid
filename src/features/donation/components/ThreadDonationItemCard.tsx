@@ -47,7 +47,6 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.border_light, // ✅ 시각 확인용
   },
   textContainer: {
     flex: 1,
