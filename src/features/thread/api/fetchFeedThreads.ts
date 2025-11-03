@@ -59,6 +59,7 @@ export const fetchFeedThreads = async (
       status: response.status,
       count: threads.length,
       nextCursorMark: data.nextCursorMark,
+      row: data,
     });
 
     return {

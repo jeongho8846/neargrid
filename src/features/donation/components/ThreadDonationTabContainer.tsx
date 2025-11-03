@@ -1,0 +1,121 @@
+import React, { useState, useEffect } from 'react';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import AppText from '@/common/components/AppText';
+import { COLORS } from '@/common/styles/colors';
+import { SPACING } from '@/common/styles/spacing';
+import ThreadDonationList from '../lists/ThreadDonationList';
+import ThreadDonationRankingList from '../lists/ThreadDonationRankingList';
+
+type Props = {
+  threadId: string;
+  currentMemberId: string;
+};
+
+/**
+ * ✅ ThreadDonationTabContainer
+ * - 후원 내역 / 랭킹 탭 전환
+ * - 닫히기 전까지 데이터 유지
+ * - AppText i18nKey 기반 번역
+ * - 탭 2개: 후원 내역 / 랭킹 (명시적으로 구성)
+ */
+const ThreadDonationTabContainer: React.FC<Props> = ({
+  threadId,
+  currentMemberId,
+}) => {
+  const [activeTab, setActiveTab] = useState<'history' | 'ranking'>('history');
+
+  // ✅ 마운트 시 전달된 프롭 로그
+  useEffect(() => {
+    console.log('🧾 [ThreadDonationTabContainer] props');
+    console.log('  • threadId:', threadId);
+    console.log('  • currentMemberId:', currentMemberId);
+  }, [threadId, currentMemberId]);
+
+  // ✅ 탭 변경 로그
+  useEffect(() => {
+    console.log('🔁 [ThreadDonationTabContainer] activeTab 변경:', activeTab);
+  }, [activeTab]);
+
+  return (
+    <View style={styles.container}>
+      {/* ✅ 탭 헤더 */}
+      <View style={styles.tabHeader}>
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === 'history' && styles.activeTabButton,
+          ]}
+          onPress={() => setActiveTab('history')}
+          activeOpacity={0.8}
+        >
+          <AppText
+            i18nKey="STR_DONATION_TAB_HISTORY"
+            variant="button"
+            color={activeTab === 'history' ? 'body' : 'body'}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.tabButton,
+            activeTab === 'ranking' && styles.activeTabButton,
+          ]}
+          onPress={() => setActiveTab('ranking')}
+          activeOpacity={0.8}
+        >
+          <AppText
+            i18nKey="STR_DONATION_TAB_RANKING"
+            variant="button"
+            color={activeTab === 'history' ? 'body' : 'body'}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {/* ✅ 탭 컨텐츠 */}
+      <View style={styles.content}>
+        {activeTab === 'history' ? (
+          <ThreadDonationList
+            threadId={threadId}
+            currentMemberId={currentMemberId}
+          />
+        ) : (
+          <ThreadDonationRankingList
+            threadId={threadId}
+            currentMemberId={currentMemberId}
+          />
+        )}
+      </View>
+    </View>
+  );
+};
+
+export default ThreadDonationTabContainer;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.sheet_background,
+  },
+  tabHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    backgroundColor: COLORS.sheet_background,
+  },
+  tabButton: {
+    paddingVertical: SPACING.xs,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: SPACING.sm,
+    width: '50%',
+    alignContent: 'center',
+    alignItems: 'center',
+  },
+  activeTabButton: {
+    backgroundColor: COLORS.button_active,
+  },
+  content: {
+    flex: 1,
+  },
+});

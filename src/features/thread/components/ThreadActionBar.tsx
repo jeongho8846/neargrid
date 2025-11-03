@@ -1,6 +1,5 @@
-// 📄 src/features/thread/components/ThreadActionBar.tsx
 import React, { useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import ContentsHeartButton from '@/common/components/Contents_Heart_Button';
@@ -14,7 +13,9 @@ import { useThreadLike } from '../hooks/useThreadLike';
 import { openThreadLikeListSheet } from '../sheets/openThreadLikeListSheet';
 import { openThreadShareSheet } from '../sheets/openThreadShareSheet';
 import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
+import { openThreadDonationListSheet } from '@/features/donation/sheets/openThreadDonationListSheet'; // ✅ 추가
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import AppText from '@/common/components/AppText';
 
 type Props = {
   threadId: string;
@@ -70,6 +71,15 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
     });
   }, [member, threadId]);
 
+  /** ✅ 도네이션 내역 시트 버튼 */
+  const onPressDonationCount = useCallback(() => {
+    if (!member?.id) {
+      console.warn('⚠️ 로그인 정보 없음 → 도네이션 내역 시트 열지 않음');
+      return;
+    }
+    openThreadDonationListSheet({ threadId, currentMemberId: member.id });
+  }, [threadId, member?.id]);
+
   // ✅ thread 데이터가 없으면 렌더링 생략
   if (!thread) return null;
 
@@ -120,6 +130,12 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
       {/* ✅ 오른쪽 버튼 영역 */}
       <View style={styles.rowRight}>
         <ContentsDonationButton onPress={onPressDonate} isLoading={isLoading} />
+
+        <TouchableOpacity onPress={onPressDonationCount} activeOpacity={0.8}>
+          <AppText variant="body">
+            {thread.donationPointReceivedCount} P
+          </AppText>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -142,7 +158,7 @@ const styles = StyleSheet.create({
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: SPACING.xs,
   },
   likeCountWrap: { marginLeft: SPACING.sm },
   commentCountWrap: { marginLeft: SPACING.md },

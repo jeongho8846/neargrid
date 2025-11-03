@@ -43,6 +43,9 @@ export type ServerThreadDto = {
   bountyPoint: number | null;
   expireDateTime: string | null;
   remainDateTime: string | null;
+
+  /** ✅ 받은 후원 포인트 총합 */
+  donationPointReceivedCount: number | null;
 };
 
 /**
@@ -87,6 +90,9 @@ export type Thread = {
   childThreadCount: number;
   childThreadDirectCount: number;
   childThreadWritableByOthers: boolean;
+
+  /** ✅ 받은 후원 포인트 총합 */
+  donationPointReceivedCount: number;
 };
 
 /**
@@ -138,6 +144,8 @@ export const createEmptyThread = (id: string): Thread => ({
   childThreadCount: 0,
   childThreadDirectCount: 0,
   childThreadWritableByOthers: false,
+
+  donationPointReceivedCount: 0, // ✅ 추가
 });
 
 /**
@@ -182,4 +190,6 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
   childThreadCount: dto.childThreadCount ?? 0,
   childThreadDirectCount: dto.childThreadDirectCount ?? 0,
   childThreadWritableByOthers: dto.childThreadWritableByOthers ?? false,
+
+  donationPointReceivedCount: dto.donationPointReceivedCount ?? 0, // ✅ 추가
 });

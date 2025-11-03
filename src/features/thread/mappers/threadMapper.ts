@@ -39,8 +39,10 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
   childThreadCount: dto.childThreadCount ?? 0,
   childThreadDirectCount: dto.childThreadDirectCount ?? 0,
   childThreadWritableByOthers: dto.childThreadWritableByOthers ?? false,
+
+  /** ✅ 받은 후원 포인트 총합 */
+  donationPointReceivedCount: dto.donationPointReceivedCount ?? 0,
 });
 
-// 배열 매핑 유틸(선택)
 export const mapServerThreads = (dtos: ServerThreadDto[]): Thread[] =>
   (dtos ?? []).map(mapServerThread);

@@ -160,4 +160,7 @@ export const apiWithToken: string[] = [
   '/thread/attachThreadToHubThread',
   '/donation/createDonationThread',
   '/payment/createPayment',
+  '/search/getDonationRankRecipientByDonor',
+  '/donation/getDonationThreadByThread',
+  '/search/getDonationRankThreadByDonor',
 ];
