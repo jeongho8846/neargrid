@@ -25,7 +25,7 @@ const MyTheme = {
     card: COLORS.background,
     border: COLORS.border,
     primary: COLORS.button_active,
-    text: COLORS.text,
+    text: COLORS.body,
     notification: COLORS.error,
   },
 };

@@ -2,6 +2,7 @@ import React, {
   useRef,
   useState,
   forwardRef,
+  useEffect,
   useImperativeHandle,
 } from 'react';
 import {
@@ -37,10 +38,13 @@ type Props = {
   threads: any[];
   isLoading: boolean;
   onMarkerPress?: (ids: string[]) => void;
+
+  // ✅ [ADD] 위치로 이동 완료시 MapScreen에 알림
+  onMoveToLocation?: (lat: number, lon: number) => void;
 };
 
 const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
-  ({ memberId, threads, isLoading, onMarkerPress }, ref) => {
+  ({ memberId, threads, isLoading, onMarkerPress, onMoveToLocation }, ref) => {
     const mapRef = useRef<any>(null);
     const zoomRef = useRef(0.05);
     const { latitude, longitude } = useLocationStore();
@@ -48,6 +52,41 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
     const { fetchThreads } = useFetchMapThreads();
     const [region, setRegion] = useState<Region | null>(null);
     const [clusters, setClusters] = useState<any[][]>([]);
+
+    // ✅ [ADD] 최초 1회만 내 위치로 이동 + 콜백 알림
+    const hasNotifiedOnceRef = useRef(false);
+    React.useEffect(() => {
+      if (hasNotifiedOnceRef.current) return;
+      if (!latitude || !longitude) return;
+      if (!mapRef.current) return;
+
+      // 지도 부드럽게 이동
+      mapRef.current.animateToRegion(
+        {
+          latitude,
+          longitude,
+          latitudeDelta: zoomRef.current,
+          longitudeDelta: zoomRef.current,
+        },
+        600,
+      );
+
+      hasNotifiedOnceRef.current = true;
+
+      // 이동 후 부모(MapScreen)로 좌표 전달
+      // (바로 호출해도 되고, 약간의 지연을 두고 싶으면 setTimeout 사용)
+      onMoveToLocation?.(latitude, longitude);
+    }, [latitude, longitude, onMoveToLocation]);
+
+    // ✅ threads가 바뀌면, 현재 region 기준으로 클러스터링 다시 실행
+    React.useEffect(() => {
+      if (!mapRef.current || !region || threads.length === 0) return;
+      console.log('🧩 검색 완료 후 클러스터링 재실행:', threads.length);
+      InteractionManager.runAfterInteractions(async () => {
+        const grouped = await clusterMarkersByScreen(mapRef, threads, 35);
+        setClusters(grouped);
+      });
+    }, [threads]);
 
     /** ✅ 지도 핸들러를 외부로 노출 */
     useImperativeHandle(ref, () => ({
@@ -128,7 +167,7 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
             <AppMapCurrentMarker latitude={latitude} longitude={longitude} />
           )}
 
-          {/* ✅ 클러스터 마커 */}
+          {/* ✅ 클러스터 마커 기존 로직 그대로 */}
           {clusters.map((group, i) => {
             if (group.length === 1) {
               const t = group[0];
@@ -164,7 +203,7 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
           })}
         </AppMapView>
 
-        {/* ✅ 검색 버튼 */}
+        {/* ✅ 기존 “이 위치에서 검색” 버튼 유지 */}
         <AppMapSearchHereButton
           onPress={handleSearchHere}
           isLoading={isLoading}

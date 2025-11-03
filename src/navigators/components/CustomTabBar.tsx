@@ -159,7 +159,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     backgroundColor: COLORS.background,
     borderTopColor: COLORS.border,
-    borderTopWidth: 2,
+    borderTopWidth: 1,
     borderLeftWidth: 0.5,
     borderRightWidth: 0.5,
     borderTopLeftRadius: 20,

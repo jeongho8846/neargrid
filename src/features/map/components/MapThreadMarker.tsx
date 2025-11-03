@@ -72,21 +72,21 @@ export default MapThreadMarker;
 
 const styles = StyleSheet.create({
   container: {
-    width: 80, // ✅ 이미지보다 큰 투명 영역
-    height: 80,
+    width: 60, // ✅ 이미지보다 큰 투명 영역
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'transparent',
   },
   imageWrapper: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     justifyContent: 'center',
     alignItems: 'center',
   },
   image: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     backgroundColor: COLORS.background,
   },
@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
     borderRadius: 30,
   },
   placeholder: {
-    width: 60,
-    height: 60,
+    width: 40,
+    height: 40,
     borderRadius: 12,
     backgroundColor: COLORS.button_surface,
   },

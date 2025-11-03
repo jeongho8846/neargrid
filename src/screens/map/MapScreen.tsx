@@ -1,18 +1,8 @@
 // 📄 src/screens/map/MapScreen.tsx
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import {
-  useFocusEffect,
-  useNavigation,
-  useRoute,
-} from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import AppText from '@/common/components/AppText';
@@ -34,7 +24,6 @@ const MapScreen = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<MapViewContainerRef>(null);
   const navigation = useNavigation();
-  const route = useRoute();
   const snapPoints = useMemo(() => [60, '50%', '90%'], []);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -52,15 +41,15 @@ const MapScreen = () => {
     includePastRemainTime: false,
   });
 
-  /** ✅ 스레드 데이터 로드 */
+  /** ✅ 스레드 데이터 로드 (직접 호출 전용) */
   const loadThreads = useCallback(
-    async (params = searchParams) => {
+    async (params = searchParams, lat?: number, lon?: number) => {
       if (!member?.id) return;
       try {
         const res = await fetchThreads({
-          latitude: 37.5665,
-          longitude: 126.978,
-          distance: 90000000,
+          latitude: lat ?? 37.5665, // ✅ 동적 좌표
+          longitude: lon ?? 126.978,
+          distance: 3000,
           memberId: member.id,
           keyword: params.keyword,
           threadTypes: params.threadTypes,
@@ -76,56 +65,29 @@ const MapScreen = () => {
     [member?.id, fetchThreads, setThreads, searchParams],
   );
 
-  /** ✅ 첫 진입 시 로드 */
-  useEffect(() => {
-    loadThreads();
-    return () => clearThreads();
-  }, [member?.id]);
-
-  /** ✅ 필터 옵션이 변경됐을 때 (MapSearch 등에서 돌아올 때) */
-  useFocusEffect(
-    useCallback(() => {
-      if (route.params && (route.params as any).filterOptions) {
-        const { inputSearchText, filterOptions } = route.params as any;
-        const updated = {
-          keyword: inputSearchText,
-          threadTypes: filterOptions.thread_types,
-          recentTimeMinute: filterOptions.recent_time_minute,
-          remainTimeMinute: filterOptions.remain_time_minute,
-          includePastRemainTime: filterOptions.is_include_past_remain_date_time,
-        };
-        setSearchParams(updated);
-        loadThreads(updated);
-      }
-    }, [route.params, member?.id]),
-  );
-
-  /** ✅ FootPrint → Map 으로 돌아왔을 때만 새로 검색 */
-  useFocusEffect(
-    useCallback(() => {
-      if (route.params?.from === 'FootPrint') {
-        console.log('📍 FootPrint → Map 복귀 감지 → 재검색 실행');
-        loadThreads();
-
-        // ✅ 한 번만 동작하게 초기화
-        navigation.setParams({ from: undefined });
-      }
-    }, [route.params?.from, loadThreads]),
-  );
-
   /** ✅ 마커 클릭 */
   const handleMarkerPress = (ids: string[]) => {
     setSelectedIds(ids);
     sheetRef.current?.snapToIndex(1);
   };
 
+  /** ✅ 검색 초기화 */
+  const handleClearKeyword = () => {
+    const reset = { ...searchParams, keyword: '' };
+    setSearchParams(reset);
+    loadThreads(reset); // ✅ 이 경우만 검색 수행
+  };
+
+  /** ✅ 필터 해제 */
   const clearFilter = () => setSelectedIds([]);
 
+  /** ✅ 지도에서 선택된 스레드 필터링 */
   const filteredThreads =
     selectedIds.length > 0
       ? threads.filter(t => selectedIds.includes(t.threadId))
       : threads;
 
+  /** ✅ 리스트 아이템 렌더 */
   const renderItem = ({ item }: any) => (
     <ThreadItemCard
       thread={item}
@@ -133,6 +95,7 @@ const MapScreen = () => {
     />
   );
 
+  /** ✅ 리스트 헤더 */
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <View style={styles.headerLeft}>
@@ -149,12 +112,6 @@ const MapScreen = () => {
     </View>
   );
 
-  const handleClearKeyword = () => {
-    const reset = { ...searchParams, keyword: '' };
-    setSearchParams(reset);
-    loadThreads(reset);
-  };
-
   return (
     <View style={styles.container}>
       {/* ✅ 지도 */}
@@ -164,6 +121,10 @@ const MapScreen = () => {
         threads={threads}
         isLoading={loading}
         onMarkerPress={handleMarkerPress}
+        onMoveToLocation={(lat, lon) => {
+          console.log('📍 내 위치 도착 → 현재 지도 중심으로 검색 실행');
+          loadThreads(searchParams, lat, lon); // ✅ 이 경우만 검색 수행
+        }}
       />
 
       {/* ✅ 왼쪽 상단 FootPrint 이동 버튼 */}
