@@ -131,8 +131,7 @@ const MapScreen = () => {
       <TouchableOpacity
         style={styles.leftButton}
         onPress={() => {
-          clearThreads(); // ✅ 기존 Map 데이터 제거
-          navigation.navigate('FootPrint' as never);
+          // navigation.navigate('FootPrint' as never);
         }}
         activeOpacity={0.8}
       >
