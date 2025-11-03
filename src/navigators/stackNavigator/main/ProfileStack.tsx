@@ -6,15 +6,26 @@ import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScree
 
 const Stack = createNativeStackNavigator();
 
-const ProfileStack = () => (
-  <Stack.Navigator screenOptions={{ headerShown: false }}>
-    <Stack.Screen name="Profile" component={MemberProfileScreen} />
-    <Stack.Screen name="DetailThread" component={DetailThreadScreen} />
-    <Stack.Screen
-      name="DetailThreadComment"
-      component={DetailThreadCommentScreen}
-    />
-  </Stack.Navigator>
-);
+const ProfileStack = ({ route }) => {
+  const memberId = route?.params?.memberId; // ✅ MainTabNavigator에서 전달된 값
+
+  console.log('🧭 [ProfileStack] 받은 memberId:', memberId);
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {/* ✅ 직접 MemberProfileScreen에 전달 */}
+      <Stack.Screen
+        name="Profile"
+        component={MemberProfileScreen}
+        initialParams={{ memberId }}
+      />
+      <Stack.Screen name="DetailThread" component={DetailThreadScreen} />
+      <Stack.Screen
+        name="DetailThreadComment"
+        component={DetailThreadCommentScreen}
+      />
+    </Stack.Navigator>
+  );
+};
 
 export default ProfileStack;
