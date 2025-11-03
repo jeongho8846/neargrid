@@ -1,12 +1,13 @@
 import React from 'react';
 import {
   View,
-  Image,
   StyleSheet,
   TouchableOpacity,
   ImageBackground,
 } from 'react-native';
 import AppText from '@/common/components/AppText';
+import AppIcon from '@/common/components/AppIcon';
+import AppProfileImage from '@/common/components/AppProfileImage';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import type { MapThreadMarkerData } from '@/features/map/hooks/useFetchMapThreads';
@@ -19,7 +20,7 @@ type Props = {
 /**
  * ✅ ThreadItemCard
  * - 지도/리스트 공용 카드 UI
- * - FlatList의 numColumns로 자동 1/3 크기 계산
+ * - 좋아요/댓글 + threadType을 우측 상단에 표시
  */
 const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
   const background =
@@ -36,17 +37,47 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
           style={styles.backgroundImage}
           imageStyle={styles.imageRadius}
         >
+          {/* ❤️ 좋아요/댓글 + threadType 묶음 — 카드 우측 상단 */}
+          <View style={styles.topRightContainer}>
+            {/* 상단: 좋아요 / 댓글 */}
+            <View style={styles.topRightBox}>
+              <View style={styles.statGroup}>
+                <AppIcon name="heart" type="ion" size={14} variant="onDark" />
+                <AppText variant="button" style={styles.statText}>
+                  {thread.reactionCount ?? 0}
+                </AppText>
+              </View>
+
+              <View style={styles.statGroup}>
+                <AppIcon
+                  name="chatbubble"
+                  type="ion"
+                  size={14}
+                  variant="onDark"
+                />
+                <AppText variant="button" style={styles.statText}>
+                  {thread.commentCount ?? 0}
+                </AppText>
+              </View>
+            </View>
+
+            {/* 하단: 쓰레드 타입 */}
+            <View style={styles.threadTypeBox}>
+              <AppText
+                variant="caption_bold"
+                threadType={thread.threadType as keyof typeof COLORS}
+              />
+            </View>
+          </View>
+
+          {/* 👤 하단 오버레이 - 프로필 */}
           <View style={styles.overlay}>
             <View style={styles.profileRow}>
-              {thread.memberProfileImageUrl ? (
-                <Image
-                  source={{ uri: thread.memberProfileImageUrl }}
-                  style={styles.profileImage}
-                />
-              ) : (
-                <View style={styles.profilePlaceholder} />
-              )}
-              <AppText variant="username">
+              <AppProfileImage
+                imageUrl={thread.memberProfileImageUrl}
+                size={28}
+              />
+              <AppText variant="username" style={styles.username}>
                 {thread.memberNickName ?? 'Unknown'}
               </AppText>
             </View>
@@ -61,13 +92,17 @@ export default ThreadItemCard;
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1, // ✅ numColumns=3일 때 자동 1/3 비율 차지
-    aspectRatio: 0.75, // ✅ 정사각형 유지
+    flex: 1,
+    aspectRatio: 0.75,
     borderRadius: 16,
     overflow: 'hidden',
     padding: SPACING.xs,
   },
-  contentsBox: { flex: 1, backgroundColor: COLORS.border, borderRadius: 16 },
+  contentsBox: {
+    flex: 1,
+    backgroundColor: COLORS.border,
+    borderRadius: 16,
+  },
   backgroundImage: {
     flex: 1,
     justifyContent: 'flex-end',
@@ -75,6 +110,8 @@ const styles = StyleSheet.create({
   imageRadius: {
     borderRadius: 16,
   },
+
+  /** 👇 하단 프로필 오버레이 */
   overlay: {
     backgroundColor: COLORS.overlay_dark,
     padding: SPACING.sm,
@@ -84,17 +121,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  profileImage: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    marginRight: SPACING.sm,
+  username: {
+    marginLeft: SPACING.sm,
   },
-  profilePlaceholder: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: COLORS.border,
-    marginRight: SPACING.sm,
+
+  /** ⭐ 우측 상단 전체 묶음 */
+  topRightContainer: {
+    position: 'absolute',
+    top: SPACING.sm,
+    right: SPACING.sm,
+    alignItems: 'flex-end',
+  },
+
+  /** ❤️ 좋아요/댓글 반투명 박스 */
+  topRightBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.overlay_strong,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    marginBottom: 6, // ✅ threadType 박스와 간격
+  },
+  statGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: SPACING.sm,
+  },
+  statText: {
+    marginLeft: 3,
+  },
+
+  /** 🧩 threadType 박스 */
+  threadTypeBox: {
+    backgroundColor: COLORS.overlay_strong,
+    borderRadius: 10,
+    paddingVertical: 2,
+    paddingHorizontal: 6,
   },
 });

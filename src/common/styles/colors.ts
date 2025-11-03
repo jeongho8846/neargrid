@@ -1,4 +1,4 @@
-// src/common/styles/colors.ts
+// 📄 src/common/styles/colors.ts
 export const COLORS = {
   // 🟣 Button
   button_active: '#0447ffff',
@@ -7,7 +7,6 @@ export const COLORS = {
   button_surface: '#1C1C1C',
 
   // 📝 Text (Dark Theme)
-
   title: '#FFFFFF', // 제목/섹션 타이틀 (밝은 흰색)
   body: '#FFFFFF', // 본문 텍스트
   username: '#EDEDED', // 닉네임 강조
@@ -72,4 +71,12 @@ export const COLORS = {
   overlay_light: 'rgba(255,255,255,0.25)', // 밝은 배경용 오버레이
   overlay_dark: 'rgba(0,0,0,0.35)', // 어두운 배경용 오버레이 ✅
   overlay_strong: 'rgba(0,0,0,0.55)', // 강조용 (이미지 어둡게)
-};
+
+  /** 🧩 Thread Type Colors (텍스트 색상용) */
+  GENERAL_THREAD: '#E0E0E0', // 일반
+  ROUTE_THREAD: '#fdbb40ff', // 기부
+  PLAN_TO_VISIT_THREAD: '#8840fdff', // 이벤트
+  MOMENT_THREAD: '#00d1d8ff', // 공지
+} as const;
+
+export type ColorKeys = keyof typeof COLORS;

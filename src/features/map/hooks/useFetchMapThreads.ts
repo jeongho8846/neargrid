@@ -9,8 +9,10 @@ export type MapThreadMarkerData = {
   markerImageUrl?: string;
   contentImageUrls?: string[];
   reactionCount: number;
+  commentCount: number;
   memberNickName?: string;
   memberProfileImageUrl?: string;
+  threadType?: string; // ✅ 추가
 };
 
 export const useFetchMapThreads = () => {
@@ -51,7 +53,7 @@ export const useFetchMapThreads = () => {
         longitude,
         distance,
         memberId,
-        keyword, // ✅ 전달
+        keyword,
         timeFilter: recentTimeMinute,
         remainTime: remainTimeMinute,
         threadTypes,
@@ -71,8 +73,10 @@ export const useFetchMapThreads = () => {
             markerImageUrl: t.markerImageUrl || t.contentImageUrls?.[0],
             contentImageUrls: t.contentImageUrls ?? [],
             reactionCount: t.reactionCount ?? 0,
+            commentCount: t.commentThreadCount ?? 0, // ✅ 여기 수정
             memberNickName: t.memberNickName,
             memberProfileImageUrl: t.memberProfileImageUrl ?? '',
+            threadType: t.threadType ?? '',
           } as MapThreadMarkerData;
         })
         .filter(Boolean) as MapThreadMarkerData[];

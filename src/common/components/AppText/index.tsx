@@ -1,4 +1,3 @@
-// src/common/components/AppText/index.tsx
 import React from 'react';
 import { Text, TextProps, StyleProp, TextStyle, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -10,6 +9,7 @@ export type AppTextVariant =
   | 'body'
   | 'username'
   | 'caption'
+  | 'caption_bold'
   | 'link'
   | 'button'
   | 'danger';
@@ -18,6 +18,8 @@ type Props = TextProps & {
   i18nKey?: string;
   variant?: AppTextVariant;
   color?: keyof typeof COLORS;
+  /** ✅ threadType에 따라 자동 색상 + 번역 적용 */
+  threadType?: keyof typeof COLORS;
   style?: StyleProp<TextStyle>;
   values?: Record<string, any>;
   isLoading?: boolean;
@@ -49,6 +51,13 @@ const variantStyles: Record<AppTextVariant, TextStyle> = {
     lineHeight: 16,
     color: COLORS.caption,
   },
+  caption_bold: {
+    fontFamily: 'Pretendard-Regular',
+    fontSize: 12,
+    lineHeight: 16,
+    color: COLORS.caption,
+    fontWeight: 'bold',
+  },
   link: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 14,
@@ -73,6 +82,7 @@ export default function AppText({
   i18nKey,
   variant = 'body',
   color,
+  threadType,
   style,
   children,
   values,
@@ -82,9 +92,24 @@ export default function AppText({
 }: Props) {
   const { t } = useTranslation();
   const baseStyle = variantStyles[variant];
-  const appliedColor = color ? { color: COLORS[color] } : {};
 
-  const content = i18nKey ? t(i18nKey, values) : children;
+  // ✅ 색상 우선순위: threadType > color > 기본 variant color
+  const dynamicColor = threadType
+    ? { color: COLORS[threadType] }
+    : color
+    ? { color: COLORS[color] }
+    : {};
+
+  // ✅ 번역 처리
+  let content: any = children;
+
+  if (i18nKey) {
+    content = t(i18nKey, values);
+  } else if (threadType) {
+    // threadType이 있을 때 자동 번역 key 변환
+    const threadTypeKey = `STR_THREAD_TYPE_${threadType}`;
+    content = t(threadTypeKey);
+  }
 
   if (isLoading) {
     return (
@@ -111,7 +136,7 @@ export default function AppText({
 
   return (
     <Text
-      style={[baseStyle, appliedColor, style]}
+      style={[baseStyle, dynamicColor, style]}
       allowFontScaling={false}
       {...rest}
     >
