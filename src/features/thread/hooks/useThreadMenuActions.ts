@@ -1,4 +1,3 @@
-// 📄 src/features/thread/hooks/useThreadMenuActions.ts
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,14 +6,17 @@ import { Thread } from '../model/ThreadModel';
 import { THREAD_KEYS } from '../keys/threadKeys';
 import AppToast from '@/common/components/AppToast/AppToastManager';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet'; // ✅ 후원 시트 변경
+import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+
+// ✅ 신고 시트 import
+import { openReportSheet } from '@/features/report/sheets/openReportSheet';
 
 export const useThreadMenuActions = (thread: Thread) => {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { close } = useBottomSheetStore();
-  const { member } = useCurrentMember(); // ✅ 현재 로그인한 멤버 가져오기
+  const { member } = useCurrentMember();
 
   /**
    * ✅ 링크 복사
@@ -51,23 +53,17 @@ export const useThreadMenuActions = (thread: Thread) => {
     openDonateSheet({
       currentMemberId: member.id,
       threadId: thread.threadId,
-      currentPoint: member.point ?? 0, // optional
+      currentPoint: member.point ?? 0,
     });
-    // close();
   };
 
   /**
    * ✅ 숨기기 / 숨기기 취소
    */
-  /**
-   * ✅ 숨기기 / 숨기기 취소
-   */
   const toggleHideThread = () => {
-    // ✅ 1. 리스트 캐시 (InfiniteQuery 구조)
     queryClient.setQueryData(THREAD_KEYS.list(), (old: any) => {
       if (!old?.pages) return old;
-
-      const newData = {
+      return {
         ...old,
         pages: old.pages.map((page: any) => ({
           ...page,
@@ -80,29 +76,30 @@ export const useThreadMenuActions = (thread: Thread) => {
             : page.threads,
         })),
       };
-      return newData;
     });
 
-    // ✅ 2. 단일 Thread 캐시(detail)
     queryClient.setQueryData(
       THREAD_KEYS.detail(thread.threadId),
-      (old: Thread | undefined) => {
-        if (!old) return old;
-        return { ...old, available: !old.available };
-      },
+      (old: Thread | undefined) =>
+        old ? { ...old, available: !old.available } : old,
     );
-
-    // ✅ 3. 사용자 피드백
 
     close();
   };
 
   /**
-   * ✅ 신고 (임시)
+   * ✅ 신고 BottomSheet 열기
    */
-  const report = () => {
-    AppToast.show('신고 기능은 준비 중입니다');
-    close();
+  const report = async () => {
+    try {
+      await openReportSheet({
+        contentId: thread.threadId,
+        content_type: 'THREAD',
+        parent_content_id: '',
+      });
+    } catch (error) {
+      console.error('🚨 신고 시트 열기 실패:', error);
+    }
   };
 
   return {
