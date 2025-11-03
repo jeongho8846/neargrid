@@ -15,6 +15,7 @@ import { COLORS } from '@/common/styles/colors';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
 import { queryClient } from '@/services/reactQuery/reactQueryClient';
 import '@/i18n';
+import { AppToastContainer } from '@/common/components/AppToast/AppToastManager';
 
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
@@ -81,22 +82,18 @@ const App = () => {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <BottomSheetModalProvider>
-            <StatusBar
-              translucent={false}
-              backgroundColor="transparent"
-              barStyle="light-content"
-            />
-            <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-              <NavigationContainer theme={MyTheme}>
+          {/* ✅ NavigationContext보다 위에 있던 Provider를 아래로 이동 */}
+          <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+            <NavigationContainer theme={MyTheme}>
+              {/* ✅ 이제 NavigationContext 내부에서 동작함 */}
+              <BottomSheetModalProvider>
                 <RootNavigator />
-
-                {/* ✅ Navigation Context 안쪽으로 이동 */}
                 <GlobalBottomSheet />
                 <GlobalInputBar />
-              </NavigationContainer>
-            </SafeAreaView>
-          </BottomSheetModalProvider>
+                <AppToastContainer />
+              </BottomSheetModalProvider>
+            </NavigationContainer>
+          </SafeAreaView>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

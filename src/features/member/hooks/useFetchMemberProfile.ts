@@ -19,7 +19,7 @@ export const useFetchMemberProfile = (
     console.log(' - targetUserId:', targetUserId);
     console.log(' - enabled:', options?.enabled);
 
-    if (!currentMemberId || !targetUserId || options?.enabled === false) {
+    if (!currentMemberId || !targetUserId) {
       console.log('⚠️ [useFetchMemberProfile] 조건 불충족 → 호출 안 함');
       return;
     }

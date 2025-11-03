@@ -1,3 +1,4 @@
+// 📄 src/features/thread/components/thread_item_detail.tsx
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -69,45 +70,61 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
         />
       </View>
 
-      {/* 🖼️ IMAGE */}
-      {hasImages && (
-        <AppImageCarousel
-          images={item.contentImageUrls!}
-          height={300}
-          isLoading={false}
-        />
+      {/* 🚫 숨김 처리 */}
+      {!item.available ? (
+        <View style={styles.hiddenBox}>
+          <AppText
+            variant="body"
+            style={{ color: COLORS.body }}
+            i18nKey="STR_THREAD_HIDDEN_CONTENT"
+          />
+        </View>
+      ) : (
+        <>
+          {/* 🖼️ IMAGE */}
+          {hasImages && (
+            <AppImageCarousel
+              images={item.contentImageUrls!}
+              height={300}
+              isLoading={false}
+            />
+          )}
+
+          {/* 💬 CONTENT */}
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handlePress}
+            style={styles.touchArea}
+          >
+            {hasImages ? (
+              <View style={styles.textBox}>
+                <AppTextField text={item.description || ''} numberOfLines={3} />
+              </View>
+            ) : (
+              <View style={styles.bubbleWrap}>
+                <View style={[styles.bubbleTail, { left: SPACING.sm + 10 }]} />
+                <View
+                  style={[
+                    styles.bubbleInner,
+                    {
+                      marginLeft: SPACING.sm,
+                      padding: SPACING.md,
+                    },
+                  ]}
+                >
+                  <AppTextField
+                    text={item.description || ''}
+                    numberOfLines={6}
+                  />
+                </View>
+              </View>
+            )}
+          </TouchableOpacity>
+
+          {/* ⚙️ ACTION BAR */}
+          <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
+        </>
       )}
-
-      {/* 💬 CONTENT */}
-      <TouchableOpacity
-        activeOpacity={0.8}
-        onPress={handlePress}
-        style={styles.touchArea}
-      >
-        {hasImages ? (
-          <View style={styles.textBox}>
-            <AppTextField text={item.description || ''} numberOfLines={3} />
-          </View>
-        ) : (
-          <View style={styles.bubbleWrap}>
-            <View style={[styles.bubbleTail, { left: SPACING.sm + 10 }]} />
-            <View
-              style={[
-                styles.bubbleInner,
-                {
-                  marginLeft: SPACING.sm,
-                  padding: SPACING.md,
-                },
-              ]}
-            >
-              <AppTextField text={item.description || ''} numberOfLines={6} />
-            </View>
-          </View>
-        )}
-      </TouchableOpacity>
-
-      {/* ⚙️ ACTION BAR */}
-      <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
     </View>
   );
 };
@@ -155,5 +172,16 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderColor: COLORS.text_bubble_border,
     transform: [{ rotate: '45deg' }],
+  },
+  hiddenBox: {
+    backgroundColor: COLORS.sheet_background,
+    borderRadius: 8,
+    paddingVertical: SPACING.lg,
+    marginHorizontal: SPACING.sm,
+    marginTop: SPACING.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+
+    borderColor: COLORS.border,
   },
 });

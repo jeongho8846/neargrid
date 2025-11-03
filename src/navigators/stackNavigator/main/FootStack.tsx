@@ -2,6 +2,7 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FootPrintScreen from '@/screens/map/FootPrintScreen';
+import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -9,6 +10,7 @@ const FootStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="FootPrint" component={FootPrintScreen} />
+      <Stack.Screen name="Profile" component={MemberProfileScreen} />
     </Stack.Navigator>
   );
 };

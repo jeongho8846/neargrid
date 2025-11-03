@@ -5,6 +5,7 @@ import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
 import MapSearchScreen from '@/screens/map/MapSearchScreen';
 import FootPrintScreen from '@/screens/map/FootPrintScreen';
+import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ const MapStack = () => (
       component={DetailThreadCommentScreen}
     />
     <Stack.Screen name="FootPrint" component={FootPrintScreen} />
+    <Stack.Screen name="Profile" component={MemberProfileScreen} />
   </Stack.Navigator>
 );
 

@@ -1,3 +1,4 @@
+// 📄 src/screens/member/MemberProfileScreen.tsx
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
@@ -8,17 +9,15 @@ import { useFetchMemberProfile } from '@/features/member/hooks/useFetchMemberPro
 import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFootPrintContents';
 import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
-import ThreadItemCard from '@/features/thread/components/thread_item_card';
 import AppText from '@/common/components/AppText';
-import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
 
-  // 🔹 route.params.memberId 있으면 다른 유저, 없으면 내 프로필
-  const targetUserId = route?.params?.memberId ?? currentMember?.id;
+  // ✅ route에서 memberId 직접 받기
+  const targetUserId = route?.params?.memberId;
 
   const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
     useCollapsibleHeader(0);
@@ -27,7 +26,7 @@ export default function MemberProfileScreen({ route }) {
   const { data: profile, isLoading: isProfileLoading } = useFetchMemberProfile(
     currentMember?.id ?? '',
     targetUserId ?? '',
-    { enabled: !!targetUserId },
+    { enabled: !!targetUserId }, // ✅ targetUserId 있을 때만 fetch 실행
   );
 
   /** 🧭 FootPrint 데이터 가져오기 */
@@ -37,7 +36,7 @@ export default function MemberProfileScreen({ route }) {
   const [threads, setThreads] = useState([]);
 
   useEffect(() => {
-    if (!targetUserId) return;
+    if (!targetUserId) return; // ✅ 없으면 아무것도 안함
 
     // ✅ 날짜 포맷 (Spring 호환)
     const toIso = (d: Date) => d.toISOString().slice(0, 19);
@@ -56,7 +55,6 @@ export default function MemberProfileScreen({ route }) {
 
         // ✅ 불필요한 depth>0 (대댓글/자식 쓰레드) 필터링
         const filtered = res.filter((t: any) => t.depth === 0);
-
         setThreads(filtered);
       } catch (err: any) {
         console.error(

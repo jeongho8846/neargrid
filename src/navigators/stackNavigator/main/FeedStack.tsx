@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import FeedScreen from '@/screens/feed/FeedScreen';
 import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
+import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,6 +15,7 @@ const FeedStack = () => (
       name="DetailThreadComment"
       component={DetailThreadCommentScreen}
     />
+    <Stack.Screen name="Profile" component={MemberProfileScreen} />
   </Stack.Navigator>
 );
 

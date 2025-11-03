@@ -68,13 +68,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 20,
-    backgroundColor: COLORS.button_active,
+    backgroundColor: COLORS.overlay_light,
     opacity: 0.9,
     zIndex: 9999,
   },
   text: {
     ...FONT.body,
-    color: COLORS.text,
+    color: COLORS.body,
   },
 });
 
