@@ -4,7 +4,7 @@ import AppText from '@/common/components/AppText';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
-import { useGetDonationRankRecipientByDonor } from '../hooks/useGetDonationRankRecipientByDonor';
+import { useGetDonationRankThreadByDonor } from '../hooks/useGetDonationRankThreadByDonor';
 import { useDonationTabStore } from '../state/donationTabStore';
 import ThreadDonationRankingItemCard from '../components/ThreadDonationRankingItemCard';
 
@@ -24,8 +24,10 @@ const ThreadDonationRankingList: React.FC<Props> = ({
   currentMemberId,
 }) => {
   const { clearAll } = useDonationTabStore();
-  const { items, loadMore, hasNext, loading } =
-    useGetDonationRankRecipientByDonor(threadId, currentMemberId);
+  const { items, loadMore, hasNext, loading } = useGetDonationRankThreadByDonor(
+    threadId,
+    currentMemberId,
+  );
 
   // 디버그 로그
   useEffect(() => {

@@ -26,7 +26,10 @@ type Props = {
 const MemberProfileHeader: React.FC<Props> = ({ profile, isLoading }) => {
   const coverImage = profile?.backgroundUrl;
   const profileImage = profile?.profileImageUrl;
-
+  console.log(
+    '프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필',
+    profile,
+  );
   return (
     <View style={styles.container}>
       {/* 🔹 Top - Cover */}
@@ -79,7 +82,13 @@ const MemberProfileHeader: React.FC<Props> = ({ profile, isLoading }) => {
 
       {/* 🔹 Bottom - 포인트 + 통계 */}
       <View style={styles.bottomSection}>
-        <MemberStatsRow stats={profile?.stats} isLoading={isLoading} />
+        <MemberStatsRow
+          stats={profile?.stats}
+          isLoading={isLoading}
+          targetId={profile?.id}
+          receivedPoint={profile?.receivedPoint}
+          givenPoint={profile?.givenPoint}
+        />
       </View>
     </View>
   );

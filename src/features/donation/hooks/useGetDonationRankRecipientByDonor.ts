@@ -4,52 +4,69 @@ import { useDonationTabStore } from '../state/donationTabStore';
 
 /**
  * ✅ useGetDonationRankRecipientByDonor
- * - 특정 수신자(스레드 작성자)의 후원 랭킹 조회
- * - 페이징 + Zustand 캐시 유지
- * - 닫히기 전까지 데이터 유지
+ * - 내가 도네이션을 보낸 랭킹 조회 (수신자 기준)
+ * - 최초 1회만 호출
+ * - Zustand 캐시 유지 (탭 전환 시 재호출 X)
  */
 export const useGetDonationRankRecipientByDonor = (
-  threadId: string,
   currentMemberId: string,
+  recipientId?: string,
 ) => {
-  const { ranking, setRanking } = useDonationTabStore();
+  const { rankRecipientByDonor, setRankRecipientByDonor } =
+    useDonationTabStore();
   const [loading, setLoading] = useState(false);
 
-  /** ✅ 첫 페이지 포함한 데이터 로딩 */
+  /** ✅ 페이징 로드 */
   const loadMore = useCallback(async () => {
-    // ⚠️ 데이터가 없거나 마지막 페이지일 경우 중단
-    if ((!ranking.hasNext && ranking.items.length > 0) || loading) return;
-    setLoading(true);
+    if (
+      (!rankRecipientByDonor.hasNext &&
+        rankRecipientByDonor.items.length > 0) ||
+      loading
+    )
+      return;
 
+    setLoading(true);
     try {
       const res = await getDonationRankRecipientByDonor({
-        currentMemberId,
-        threadId,
-        cursorMark: ranking.nextCursor,
+        current_member_id: currentMemberId,
+        recipient_id: recipientId,
+        cursor_mark: rankRecipientByDonor.nextCursor,
       });
 
-      setRanking({
-        items: [...(ranking.items ?? []), ...(res.items ?? [])],
-        nextCursor: res.nextCursor,
-        hasNext: res.hasNext,
+      const mapped =
+        res.donationRankRecipientByDonorResponseDtos?.map((row: any) => ({
+          memberId: row.recipientMember?.id ?? row.donorMember?.id,
+          profileImageUrl:
+            row.recipientMember?.profileImageUrl ??
+            row.donorMember?.profileImageUrl,
+          nickname: row.recipientMember?.nickName ?? row.donorMember?.nickName,
+          realName: row.recipientMember?.realName ?? row.donorMember?.realName,
+          totalAmount: row.totalDonationPoint,
+        })) ?? [];
+
+      setRankRecipientByDonor({
+        items: [...(rankRecipientByDonor.items ?? []), ...mapped],
+        nextCursor: res.nextCursorMark ?? null,
+        hasNext: !!res.nextCursorMark,
       });
     } catch (err) {
       console.error('❌ getDonationRankRecipientByDonor 실패:', err);
     } finally {
       setLoading(false);
     }
-  }, [threadId, currentMemberId, ranking, loading]);
+  }, [rankRecipientByDonor, currentMemberId, recipientId, loading]);
 
-  /** ✅ 최초 1회 로딩 */
+  /** ✅ 최초 1회만 로드 (탭 전환 시 재호출 방지) */
   useEffect(() => {
-    if (!ranking.items?.length && !loading) {
+    if (rankRecipientByDonor.items.length === 0 && !loading) {
       loadMore();
     }
-  }, [threadId, currentMemberId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // 👈 최초 1회만 실행
 
   return {
-    items: ranking.items ?? [],
-    hasNext: ranking.hasNext ?? false,
+    items: rankRecipientByDonor.items ?? [],
+    hasNext: rankRecipientByDonor.hasNext ?? false,
     loading,
     loadMore,
   };

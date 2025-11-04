@@ -1,49 +1,47 @@
 import { apiContents } from '@/services/apiService';
 
-type GetDonationRankRecipientByDonorParams = {
-  recipient_id?: string;
+type GetDonationRankDonorByRecipientParams = {
+  donor_id?: string;
   current_member_id: string;
   cursor_mark?: string | null;
 };
 
 /**
- * ✅ 내가 도네이션을 보낸 랭킹 조회
- * - cursor_mark가 undefined일 경우 빈 문자열("")로 변환해서 전달
+ * ✅ 나에게 도네이션을 보낸 랭킹 조회
+ * - 상세 로그 추가 (요청/응답/에러)
  */
-export const getDonationRankRecipientByDonor = async ({
-  recipient_id,
+export const getDonationRankDonorByRecipient = async ({
+  donor_id,
   current_member_id,
   cursor_mark,
-}: GetDonationRankRecipientByDonorParams) => {
-  const endpoint = '/search/getDonationRankRecipientByDonor';
+}: GetDonationRankDonorByRecipientParams) => {
+  const endpoint = '/search/getDonationRankDonorByRecipient';
 
-  // ✅ undefined/null 방지용 처리
-  const safeCursor = cursor_mark ?? '';
-
-  console.log('📥 [getDonationRankRecipientByDonor] 요청 시작');
+  console.log('📥 [getDonationRankDonorByRecipient] 요청 시작');
   console.log('🔗 URL:', endpoint);
   console.log('📦 Params:', {
-    recipient_id,
+    donor_id,
     current_member_id,
-    cursor_mark: safeCursor,
+    cursor_mark,
   });
+  const safeCursor = cursor_mark ?? '';
 
   try {
     const res = await apiContents.get(endpoint, {
       params: {
-        recipient_id,
+        donor_id,
         current_member_id,
-        cursor_mark: safeCursor, // ✅ 빈 문자열이라도 항상 존재하도록
+        cursor_mark: safeCursor,
       },
     });
 
-    console.log('✅ [getDonationRankRecipientByDonor] 요청 성공');
+    console.log('✅ [getDonationRankDonorByRecipient] 요청 성공');
     console.log('📊 Status:', res.status);
     console.log('📤 Response:', JSON.stringify(res.data, null, 2));
 
     return res.data;
   } catch (error: any) {
-    console.error('❌ [getDonationRankRecipientByDonor] 요청 실패');
+    console.error('❌ [getDonationRankDonorByRecipient] 요청 실패');
     console.error('🚨 Error Message:', error.message);
     if (error.response) {
       console.error('📉 Status:', error.response.status);

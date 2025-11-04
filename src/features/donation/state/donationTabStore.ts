@@ -1,72 +1,55 @@
+// 📄 src/features/donation/state/donationTabStore.ts
 import { create } from 'zustand';
+import type { DonationRankingItem } from '../api/getDonationRankThreadByDonor';
 import type { DonationRecordItem } from '../api/getDonationThreadByThread';
-import type { DonationRankingItem } from '../api/getDonationRankRecipientByDonor';
+
+type RankingState = {
+  items: DonationRankingItem[];
+  nextCursor?: string | null;
+  hasNext: boolean;
+};
 
 type DonationTabState = {
-  /** ✅ 후원 기록 */
   record: {
     items: DonationRecordItem[];
     nextCursor?: string;
     hasNext: boolean;
   };
-  /** ✅ 후원 랭킹 */
-  ranking: {
-    items: DonationRankingItem[];
-    nextCursor?: string;
-    hasNext: boolean;
-  };
+  ranking: RankingState;
+  rankDonorByRecipient: RankingState; // 🆕 받은 도네이션 랭킹
+  rankRecipientByDonor: RankingState; // 🆕 준 도네이션 랭킹
 
-  /** ✅ 액션 */
   setRecord: (data: Partial<DonationTabState['record']>) => void;
-  setRanking: (data: Partial<DonationTabState['ranking']>) => void;
-  resetRecord: () => void;
-  resetRanking: () => void;
+  setRanking: (data: Partial<RankingState>) => void;
+  setRankDonorByRecipient: (data: Partial<RankingState>) => void;
+  setRankRecipientByDonor: (data: Partial<RankingState>) => void;
+
   clearAll: () => void;
 };
 
-/**
- * ✅ 도네이션 탭 전용 Zustand 스토어
- * - 탭 전환 시 데이터 유지
- * - 시트 닫을 때 clearAll()으로 초기화
- */
 export const useDonationTabStore = create<DonationTabState>(set => ({
-  record: {
-    items: [],
-    nextCursor: undefined,
-    hasNext: true,
-  },
-  ranking: {
-    items: [],
-    nextCursor: undefined,
-    hasNext: true,
-  },
+  record: { items: [], nextCursor: undefined, hasNext: true },
+  ranking: { items: [], nextCursor: undefined, hasNext: true },
+  rankDonorByRecipient: { items: [], nextCursor: undefined, hasNext: true },
+  rankRecipientByDonor: { items: [], nextCursor: undefined, hasNext: true },
 
-  setRecord: data =>
-    set(state => ({
-      record: { ...state.record, ...data },
-    })),
-
+  setRecord: data => set(state => ({ record: { ...state.record, ...data } })),
   setRanking: data =>
+    set(state => ({ ranking: { ...state.ranking, ...data } })),
+  setRankDonorByRecipient: data =>
     set(state => ({
-      ranking: { ...state.ranking, ...data },
+      rankDonorByRecipient: { ...state.rankDonorByRecipient, ...data },
+    })),
+  setRankRecipientByDonor: data =>
+    set(state => ({
+      rankRecipientByDonor: { ...state.rankRecipientByDonor, ...data },
     })),
 
-  /** ✅ 기록만 초기화 */
-  resetRecord: () =>
-    set({
-      record: { items: [], nextCursor: undefined, hasNext: true },
-    }),
-
-  /** ✅ 랭킹만 초기화 */
-  resetRanking: () =>
-    set({
-      ranking: { items: [], nextCursor: undefined, hasNext: true },
-    }),
-
-  /** ✅ 시트 닫을 때 전체 초기화 */
   clearAll: () =>
     set({
       record: { items: [], nextCursor: undefined, hasNext: true },
       ranking: { items: [], nextCursor: undefined, hasNext: true },
+      rankDonorByRecipient: { items: [], nextCursor: undefined, hasNext: true },
+      rankRecipientByDonor: { items: [], nextCursor: undefined, hasNext: true },
     }),
 }));
