@@ -1,23 +1,9 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
   <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
-    <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
-
-    <!-- ✅ 반투명 모드 끄기 -->
-    <item name="android:windowTranslucentStatus">false</item>
-    <item name="android:windowTranslucentNavigation">false</item>
-
-    <!-- ✅ 시스템 바를 앱이 직접 그리도록 -->
-    <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-
-    <!-- ✅ 완전 투명 상태바/내비게이션바 -->
     <item name="android:statusBarColor">@android:color/transparent</item>
     <item name="android:navigationBarColor">@android:color/transparent</item>
-
-    <!-- ✅ 대비 자동조정 끄기 (Android 10 이상) -->
     <item name="android:enforceStatusBarContrast" tools:targetApi="q">false</item>
     <item name="android:enforceNavigationBarContrast" tools:targetApi="q">false</item>
-
-    <!-- ✅ 밝은 배경일 때 상태바/네비게이션 아이콘 색 자동조정 -->
     <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
   </style>

@@ -34,22 +34,11 @@ const MyTheme = {
 const App = () => {
   /* 🧩 시스템바 및 FCM 초기화 */
   useEffect(() => {
-    try {
-      changeNavigationBarColor(COLORS.background, true);
-
-      if (Platform.OS === 'android') {
-        StatusBar.setTranslucent(false);
-        StatusBar.setBackgroundColor(COLORS.background, true);
-      }
-
-      // Firebase 초기화 후 FCM 시작
-      const timer = setTimeout(() => {
-        // initFCM();
-      }, 800);
-
-      return () => clearTimeout(timer);
-    } catch (err) {
-      console.warn('⚠️ System bar or FCM init failed', err);
+    if (Platform.OS === 'android') {
+      changeNavigationBarColor('transparent', false);
+      StatusBar.setTranslucent(true);
+      StatusBar.setBackgroundColor('transparent');
+      StatusBar.setBarStyle('light-content');
     }
   }, []);
 
@@ -83,13 +72,14 @@ const App = () => {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           {/* ✅ NavigationContext보다 위에 있던 Provider를 아래로 이동 */}
-          <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+          <SafeAreaView style={styles.safeArea} edges={['top']}>
             <NavigationContainer theme={MyTheme}>
               {/* ✅ 이제 NavigationContext 내부에서 동작함 */}
               <BottomSheetModalProvider>
-                <RootNavigator />
+                {/* <GlobalInputBar /> */}
                 <GlobalBottomSheet />
-                <GlobalInputBar />
+                <RootNavigator />
+
                 <AppToastContainer />
               </BottomSheetModalProvider>
             </NavigationContainer>
@@ -104,6 +94,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
+    backgroundColor: COLORS.background,
   },
   safeArea: {
     flex: 1,

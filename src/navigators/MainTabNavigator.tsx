@@ -8,6 +8,7 @@ import CustomTabBar from './components/CustomTabBar';
 import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher';
+import CreateStack from './stackNavigator/main/CreateStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -62,7 +63,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Add"
-        component={FeedStack}
+        component={CreateStack}
         options={{ tabBarLabel: '추가' }}
       />
       <Tab.Screen
