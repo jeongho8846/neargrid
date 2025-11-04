@@ -28,52 +28,59 @@ type Props = TextProps & {
 
 const variantStyles: Record<AppTextVariant, TextStyle> = {
   title: {
-    fontFamily: 'Pretendard-Bold',
+    fontFamily: 'Pretendard-SemiBold',
     fontSize: 18,
-    lineHeight: 24,
+    lineHeight: 21, // (24 → 21)
+    letterSpacing: -0.3, // tighter
     color: COLORS.title,
   },
   body: {
     fontFamily: 'Pretendard-Regular',
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 18, // (22 → 18)
+    letterSpacing: -0.25,
     color: COLORS.body,
   },
   username: {
-    fontFamily: 'Pretendard-SemiBold',
+    fontFamily: 'Pretendard-Medium', // SemiBold보다 살짝 얇게
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 17,
+    letterSpacing: -0.2,
     color: COLORS.username,
   },
   caption: {
     fontFamily: 'Pretendard-Regular',
     fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 14,
+    letterSpacing: -0.15,
     color: COLORS.caption,
   },
   caption_bold: {
-    fontFamily: 'Pretendard-Regular',
+    fontFamily: 'Pretendard-Medium',
     fontSize: 12,
-    lineHeight: 16,
+    lineHeight: 14,
+    letterSpacing: -0.15,
     color: COLORS.caption,
-    fontWeight: 'bold',
   },
   link: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 14,
-    lineHeight: 20,
+    lineHeight: 17,
+    letterSpacing: -0.2,
     color: COLORS.link_variant,
   },
   button: {
     fontFamily: 'Pretendard-SemiBold',
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 18,
+    letterSpacing: -0.2,
     color: COLORS.button_variant,
   },
   danger: {
     fontFamily: 'Pretendard-Regular',
     fontSize: 15,
-    lineHeight: 20,
+    lineHeight: 18,
+    letterSpacing: -0.25,
     color: COLORS.danger_variant,
   },
 };
