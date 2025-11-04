@@ -1,8 +1,8 @@
 // 📄 src/common/styles/colors.ts
 export const COLORS = {
   // 🟣 Button
-  button_active: '#0447ffff',
-  button_disabled: '#A0CFFF',
+  button_active: '#4071f8ff',
+  button_disabled: '#27428bff',
   button_pressed: '#005BBB',
   button_surface: '#1C1C1C',
 

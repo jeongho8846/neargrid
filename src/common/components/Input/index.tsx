@@ -54,16 +54,15 @@ export default AppInput;
 const styles = StyleSheet.create({
   label: {
     marginBottom: 4,
-    color: COLORS.text,
+    color: COLORS.body,
   },
   input: {
     height: 48,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    backgroundColor: COLORS.input_background,
     borderRadius: 8,
     paddingHorizontal: SPACING.md,
     fontSize: FONT.body.fontSize,
-    color: COLORS.text,
+    color: COLORS.body,
     flexShrink: 1, // ✅ 부모 영역 안에서 줄바꿈되어도 가로길이 고정
   },
   errorBorder: {
