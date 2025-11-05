@@ -66,7 +66,7 @@ const App = () => {
          ├─ GlobalBottomSheet (navigation context 공유)
          └─ GlobalInputBar
   */
-
+  console.log('🧭 RN Dev Mode:', __DEV__);
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>

@@ -1,120 +1,137 @@
 import { useEffect, useRef, useState } from 'react';
-import { Client, IMessage } from '@stomp/stompjs';
-import SockJS from 'sockjs-client/dist/sockjs'; // ✅ RN 호환 import
+import { Client, IMessage, Frame } from '@stomp/stompjs';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-/**
- * ✅ useChatWebSocketSockJS
- * - React Native + SockJS 1.1.2 호환 버전
- * - STOMP.js 7.x 기반
- */
-export function useChatWebSocketSockJS(enabled: boolean = true) {
-  const [connected, setConnected] = useState(false);
+export function useStompChatClient({
+  memberId,
+  enabled = true,
+}: {
+  memberId?: string;
+  enabled?: boolean;
+}) {
   const clientRef = useRef<Client | null>(null);
+  const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || !memberId) {
+      console.log('⚠️ [STOMP] Disabled or no memberId provided');
+      return;
+    }
+
     let isUnmounted = false;
 
     const connect = async () => {
-      const token = await AsyncStorage.getItem('accessToken');
+      console.log('🚀 [INIT] useStompChatClient 시작');
+      try {
+        const token = await AsyncStorage.getItem('accessToken');
+        console.log('🔑 [TOKEN]', token ? `${token.slice(0, 20)}...` : '없음');
 
-      console.log('🚀 [INIT] useChatWebSocketSockJS 시작');
+        if (!token) {
+          console.warn('⚠️ [STOMP] AccessToken 없음 → 연결 중단');
+          return;
+        }
 
-      const baseUrl = 'https://api.neargrid.ai:490/chatConnect'; // ✅ SockJS는 https로 시작해야 함
-      const masked =
-        token && token.length > 10
-          ? `${token.slice(0, 10)}...${token.slice(-5)}`
-          : token;
-      console.log('🔑 [TOKEN]', masked ?? '(없음)');
+        const url = 'wss://api.neargrid.ai:490/chatConnect-app';
+        console.log('🌐 [STOMP] 연결 시도:', url);
 
-      // ✅ SockJS 인스턴스 생성 (RN에서는 transports 제한 필수)
-      const sock = new SockJS(baseUrl, null, { transports: ['websocket'] });
+        const client = new Client({
+          brokerURL: url,
+          connectHeaders: {
+            authorization: `Bearer ${token}`,
+          },
+          reconnectDelay: 5000,
+          heartbeatIncoming: 10000,
+          heartbeatOutgoing: 10000,
 
-      // ✅ STOMP 클라이언트 생성 시 connectHeaders 바로 주입
-      const client = new Client({
-        webSocketFactory: () => sock,
+          // ✅ STOMP 프레임 전체 출력
+          debug: msg => {
+            if (msg.startsWith('>>>')) console.log('⬆️ [STOMP SEND]', msg);
+            else if (msg.startsWith('<<<')) console.log('⬇️ [STOMP RECV]', msg);
+            else console.log('🪶 [STOMP DEBUG@@]', msg);
+          },
 
-        // ✅ 연결 시 Authorization 헤더 포함
-        connectHeaders: {
-          Authorization: `Bearer ${token}`,
-        },
+          beforeConnect: () => {
+            console.log('⏳ [STOMP] beforeConnect 호출됨');
+          },
+          onWebSocketOpen: () => {
+            console.log('🔵 [STOMP] WebSocket OPEN');
+          },
+          onConnect: (frame: Frame) => {
+            if (isUnmounted) return;
+            console.log('✅ [STOMP] 연결 성공!');
+            console.log('📜 [CONNECT FRAME]', frame.headers);
+            setConnected(true);
 
-        reconnectDelay: 5000,
-        heartbeatIncoming: 10000,
-        heartbeatOutgoing: 10000,
+            const subPath = `/private/${memberId}`;
+            console.log(`📡 [SUBSCRIBE] ${subPath}`);
+            client.subscribe(subPath, (message: IMessage) => {
+              console.log('📨 [MESSAGE ARRIVED]');
+              console.log('  • headers:', message.headers);
+              try {
+                console.log('  • body (parsed):', JSON.parse(message.body));
+              } catch {
+                console.log('  • body (raw):', message.body);
+              }
+            });
+          },
+          onStompError: frame => {
+            console.error(
+              '❌ [STOMP ERROR]',
+              frame.headers['message'],
+              frame.body,
+            );
+          },
+          onWebSocketError: e => {
+            console.error('🚨 [WebSocket ERROR]', e);
+          },
+          onDisconnect: frame => {
+            console.log('🔌 [STOMP] Disconnected', frame || '');
+            setConnected(false);
+          },
+          onWebSocketClose: evt => {
+            console.log('⚫ [WebSocket CLOSED]', evt.code, evt.reason);
+          },
+        });
 
-        // ✅ 디버그 로그
-        debug: msg => {
-          if (msg.includes('Opening Web Socket')) {
-            console.log('🔵 [DEBUG] WebSocket 열기');
-          } else if (msg.includes('Web Socket Opened')) {
-            console.log('🟢 [DEBUG] WebSocket 연결 성공');
-          } else if (msg.includes('Connection not established')) {
-            console.warn('⏰ [DEBUG] STOMP 연결 타임아웃');
-          } else {
-            console.log('[STOMP]', msg);
-          }
-        },
-
-        beforeConnect: () => {
-          console.log('⏳ [STOMP] beforeConnect 호출됨');
-          if (!token) throw new Error('⚠️ AccessToken 없음');
-          console.log('📤 [STOMP] CONNECT 헤더 주입 완료');
-        },
-
-        onConnect: frame => {
-          if (isUnmounted) return;
-          console.log('✅ [STOMP] 연결 성공', frame.headers);
-          setConnected(true);
-
-          // ✅ 테스트 구독
-          client.subscribe('/topic/test', (msg: IMessage) => {
-            console.log('📩 [MESSAGE 수신]', msg.body);
-          });
-
-          // ✅ 테스트 발행
-          client.publish({
-            destination: '/topic/test',
-            body: JSON.stringify({ msg: 'Hello from nearGrid SockJS!' }),
-          });
-        },
-
-        onDisconnect: () => {
-          console.log('🛑 [STOMP] 연결 종료');
-          if (!isUnmounted) setConnected(false);
-        },
-
-        onStompError: frame => {
-          console.error('❌ [STOMP ERROR]', frame.headers['message']);
-          console.error('📩 [STOMP ERROR BODY]', frame.body);
-        },
-
-        onWebSocketClose: e => {
-          console.warn('🔻 [WS CLOSED]', e.code, e.reason);
-        },
-
-        onWebSocketError: e => {
-          console.error('⚠️ [WS ERROR]', e.message);
-        },
-      });
-
-      console.log('⚙️ [STOMP] 활성화 시작');
-      client.activate();
-      clientRef.current = client;
+        console.log('⚙️ [STOMP] 클라이언트 활성화');
+        client.activate();
+        clientRef.current = client;
+      } catch (err) {
+        console.error('🔥 [STOMP INIT ERROR]', err);
+      }
     };
 
     connect();
 
-    // 🧹 cleanup
     return () => {
       isUnmounted = true;
       if (clientRef.current) {
-        console.log('🧹 [CLEANUP] SockJS 연결 종료');
-        clientRef.current.deactivate();
+        console.log('🧹 [CLEANUP] STOMP 종료 시도');
+        try {
+          clientRef.current.deactivate();
+          console.log('🧹 [CLEANUP] 성공적으로 비활성화됨');
+        } catch (err) {
+          console.error('🧹 [CLEANUP ERROR]', err);
+        }
       }
     };
-  }, [enabled]);
+  }, [enabled, memberId]);
 
-  return { connected };
+  const sendMessage = (destination: string, payload: any) => {
+    const client = clientRef.current;
+    if (!client || !connected) {
+      console.warn('⚠️ [STOMP] 연결되지 않음 → 메시지 전송 불가');
+      return;
+    }
+
+    try {
+      const body = JSON.stringify(payload);
+      console.log('📤 [SEND MESSAGE]', destination, body);
+      client.publish({ destination, body });
+    } catch (err) {
+      console.error('❌ [SEND ERROR]', err);
+    }
+  };
+
+  return { connected, sendMessage };
 }

@@ -1,32 +1,38 @@
-// 📄 src/screens/BlankScreen.tsx
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import AppText from '@/common/components/AppText'; // ✅ 프로젝트 규칙에 맞게 AppText 사용
-import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import { useNavigation } from '@react-navigation/native';
+// 📄 src/screens/thread/ThreadCreateScreen.tsx
+import React, { useEffect } from 'react';
+import {
+  View,
+  TouchableOpacity,
+  ActivityIndicator,
+  Button,
+} from 'react-native';
+import AppText from '@/common/components/AppText';
+import { COLORS } from '@/common/styles/colors';
+import { SPACING } from '@/common/styles/spacing';
+import { useStompChatClient } from '@/features/chat/hooks/useChatWebSocketTest';
 
 const ThreadCreateScreen = () => {
-  const navigation = useNavigation();
+  const { connected, sendMessage } = useStompChatClient({
+    memberId: '682867966802399783', // 현재 로그인된 사용자 ID
+    enabled: true,
+  });
+
+  useEffect(() => {
+    if (connected) {
+      console.log('🎉 [ChatTest] Connected to WebSocket');
+    }
+  }, [connected]);
 
   return (
-    <View style={styles.container}>
-      <AppCollapsibleHeader
-        titleKey="STR_FEED"
-        isAtTop={false}
-        onBackPress={() => navigation.goBack()}
+    <View style={{ flex: 1, justifyContent: 'center' }}>
+      <Button
+        title="Send Test Message"
+        onPress={() =>
+          sendMessage('/app/chat.send', { text: 'Hello from nearGrid' })
+        }
       />
-      <AppText variant="title">Blank Screen</AppText>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'black',
-  },
-});
 
 export default ThreadCreateScreen;
