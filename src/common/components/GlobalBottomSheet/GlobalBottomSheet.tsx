@@ -1,4 +1,3 @@
-// 📄 src/common/components/GlobalBottomSheet/index.tsx
 import React, { useEffect, useRef } from 'react';
 import { BottomSheetModal, BottomSheetBackdrop } from '@gorhom/bottom-sheet';
 import type {
@@ -7,9 +6,13 @@ import type {
 } from '@gorhom/bottom-sheet';
 import { StyleSheet, Platform, View } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-import { COLORS } from '@/common/styles/colors';
-import { SPACING } from '@/common/styles';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+// ✅ 새로운 테스트 디자인 토큰 기반
+import { TEST_COLORS } from '@/test/styles/colors';
+import { TEST_RADIUS } from '@/test/styles/radius';
+import { TEST_SPACING } from '@/test/styles/spacing';
+import { TEST_SHADOW } from '@/test/styles/shadows';
 
 const SheetBackdrop = React.memo(
   ({
@@ -29,7 +32,7 @@ const SheetBackdrop = React.memo(
 
 const GlobalBottomSheet = () => {
   const ref = useRef<BottomSheetModalType>(null);
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
 
   const {
     setRef,
@@ -66,7 +69,6 @@ const GlobalBottomSheet = () => {
         }
       }}
       enableDismissOnClose
-      containerStyle={[styles.containerGap, { marginBottom: bottom + 10 }]}
       enablePanDownToClose={enablePanDownToClose ?? true}
       enableHandlePanningGesture={enableHandlePanningGesture ?? true}
       enableContentPanningGesture={enableContentPanningGesture ?? true}
@@ -95,20 +97,35 @@ const GlobalBottomSheet = () => {
 export default GlobalBottomSheet;
 
 const styles = StyleSheet.create({
+  /** ✅ 시트 배경 */
   sheetBackground: {
-    backgroundColor: COLORS.sheet_background,
-    borderTopLeftRadius: 18,
-    borderTopRightRadius: 18,
+    backgroundColor: TEST_COLORS.surface, // ✅ 카드/시트용 서피스 컬러
+    borderTopLeftRadius: TEST_RADIUS.xl,
+    borderTopRightRadius: TEST_RADIUS.xl,
+    paddingTop: TEST_SPACING.md,
+    ...TEST_SHADOW.soft, // ✅ 부드러운 그림자 적용
   },
-  handle: { backgroundColor: 'transparent' },
-  handleIndicator: { backgroundColor: COLORS.sheet_handle },
-  backdrop: { backgroundColor: COLORS.sheet_backdrop },
+
+  /** ✅ 핸들바 */
+  handle: {
+    backgroundColor: 'transparent',
+  },
+  handleIndicator: {
+    backgroundColor: TEST_COLORS.border, // ✅ 은은한 그레이 라인
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+  },
+
+  /** ✅ 백드롭 (뒤 어두운 영역) */
+  backdrop: {
+    backgroundColor: 'rgba(0, 0, 0, 0.55)', // ✅ 반투명 다크 톤
+  },
+
+  /** ✅ 컨텐츠 */
   content: {
     flex: 1,
     backgroundColor: 'transparent',
-    paddingHorizontal: SPACING.xs,
-  },
-  containerGap: {
-    marginBottom: 60,
+    paddingHorizontal: TEST_SPACING.sm,
   },
 });

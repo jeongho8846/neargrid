@@ -6,6 +6,7 @@ import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import ThreadDonationList from '../lists/ThreadDonationList';
 import ThreadDonationRankingList from '../lists/ThreadDonationRankingList';
+import { TEST_COLORS } from '@/test/styles/colors';
 
 type Props = {
   threadId: string;
@@ -114,7 +115,6 @@ export default ThreadDonationTabContainer;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.sheet_background,
   },
   tabHeader: {
     flexDirection: 'row',
@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: SPACING.sm,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    backgroundColor: COLORS.sheet_background,
   },
   tabButton: {
     paddingVertical: SPACING.xs,
@@ -133,7 +132,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTabButton: {
-    backgroundColor: COLORS.button_active,
+    backgroundColor: TEST_COLORS.button_active,
   },
   content: {
     flex: 1,
