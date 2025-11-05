@@ -16,6 +16,7 @@ import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
 import { openThreadDonationListSheet } from '@/features/donation/sheets/openThreadDonationListSheet'; // ✅ 추가
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
+import { TEST_SPACING } from '@/test/styles/spacing';
 
 type Props = {
   threadId: string;
@@ -146,10 +147,12 @@ export default ThreadActionBar;
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    paddingHorizontal: SPACING.sm,
-    paddingTop: SPACING.md,
+    paddingHorizontal: TEST_SPACING.sm,
+    paddingTop: TEST_SPACING.md,
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginVertical: TEST_SPACING.xs,
+    marginBottom: TEST_SPACING.md,
   },
   rowLeft: {
     flexDirection: 'row',
@@ -158,9 +161,9 @@ const styles = StyleSheet.create({
   rowRight: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: SPACING.xs,
+    gap: TEST_SPACING.xs,
   },
-  likeCountWrap: { marginLeft: SPACING.sm },
-  commentCountWrap: { marginLeft: SPACING.md },
-  shareWrap: { marginLeft: SPACING.md },
+  likeCountWrap: { marginLeft: TEST_SPACING.sm },
+  commentCountWrap: { marginLeft: TEST_SPACING.md },
+  shareWrap: { marginLeft: TEST_SPACING.md },
 });

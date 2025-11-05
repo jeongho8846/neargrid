@@ -5,15 +5,15 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import AppText from '@/common/components/AppText';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
 import AppTextField from '@/common/components/AppTextField';
-import AppIcon from '@/common/components/AppIcon';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
-import { COLORS } from '@/common/styles/colors';
-import { SPACING } from '@/common/styles/spacing';
 import { Thread } from '../model/ThreadModel';
 import ThreadActionBar from './ThreadActionBar';
 import ContentsMenuButton from '@/common/components/Contents_Menu_Button';
 import { openThreadMenuSheet } from '../sheets/openThreadMenuSheet';
+import { TEST_COLORS } from '@/test/styles/colors';
+import { TEST_RADIUS } from '@/test/styles/radius';
+import { TEST_SPACING } from '@/test/styles/spacing';
 
 type Props = {
   item: Thread;
@@ -37,34 +37,16 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
   };
 
   return (
-    <View style={styles.container}>
+    <View style={styles.card}>
       {/* 🧩 HEADER */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <AppProfileImage
-            imageUrl={item.memberProfileImageUrl}
-            memberId={item.memberId}
-            canGoToProfileScreen
-            size={36}
-          />
-
-          <View style={styles.headerTextCol}>
-            <AppText variant="username" isLoading={isLoading}>
-              {item.memberNickName}
-            </AppText>
-
-            <View style={styles.dateRow}>
-              <AppIcon
-                type="ion"
-                name="time-outline"
-                size={12}
-                variant="secondary"
-              />
-              <AppText variant="caption">{createdMMDD}</AppText>
-            </View>
+        <View style={styles.row}>
+          <AppProfileImage size={36} />
+          <View style={styles.userInfo}>
+            <AppText variant="username">{item.memberNickName}</AppText>
+            <AppText variant="caption">{createdMMDD}</AppText>
           </View>
         </View>
-
         <ContentsMenuButton
           onOpen={() => openThreadMenuSheet({ thread: item })}
         />
@@ -75,7 +57,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
         <View style={styles.hiddenBox}>
           <AppText
             variant="body"
-            style={{ color: COLORS.body }}
+            style={{ color: TEST_COLORS.text_secondary }}
             i18nKey="STR_THREAD_HIDDEN_CONTENT"
           />
         </View>
@@ -96,29 +78,12 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
             onPress={handlePress}
             style={styles.touchArea}
           >
-            {hasImages ? (
-              <View style={styles.textBox}>
-                <AppTextField text={item.description || ''} numberOfLines={3} />
-              </View>
-            ) : (
-              <View style={styles.bubbleWrap}>
-                <View style={[styles.bubbleTail, { left: SPACING.sm + 10 }]} />
-                <View
-                  style={[
-                    styles.bubbleInner,
-                    {
-                      marginLeft: SPACING.sm,
-                      padding: SPACING.md,
-                    },
-                  ]}
-                >
-                  <AppTextField
-                    text={item.description || ''}
-                    numberOfLines={6}
-                  />
-                </View>
-              </View>
-            )}
+            <View style={styles.textBox}>
+              <AppTextField
+                text={item.description || ''}
+                numberOfLines={hasImages ? 3 : 6}
+              />
+            </View>
           </TouchableOpacity>
 
           {/* ⚙️ ACTION BAR */}
@@ -130,58 +95,83 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
 };
 
 export default ThreadItemDetail;
-
+/* ──────────────── 스타일 ──────────────── */
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: COLORS.background,
-    paddingBottom: SPACING.md,
+  card: {
+    backgroundColor: TEST_COLORS.surface,
+    borderRadius: TEST_RADIUS.lg,
+    overflow: 'hidden',
+    marginBottom: TEST_SPACING.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: SPACING.sm,
-    paddingVertical: SPACING.sm,
+    paddingHorizontal: TEST_SPACING.md,
+    paddingVertical: TEST_SPACING.md,
   },
-  headerLeft: {
+  userInfo: {
+    marginLeft: TEST_SPACING.sm,
+  },
+
+  footer: {
+    paddingHorizontal: TEST_SPACING.md,
+    paddingVertical: TEST_SPACING.md,
+    borderTopWidth: 1,
+    borderTopColor: TEST_COLORS.border, // ✅ 상단 구분선 추가
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  headerTextCol: { flexDirection: 'column', gap: 2 },
-  dateRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  touchArea: { flex: 1 },
-  textBox: { paddingHorizontal: SPACING.sm, marginTop: SPACING.sm },
-  bubbleWrap: { marginTop: SPACING.sm, position: 'relative' },
-  bubbleInner: {
-    backgroundColor: COLORS.text_bubble_background,
-    borderWidth: 1,
-    borderColor: COLORS.text_bubble_border,
-    borderRadius: 8,
-    elevation: 2,
+  middle: {
+    backgroundColor: TEST_COLORS.surface, // ✅ 배경 통일
   },
-  bubbleTail: {
-    position: 'absolute',
-    top: -7,
-    width: 15,
-    height: 15,
-    backgroundColor: COLORS.text_bubble_background,
-    borderLeftWidth: 1,
-    borderTopWidth: 1,
-    borderColor: COLORS.text_bubble_border,
-    transform: [{ rotate: '45deg' }],
-  },
-  hiddenBox: {
-    backgroundColor: COLORS.sheet_background,
-    borderRadius: 8,
-    paddingVertical: SPACING.lg,
-    marginHorizontal: SPACING.sm,
-    marginTop: SPACING.sm,
+  imagePlaceholder: {
+    width: '100%',
+    height: 400, // ✅ 조금 낮춰서 피드에 밀도감
+    backgroundColor: TEST_COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
-
-    borderColor: COLORS.border,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: TEST_COLORS.border,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: TEST_SPACING.sm,
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  countText: {
+    marginLeft: 4,
+    color: TEST_COLORS.text_secondary,
+    fontSize: 13,
+  },
+  touchArea: {
+    flex: 1,
+    paddingTop: TEST_SPACING.md,
+    paddingHorizontal: TEST_SPACING.md,
+  },
+  textBox: {},
+  hiddenBox: {
+    backgroundColor: TEST_COLORS.surface,
+    borderRadius: 8,
+    paddingVertical: TEST_SPACING.lg,
+    marginHorizontal: TEST_SPACING.sm,
+    paddingBottom: 40,
+    borderBottomWidth: 1,
+    borderColor: TEST_COLORS.border,
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
