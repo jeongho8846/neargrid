@@ -12,6 +12,7 @@ import {
   Dimensions,
   ActivityIndicator,
   Animated,
+  Platform,
 } from 'react-native';
 import {
   BottomSheetFlatList,
@@ -169,7 +170,8 @@ function AppFlatList<T>({
     onMomentumScrollBegin,
     onMomentumScrollEnd,
     onScrollEndDrag,
-    scrollEventThrottle: 16,
+    scrollEventThrottle: 48,
+
     initialNumToRender: 10,
     windowSize: 10,
     maxToRenderPerBatch: 10,
@@ -210,6 +212,7 @@ function AppFlatList<T>({
   return (
     <>
       <FlatList
+        decelerationRate={Platform.OS === 'ios' ? 0.993 : 0.985}
         ref={flatRef}
         {...rest}
         {...baseListProps}

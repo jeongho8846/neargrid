@@ -1,6 +1,10 @@
-// 📄 src/features/thread/lists/ThreadList.tsx
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  NativeSyntheticEvent,
+  NativeScrollEvent,
+} from 'react-native';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
@@ -8,6 +12,7 @@ import ThreadListItem from './ThreadListItem';
 import ThreadItemDetail from '../components/thread_item_detail';
 import { createEmptyThread } from '../model/ThreadModel';
 import { SPACING } from '@/common/styles/spacing';
+import { useScrollStore } from '@/common/state/scrollStore';
 
 type Props = {
   data?: string[];
@@ -20,11 +25,9 @@ type Props = {
   refreshing?: boolean;
 };
 
-/**
- * ✅ ThreadList
- * - ThreadItem 목록을 렌더링하는 공용 리스트
- * - Skeleton, Refresh, Empty 상태 일관 처리
- */
+const SCROLL_THRESHOLD = 20; // ✅ 몇 px 이상일 때 스크롤 중으로 판단
+const DEBOUNCE_DELAY = 200; // ✅ 스크롤 멈춘 후 감지 대기 시간(ms)
+
 const ThreadList: React.FC<Props> = ({
   data,
   isLoading,
@@ -35,6 +38,36 @@ const ThreadList: React.FC<Props> = ({
   onRefresh,
   refreshing,
 }) => {
+  const { setScrolling } = useScrollStore();
+  const lastOffset = useRef(0);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
+
+  /** ✅ 부하를 최소화한 스크롤 감지 로직 */
+  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const offsetY = e.nativeEvent.contentOffset.y;
+    const delta = Math.abs(offsetY - lastOffset.current);
+
+    // 스크롤 이동량이 거의 없으면 무시
+    if (delta < 3) return;
+
+    // 일정 거리 이상 내려갔을 때만 한번만 setScrolling(true)
+    if (offsetY > SCROLL_THRESHOLD && !isScrollingRef.current) {
+      isScrollingRef.current = true;
+      setScrolling(true);
+    }
+
+    // 기존 타이머 초기화 후 재시작 (디바운스)
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      isScrollingRef.current = false;
+      setScrolling(false);
+    }, DEBOUNCE_DELAY);
+
+    lastOffset.current = offsetY;
+    onScroll?.(e);
+  };
+
   const isEmpty = !isLoading && (data?.length ?? 0) === 0;
 
   return (
@@ -50,7 +83,7 @@ const ThreadList: React.FC<Props> = ({
         />
       )}
       skeletonCount={5}
-      onScroll={onScroll}
+      onScroll={handleScroll}
       onRefresh={onRefresh}
       refreshing={refreshing}
       onEndReached={() => onEndReached?.()}
@@ -91,6 +124,6 @@ const styles = StyleSheet.create({
     paddingVertical: 120,
   },
   emptyText: {
-    marginTop: 12, // ✅ 단순 레이아웃만
+    marginTop: 12,
   },
 });

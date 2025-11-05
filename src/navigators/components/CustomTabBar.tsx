@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-  useDerivedValue,
+  interpolate,
+  Extrapolate,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
@@ -13,9 +15,11 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { FONT } from '@/common/styles/typography';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_SPACING } from '@/test/styles/spacing';
-import { useBottomSheetStore } from '@/common/state/bottomSheetStore'; // ✅ 추가
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
+import { useScrollStore } from '@/common/state/scrollStore';
+import { useTouchStore } from '@/common/state/touchStore'; // ✅ 터치 감지 추가
 
-const TAB_HEIGHT = 60; // ✅ 고정 높이
+const TAB_HEIGHT = 60;
 
 const CustomTabBar = ({
   state,
@@ -24,34 +28,12 @@ const CustomTabBar = ({
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
 
-  /** ✅ 바텀시트 열림 여부 체크 */
+  /** ✅ 상태 구독 */
   const { isOpen } = useBottomSheetStore();
+  const { isScrolling } = useScrollStore();
+  const { isTouching } = useTouchStore();
+
   const isSheetOpen = isOpen;
-
-  /** ✅ 탭 전체 높이 고정 */
-  const height = useSharedValue(TAB_HEIGHT + insets.bottom);
-
-  const animatedContainerStyle = useAnimatedStyle(() => ({
-    height: height.value,
-  }));
-
-  /** ✅ 라벨 애니메이션 */
-  const opacity = useDerivedValue(() => withTiming(1, { duration: 200 }));
-  const translateY = useDerivedValue(() => withTiming(0, { duration: 200 }));
-
-  const labelStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  /** ✅ 현재 활성화된 화면 감지 */
-  const activeRoute = state.routes[state.index];
-  const nestedRouteName =
-    getFocusedRouteNameFromRoute(activeRoute) ||
-    activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
-    activeRoute.name;
-
-  /** ✅ 특정 화면 or 바텀시트 오픈 시 탭바 숨김 */
   const hiddenRoutes = [
     'DetailThread',
     'DetailThreadComment',
@@ -63,24 +45,56 @@ const CustomTabBar = ({
     'DemoProfile',
     'DemoSearch',
   ];
-  const shouldHide = hiddenRoutes.includes(nestedRouteName) || isSheetOpen;
 
-  if (shouldHide) {
-    return <Animated.View style={{ height: 0 }} />;
-  }
+  /** ✅ 현재 활성화된 화면 */
+  const activeRoute = state.routes[state.index];
+  const nestedRouteName =
+    getFocusedRouteNameFromRoute(activeRoute) ||
+    activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
+    activeRoute.name;
+
+  /** ✅ 숨김 여부 */
+  const shouldHide =
+    hiddenRoutes.includes(nestedRouteName) ||
+    isSheetOpen ||
+    isScrolling ||
+    isTouching;
+
+  /** ✅ 애니메이션 상태값 */
+  const translateY = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  /** ✅ 애니메이션 트리거 */
+  useEffect(() => {
+    if (shouldHide) {
+      // 👇 사라질 때
+      translateY.value = withTiming(80, { duration: 250 }); // 아래로 슬라이드
+      opacity.value = withTiming(0, { duration: 200 });
+    } else {
+      // 👇 나타날 때
+      translateY.value = withTiming(0, { duration: 250 });
+      opacity.value = withTiming(1, { duration: 250 });
+    }
+  }, [shouldHide]);
+
+  /** ✅ 애니메이션 스타일 */
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value,
+  }));
 
   return (
-    <Animated.View style={[styles.wrapper, animatedContainerStyle]}>
+    <Animated.View
+      style={[
+        styles.wrapper,
+        animatedStyle,
+        { paddingBottom: insets.bottom + 10 },
+      ]}
+    >
       <View style={styles.container}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
-          const rawLabel =
-            options.tabBarLabel !== undefined
-              ? options.tabBarLabel
-              : options.title !== undefined
-              ? options.title
-              : route.name;
-
+          const rawLabel = options.tabBarLabel ?? options.title ?? route.name;
           const label = typeof rawLabel === 'string' ? rawLabel : route.name;
           const isFocused = state.index === index;
 
@@ -100,7 +114,6 @@ const CustomTabBar = ({
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
@@ -118,7 +131,6 @@ const CustomTabBar = ({
                 style={[
                   FONT.caption,
                   isFocused ? styles.labelFocused : styles.label,
-                  labelStyle,
                 ]}
               >
                 {label}
@@ -131,24 +143,27 @@ const CustomTabBar = ({
   );
 };
 
+export default CustomTabBar;
+
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: 20,
+    bottom: 0,
     left: 0,
     right: 0,
     alignItems: 'center',
+    zIndex: 10,
   },
   container: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(24,24,24,0.85)', // ✅ 반투명 다크
+    backgroundColor: 'rgba(24,24,24,0.85)',
     borderRadius: 42,
     paddingHorizontal: 28,
     paddingVertical: 14,
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '88%',
-    shadowColor: TEST_COLORS.overlay_dark, // ✅ 어두운 그림자 톤 적용
+    shadowColor: TEST_COLORS.overlay_dark,
     shadowOpacity: 0.4,
     shadowRadius: 16,
     shadowOffset: { width: 0, height: 6 },
@@ -169,10 +184,8 @@ const styles = StyleSheet.create({
   },
   labelFocused: {
     marginTop: TEST_SPACING.xs / 2,
-    color: TEST_COLORS.primary, // ✅ 선택 시 브랜드 컬러
+    color: TEST_COLORS.primary,
     fontSize: 11,
     fontWeight: '600',
   },
 });
-
-export default CustomTabBar;
