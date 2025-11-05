@@ -1,4 +1,3 @@
-// 📄 src/screens/map/MapScreen.tsx
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
@@ -16,6 +15,10 @@ import { useMapThreadStore } from '@/features/map/state/mapThreadStore';
 import AppMapZoomControls from '@/common/components/AppMapView/controls/AppMapZoomControls';
 import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import AppIcon from '@/common/components/AppIcon';
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore'; // ✅ 추가
+import { TEST_COLORS } from '@/test/styles/colors';
+import { TEST_PRESETS } from '@/test/styles/presets';
+import { TEST_SPACING } from '@/test/styles/spacing';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
@@ -24,10 +27,10 @@ const MapScreen = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<MapViewContainerRef>(null);
   const navigation = useNavigation();
-  const snapPoints = useMemo(() => [60, '50%', '90%'], []);
+  const { setRef, isOpen } = useBottomSheetStore(); // ✅ 전역 store 가져오기
+  const snapPoints = useMemo(() => [1, '50%', '90%'], []);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   const [searchParams, setSearchParams] = useState({
     keyword: '',
     threadTypes: [
@@ -41,13 +44,25 @@ const MapScreen = () => {
     includePastRemainTime: false,
   });
 
-  /** ✅ 스레드 데이터 로드 (직접 호출 전용) */
+  /** ✅ 바텀시트 상태 감지 */
+  const { isOpen: sheetOpen, close, open } = useBottomSheetStore();
+  const handleSheetChange = useCallback((index: number) => {
+    if (index === 0) {
+      // 닫힘
+      useBottomSheetStore.setState({ isOpen: false });
+    } else {
+      // 열림
+      useBottomSheetStore.setState({ isOpen: true });
+    }
+  }, []);
+
+  /** ✅ 스레드 데이터 로드 */
   const loadThreads = useCallback(
     async (params = searchParams, lat?: number, lon?: number) => {
       if (!member?.id) return;
       try {
         const res = await fetchThreads({
-          latitude: lat ?? 37.5665, // ✅ 동적 좌표
+          latitude: lat ?? 37.5665,
           longitude: lon ?? 126.978,
           distance: 3000,
           memberId: member.id,
@@ -65,29 +80,24 @@ const MapScreen = () => {
     [member?.id, fetchThreads, setThreads, searchParams],
   );
 
-  /** ✅ 마커 클릭 */
   const handleMarkerPress = (ids: string[]) => {
     setSelectedIds(ids);
     sheetRef.current?.snapToIndex(1);
   };
 
-  /** ✅ 검색 초기화 */
   const handleClearKeyword = () => {
     const reset = { ...searchParams, keyword: '' };
     setSearchParams(reset);
-    loadThreads(reset); // ✅ 이 경우만 검색 수행
+    loadThreads(reset);
   };
 
-  /** ✅ 필터 해제 */
   const clearFilter = () => setSelectedIds([]);
 
-  /** ✅ 지도에서 선택된 스레드 필터링 */
   const filteredThreads =
     selectedIds.length > 0
       ? threads.filter(t => selectedIds.includes(t.threadId))
       : threads;
 
-  /** ✅ 리스트 아이템 렌더 */
   const renderItem = ({ item }: any) => (
     <ThreadItemCard
       thread={item}
@@ -95,7 +105,6 @@ const MapScreen = () => {
     />
   );
 
-  /** ✅ 리스트 헤더 */
   const renderHeader = () => (
     <View style={styles.headerContainer}>
       <View style={styles.headerLeft}>
@@ -114,7 +123,6 @@ const MapScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* ✅ 지도 */}
       <MapViewContainer
         ref={mapRef}
         memberId={member?.id}
@@ -122,12 +130,20 @@ const MapScreen = () => {
         isLoading={loading}
         onMarkerPress={handleMarkerPress}
         onMoveToLocation={(lat, lon) => {
-          console.log('📍 내 위치 도착 → 현재 지도 중심으로 검색 실행');
-          loadThreads(searchParams, lat, lon); // ✅ 이 경우만 검색 수행
+          loadThreads(searchParams, lat, lon);
         }}
       />
 
-      {/* ✅ 왼쪽 상단 FootPrint 이동 버튼 */}
+      {/* ✅ Footprint 리스트보기 버튼 */}
+      <TouchableOpacity
+        style={styles.showListButton}
+        activeOpacity={0.8}
+        onPress={() => sheetRef.current?.snapToIndex(1)} // ✅ 인덱스 1로 이동
+      >
+        <AppText i18nKey="STR_MAP_BUTTON_SHOWLIST" variant="button" />
+      </TouchableOpacity>
+
+      {/* ✅ Footprint 이동 버튼 */}
       <TouchableOpacity
         style={styles.leftButton}
         onPress={() => {
@@ -138,7 +154,7 @@ const MapScreen = () => {
         <AppIcon name="footsteps" type="ion" size={24} variant="primary" />
       </TouchableOpacity>
 
-      {/* ✅ 상단 검색창 */}
+      {/* ✅ 검색창 */}
       <View style={styles.searchBar}>
         <TouchableOpacity
           style={styles.searchArea}
@@ -147,9 +163,7 @@ const MapScreen = () => {
         >
           <AppIcon name="search" type="ion" size={18} variant="secondary" />
           <AppText variant="body" style={styles.searchText}>
-            {searchParams.keyword
-              ? searchParams.keyword
-              : '검색어를 입력하세요'}
+            {searchParams.keyword || '검색어를 입력하세요'}
           </AppText>
         </TouchableOpacity>
 
@@ -175,6 +189,7 @@ const MapScreen = () => {
         index={1}
         snapPoints={snapPoints}
         backgroundStyle={styles.sheetBackground}
+        onChange={handleSheetChange} // ✅ 추가: 열림/닫힘 감지
         handleComponent={() => (
           <View style={styles.handleContainer}>
             <View style={styles.handleIndicator} />
@@ -246,6 +261,15 @@ const styles = StyleSheet.create({
     padding: 4,
     marginLeft: 6,
   },
+  showListButton: {
+    ...TEST_PRESETS.buttonBase, // ✅ 버튼 기본 프리셋 사용
+    backgroundColor: TEST_COLORS.primary, // ✅ 메인 버튼 색상
+    position: 'absolute',
+    bottom: 140,
+    alignSelf: 'center',
+    borderRadius: 24,
+  },
+
   sheetBackground: {
     backgroundColor: COLORS.background,
     borderTopLeftRadius: 18,
@@ -268,6 +292,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 14,
     right: -11,
+    bottom: 150,
   },
   headerContainer: {
     flexDirection: 'row',

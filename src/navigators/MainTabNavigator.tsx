@@ -32,19 +32,19 @@ const MainTabNavigator = () => {
           let iconName = 'ellipse';
           switch (route.name) {
             case 'Map':
-              iconName = 'map';
+              iconName = 'map-outline';
               break;
             case 'FeedStack':
-              iconName = 'trophy';
+              iconName = 'trophy-outline';
               break;
             case 'Add':
               iconName = 'add-circle';
               break;
             case 'Notification':
-              iconName = 'notifications';
+              iconName = 'notifications-outline';
               break;
             case 'Profile':
-              iconName = 'person';
+              iconName = 'person-outline';
               break;
           }
           return <Ionicons name={iconName} size={size} color={color} />;

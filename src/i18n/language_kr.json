@@ -126,5 +126,7 @@
   "STR_AUTH_NUMBER": "인증번호 입력",
   "STR_VERIFY": "인증",
   "STR_ERROR_INVALID_AUTH_CODE": "인증번호가 틀렸습니다",
-  "SRT_SIGNUP": "회원가입"
+  "SRT_SIGNUP": "회원가입",
+
+  "STR_MAP_BUTTON_SHOWLIST": "목록 보기"
 }

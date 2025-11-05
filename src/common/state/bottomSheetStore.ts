@@ -33,7 +33,8 @@ type State = {
   enablePanDownToClose: boolean;
   autoCloseOnIndexZero: boolean;
   backdropPressToClose: boolean;
-  useBackdrop: boolean; // ✅ 추가
+  useBackdrop: boolean;
+  isOpen: boolean; // ✅ 현재 바텀시트가 열려있는지 여부
 };
 
 /**
@@ -61,7 +62,8 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
   enablePanDownToClose: true,
   autoCloseOnIndexZero: true,
   backdropPressToClose: true,
-  useBackdrop: true, // ✅ 기본값: 백드롭 사용
+  useBackdrop: true,
+  isOpen: false, // ✅ 초기값 false
 
   /**
    * ✅ ref 등록 (GlobalBottomSheet에서 setRef 호출)
@@ -72,6 +74,7 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
    * ✅ 바텀시트 열기 (모든 옵션을 통합적으로 제어)
    */
   open: (content, opts) => {
+    console.log('오픈 체크');
     const snap =
       Array.isArray(opts?.snapPoints) && opts.snapPoints.length > 0
         ? opts.snapPoints
@@ -82,6 +85,7 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
 
     set({
       content,
+      isOpen: true, // ✅ 열릴 때 true
       snapPoints: snap,
       initialIndex: index,
       onCloseCallback: opts?.onCloseCallback,
@@ -90,7 +94,7 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
       enablePanDownToClose: opts?.enablePanDownToClose ?? true,
       autoCloseOnIndexZero: opts?.autoCloseOnIndexZero ?? true,
       backdropPressToClose: opts?.backdropPressToClose ?? true,
-      useBackdrop: opts?.useBackdrop ?? true, // ✅ 기본 true, false 시 백드롭 제거
+      useBackdrop: opts?.useBackdrop ?? true,
     });
 
     requestAnimationFrame(() => {
@@ -114,10 +118,11 @@ export const useBottomSheetStore = create<State & Actions>((set, get) => ({
     ref?.current?.dismiss?.();
     onCloseCallback?.();
 
-    // 닫힌 후 content 제거 (터치 이슈 방지)
+    // 닫힌 후 content 제거 및 상태 초기화
     set({
       content: null,
       onCloseCallback: undefined,
+      isOpen: false, // ✅ 닫힐 때 false
     });
   },
 }));

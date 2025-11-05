@@ -1,6 +1,5 @@
 import React from 'react';
-import { View } from 'react-native';
-import { StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import Animated, {
   useAnimatedStyle,
@@ -14,6 +13,7 @@ import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { FONT } from '@/common/styles/typography';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_SPACING } from '@/test/styles/spacing';
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore'; // ✅ 추가
 
 const TAB_HEIGHT = 60; // ✅ 고정 높이
 
@@ -23,6 +23,10 @@ const CustomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
+
+  /** ✅ 바텀시트 열림 여부 체크 */
+  const { isOpen } = useBottomSheetStore();
+  const isSheetOpen = isOpen;
 
   /** ✅ 탭 전체 높이 고정 */
   const height = useSharedValue(TAB_HEIGHT + insets.bottom);
@@ -47,7 +51,7 @@ const CustomTabBar = ({
     activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
     activeRoute.name;
 
-  /** ✅ 특정 화면에서 탭바 숨김 */
+  /** ✅ 특정 화면 or 바텀시트 오픈 시 탭바 숨김 */
   const hiddenRoutes = [
     'DetailThread',
     'DetailThreadComment',
@@ -59,7 +63,7 @@ const CustomTabBar = ({
     'DemoProfile',
     'DemoSearch',
   ];
-  const shouldHide = hiddenRoutes.includes(nestedRouteName);
+  const shouldHide = hiddenRoutes.includes(nestedRouteName) || isSheetOpen;
 
   if (shouldHide) {
     return <Animated.View style={{ height: 0 }} />;
@@ -96,6 +100,7 @@ const CustomTabBar = ({
               target: route.key,
               canPreventDefault: true,
             });
+
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
