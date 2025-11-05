@@ -48,7 +48,17 @@ const CustomTabBar = ({
     activeRoute.name;
 
   /** ✅ 특정 화면에서 탭바 숨김 */
-  const hiddenRoutes = ['DetailThread', 'DetailThreadComment', 'Add'];
+  const hiddenRoutes = [
+    'DetailThread',
+    'DetailThreadComment',
+    'Add',
+    'DemoMap',
+    'DemoFeed',
+    'DemoCreate',
+    'DemoAlarm',
+    'DemoProfile',
+    'DemoSearch',
+  ];
   const shouldHide = hiddenRoutes.includes(nestedRouteName);
 
   if (shouldHide) {
