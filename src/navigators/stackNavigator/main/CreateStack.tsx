@@ -9,13 +9,14 @@ import DemoCreateScreen from '@/test/screens/DemoCreateScreen';
 import DemoAlarmScreen from '@/test/screens/DemoAlarmScreen';
 import DemoProfileScreen from '@/test/screens/DemoProfileScreen';
 import DemoSearchScreen from '@/test/screens/DemoSearchScreen';
+import ThreadCreateScreen from '@/screens/thread/ThreadCreateScreen';
 
 const Stack = createNativeStackNavigator();
 
 const CreateStack = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {/* 1️⃣ 지도 화면 */}
+      <Stack.Screen name="DemoMapA" component={ThreadCreateScreen} />
       <Stack.Screen name="DemoMap" component={DemoMapScreen} />
       {/* 2️⃣ 피드 화면 */}
       <Stack.Screen name="DemoFeed" component={DemoFeedScreen} />
