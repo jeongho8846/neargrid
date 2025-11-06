@@ -31,7 +31,7 @@ export type AlarmModel = {
 };
 
 /* -----------------------------
-   ✅ WebSocket + STOMP 훅 본체
+   ✅ WebSocket + STOMP 훅 본체 (수정됨)
 ----------------------------- */
 export function useChatWebSocket(memberId?: string, enabled: boolean = true) {
   const clientRef = useRef<Client | null>(null);
@@ -66,33 +66,34 @@ export function useChatWebSocket(memberId?: string, enabled: boolean = true) {
       console.log('   └─ MemberID:', memberId);
 
       const client = new Client({
+        // ======================================================
+        // ✅ [수정됨] webSocketFactory
+        // stompjs가 이벤트 리스너를 직접 관리하도록
+        // 순수 WebSocket 객체만 생성하여 반환합니다.
         webSocketFactory: () => {
-          console.log('🪶 [3] WebSocket 인스턴스 생성 시작');
-          const ws = new WebSocket(wsUrl);
-          ws.onopen = () => console.log('🔌 [3.1] WebSocket OPEN');
-          ws.onclose = e =>
-            console.log(
-              '⚡️ [3.2] WebSocket CLOSED 이벤트 발생',
-              e.code,
-              e.reason,
-            );
-          ws.onerror = e =>
-            console.log('🚨 [3.3] WebSocket ERROR 이벤트 발생', e);
-          return ws;
+          console.log('🪶 WebSocket 생성 시작');
+          return new WebSocket('wss://api.neargrid.ai:490/chatConnect-app');
         },
+        // ======================================================
+
+        connectHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+
         forceBinaryWSFrames: false,
         appendMissingNULLonIncoming: true,
         reconnectDelay: 5000,
         heartbeatIncoming: 10000,
         heartbeatOutgoing: 10000,
 
-        beforeConnect: () => {
-          console.log('⚙️ [4] beforeConnect 호출됨 — CONNECT 헤더 구성 중');
-          client.connectHeaders = {
-            Authorization: `Bearer ${token}`,
-          };
-          console.log('   ✅ CONNECT 헤더 주입 완료:', client.connectHeaders);
-        },
+        // beforeConnect는 connectHeaders가 있으므로 주석 처리 유지
+        // beforeConnect: () => {
+        //   console.log('⚙️ [4] beforeConnect 호출됨 — CONNECT 헤더 구성 중');
+        //   client.connectHeaders = {
+        //     Authorization: `Bearer ${token}`,
+        //   };
+        //   console.log('   ✅ CONNECT 헤더 주입 완료:', client.connectHeaders);
+        // },
 
         onConnect: (frame: IFrame) => {
           if (isUnmounted) return;
