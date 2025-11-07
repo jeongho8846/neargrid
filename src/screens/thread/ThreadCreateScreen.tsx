@@ -8,7 +8,7 @@ import { useChatWebSocket } from '@/features/chat/hooks/useChatWebSocketTest';
 
 const ThreadCreateScreen = () => {
   const { connected, sendChatMessage } = useChatWebSocket(
-    '690851265852216817',
+    '682867966802399783',
     true,
   );
 
