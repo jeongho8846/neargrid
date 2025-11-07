@@ -1,14 +1,11 @@
 import { create } from 'zustand';
 
-/**
- * ✅ 전역 탭바 상태 (CustomTabBar visible)
- */
-type TabBarState = {
+type TabBarStore = {
   visible: boolean;
-  setVisible: (v: boolean) => void;
+  setVisible: (visible: boolean) => void;
 };
 
-export const useTabBarStore = create<TabBarState>(set => ({
+export const useTabBarStore = create<TabBarStore>(set => ({
   visible: true,
-  setVisible: v => set({ visible: v }),
+  setVisible: visible => set({ visible }),
 }));

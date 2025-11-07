@@ -1,11 +1,12 @@
 import React from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/services/reactQuery/queryClient';
 import AppNavigation from './providers/navigation';
 import { COLORS } from '@/common/styles/tokens/colors';
+import { StyleSheet } from 'react-native';
+import AppToast from '@/common/components/AppToast';
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AppNavigation />
+          <AppToast />
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

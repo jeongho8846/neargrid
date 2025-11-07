@@ -6,12 +6,14 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/tokens/colors';
 import { RADIUS } from '@/common/styles/tokens/radius';
 import { SHADOW } from '@/common/styles/tokens/shadow';
-import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
+import { useTabBarStore } from '@/common/state/tabBarStore';
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 
 const TAB_HEIGHT = 60;
 
@@ -21,43 +23,52 @@ export default function CustomTabBar({
   navigation,
 }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
-  const visible = useTabBarStore(s => s.visible); // ✅ 전역 상태 가져오기
+  const { isOpen } = useBottomSheetStore(); // ✅ 바텀시트 상태
+  const visible = useTabBarStore(s => s.visible); // ✅ 탭바 수동 표시 상태
+
+  // ✅ 바텀시트가 열리면 자동 숨김 (index ≥ 2 같은 의미로 isOpen=true)
+  const shouldShow = visible && !isOpen;
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateY: withTiming(visible ? 0 : TAB_HEIGHT + 80, {
+        translateY: withTiming(shouldShow ? 0 : TAB_HEIGHT + 80, {
           duration: 250,
         }),
       },
     ],
-    opacity: withTiming(visible ? 1 : 0, { duration: 200 }),
+    opacity: withTiming(shouldShow ? 1 : 0, { duration: 200 }),
   }));
 
   const getIconName = (label: string, focused: boolean) => {
     switch (label.toLowerCase()) {
       case 'map':
-        return focused ? 'map' : 'map-outline';
+        return focused ? 'map' : 'map';
       case 'feed':
-        return focused ? 'home' : 'home-outline';
+        return focused ? 'home' : 'home';
       case 'create':
-        return focused ? 'add-circle' : 'add-circle-outline';
+        return focused ? 'plus-circle' : 'plus-circle';
       case 'ranking':
-        return focused ? 'trophy' : 'trophy-outline';
+        return focused ? 'award' : 'award';
       case 'profile':
-        return focused ? 'person' : 'person-outline';
+        return focused ? 'user' : 'user';
       default:
-        return 'ellipse-outline';
+        return 'circle';
     }
   };
 
   return (
-    <Animated.View style={[styles.container, animatedContainerStyle]}>
+    <Animated.View
+      style={[
+        styles.container,
+        animatedContainerStyle,
+        { bottom: insets.bottom + 12 }, // ✅ Safe area 보정
+      ]}
+    >
       <View style={styles.inner}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
           const label = options.tabBarLabel ?? options.title ?? route.name;
-
           const isFocused = state.index === index;
 
           const onPress = () => {
@@ -66,6 +77,7 @@ export default function CustomTabBar({
               target: route.key,
               canPreventDefault: true,
             });
+
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
@@ -83,7 +95,7 @@ export default function CustomTabBar({
             >
               <AppIcon
                 name={iconName}
-                size={24}
+                size={22}
                 color={isFocused ? COLORS.primary : COLORS.text_secondary}
               />
               <AppText
@@ -105,7 +117,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 16,
     right: 16,
-    bottom: 50,
     borderRadius: RADIUS.xl,
     backgroundColor: COLORS.surface,
     ...SHADOW.soft,

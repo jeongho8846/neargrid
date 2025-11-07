@@ -3,13 +3,12 @@ import React, { memo } from 'react';
 import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FONT } from '@/common/styles/tokens/typography';
-import { COLORS } from '@/common/styles/tokens/colors';
 
 type Variant = 'title' | 'body' | 'caption' | 'button' | 'label';
 type Align = 'auto' | 'left' | 'right' | 'center' | 'justify';
 
 type Props = Omit<TextProps, 'children'> & {
-  tKey: string;
+  tKey?: string;
   values?: Record<string, any>;
   variant?: Variant;
   align?: Align;

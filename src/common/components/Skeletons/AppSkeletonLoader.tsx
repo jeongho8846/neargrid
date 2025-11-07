@@ -1,7 +1,7 @@
 // src/common/components/skeletons/AppSkeletonLoader.tsx
 import React from 'react';
 import { View, StyleSheet, ViewStyle, DimensionValue } from 'react-native';
-import { COLORS } from '@/common/styles/colors';
+import { COLORS } from 'src/common/styles';
 
 type Props = {
   width?: DimensionValue; // ✅ 수정됨

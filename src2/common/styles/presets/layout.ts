@@ -1,26 +1,33 @@
-import { StyleSheet } from 'react-native';
-import { COLORS } from '@/common/styles/tokens/colors';
+import { ViewStyle } from 'react-native';
+import { SPACING, COLORS } from '../tokens';
 
-export const LAYOUT = StyleSheet.create({
-  /** ✅ 기본 스크린 컨테이너 */
+export const LAYOUT = {
   screen: {
     flex: 1,
-    paddingHorizontal: 8,
     backgroundColor: COLORS.background,
-  },
+    paddingHorizontal: SPACING.sm,
+  } as ViewStyle,
 
-  /** ✅ 가운데 정렬 화면 */
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: COLORS.background,
-  },
+  } as ViewStyle,
 
-  /** ✅ 스크롤 컨테이너 기본 */
-  scroll: {
-    flexGrow: 1,
-    paddingHorizontal: 8,
-    backgroundColor: COLORS.background,
-  },
-});
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  } as ViewStyle,
+
+  rowBetween: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  } as ViewStyle,
+
+  cardContainer: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 12,
+    padding: SPACING.md,
+  } as ViewStyle,
+} as const;

@@ -4,7 +4,7 @@ import { View } from 'react-native';
 import AppSkeletonProfileRow from './AppSkeletonProfileRow';
 import AppSkeletonTextLines from './AppSkeletonTextLines';
 import AppSkeletonMediaBox from './AppSkeletonMediaBox';
-import { SPACING } from '@/common/styles/spacing';
+import { SPACING } from 'src/common/styles';
 
 type PresetType = 'detail' | 'simple';
 

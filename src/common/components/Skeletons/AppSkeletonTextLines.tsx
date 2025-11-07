@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, DimensionValue } from 'react-native'; // ✅ 추가
 import AppSkeletonLoader from './AppSkeletonLoader';
-import { SPACING } from '@/common/styles/spacing';
+import { SPACING } from 'src/common/styles';
 
 type Props = {
   count?: number; // 기본 2줄

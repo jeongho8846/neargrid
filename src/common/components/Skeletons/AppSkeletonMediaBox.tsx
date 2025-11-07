@@ -1,7 +1,7 @@
 // src/common/components/skeletons/AppSkeletonMediaBox.tsx
 import React from 'react';
 import AppSkeletonLoader from './AppSkeletonLoader';
-import { SPACING } from '@/common/styles/spacing';
+import { SPACING } from 'src/common/styles';
 
 /**
  * ✅ 이미지/비디오 영역용 placeholder

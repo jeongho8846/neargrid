@@ -2,7 +2,7 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import AppSkeletonLoader from './AppSkeletonLoader';
-import { SPACING } from '@/common/styles/spacing';
+import { SPACING } from 'src/common/styles';
 
 /**
  * ✅ 프로필 이미지 + 닉네임줄
