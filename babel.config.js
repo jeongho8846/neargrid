@@ -21,10 +21,11 @@ module.exports = {
     [
       'module-resolver',
       {
-        root: ['./src'],
+        root: ['./'],
         alias: {
-          '@': './src', // ✅ "@/..." → src/... 매핑
+          '@': './src2', // ✅ "@/..." → src/... 매핑
         },
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
       },
     ],
     'react-native-reanimated/plugin', // ✅ 반드시 마지막에 추가

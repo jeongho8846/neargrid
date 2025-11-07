@@ -3,10 +3,10 @@ import { View, StyleSheet } from 'react-native';
 import AppText from '@/common/components/AppText';
 import { LAYOUT } from '@/common/styles/presets/layout';
 
-export default function ChatRoomScreen() {
+export default function MapScreen() {
   return (
     <View style={styles.root}>
-      <AppText tKey="screen.feed.title" />
+      <AppText tKey="screen.Map.title" />
     </View>
   );
 }
