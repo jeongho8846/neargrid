@@ -1,6 +1,6 @@
 # nearGrid Project Rules
 
-테스트1
+테스트2
 
 ## 1. Directory Structure
 
