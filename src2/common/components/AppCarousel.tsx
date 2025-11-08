@@ -44,6 +44,9 @@ export default function AppCarousel({ images, height = 240 }: Props) {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
+        decelerationRate="fast" // ✅ 빠르게 멈추기
+        snapToInterval={width} // ✅ 한 페이지당 width 단위로 스냅
+        snapToAlignment="center"
       />
       <View style={styles.dotContainer}>
         {images.map((_, i) => (

@@ -1,12 +1,14 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import { COLORS, RADIUS, SPACING } from '../styles/tokens';
 import AppText from './AppText';
+import AppIcon from './AppIcon';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
 type Props = {
-  tKey: string;
+  tKey?: string; // ✅ 텍스트는 선택
+  icon?: string; // ✅ 아이콘도 선택
   variant?: Variant;
   disabled?: boolean;
   onPress?: () => void;
@@ -14,6 +16,7 @@ type Props = {
 
 export default function AppButton({
   tKey,
+  icon,
   variant = 'primary',
   disabled,
   onPress,
@@ -42,7 +45,16 @@ export default function AppButton({
       disabled={disabled}
       onPress={onPress}
     >
-      <AppText tKey={tKey} variant="button" style={{ color: textColor }} />
+      <View style={styles.content}>
+        {icon && <AppIcon name={icon} size={18} color={textColor} />}
+        {tKey && (
+          <AppText
+            tKey={tKey}
+            variant="button"
+            style={[styles.text, { color: textColor }]}
+          />
+        )}
+      </View>
     </TouchableOpacity>
   );
 }
@@ -54,5 +66,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: SPACING.xs, // ✅ 아이콘-텍스트 간격
+  },
+  text: {
+    includeFontPadding: false,
   },
 });

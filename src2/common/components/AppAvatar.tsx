@@ -49,7 +49,11 @@ export default function AppAvatar({
         <AppImage source={{ uri }} style={styles.image} />
       ) : (
         <View style={styles.fallback}>
-          <AppIcon name="user" size={24} color={COLORS.text_secondary} />
+          <AppIcon
+            name="person-sharp"
+            size={24}
+            color={COLORS.text_secondary}
+          />
         </View>
       )}
     </Wrapper>

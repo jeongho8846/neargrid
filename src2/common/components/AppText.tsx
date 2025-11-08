@@ -6,7 +6,7 @@ import { formatTime } from '@/utils/time';
 import { formatDistance } from '@/utils/distance';
 import { formatCompactNumber } from '@/utils/number';
 
-type Variant = 'title' | 'body' | 'caption' | 'button' | 'label';
+type Variant = 'title' | 'body' | 'caption' | 'button' | 'label' | 'nickname'; // ✅ 추가
 type Align = 'auto' | 'left' | 'right' | 'center' | 'justify';
 type Format = 'time' | 'timeAbsolute' | 'distance' | 'number';
 
@@ -38,8 +38,7 @@ function AppTextBase({
   if (format && children != null) {
     const value = children;
     if (format === 'time') content = formatTime(value, 'relative');
-    else if (format === 'timeAbsolute')
-      content = formatTime(value, 'absolute'); // ✅ 내부에서 시/날짜 자동 분기
+    else if (format === 'timeAbsolute') content = formatTime(value, 'absolute');
     else if (format === 'distance') content = formatDistance(Number(value));
     else if (format === 'number') content = formatCompactNumber(Number(value));
   } else if (tKey) {
@@ -78,13 +77,18 @@ const styles = StyleSheet.create({
     textAlignVertical: 'center',
   },
 });
+
 const variantStyles = StyleSheet.create({
   title: { ...FONT.title },
   body: { ...FONT.body },
   caption: { ...FONT.caption },
   button: { ...FONT.button },
   label: { ...FONT.label },
+  nickname: {
+    ...FONT.nickname,
+  },
 });
+
 const alignStyles: Record<Align, TextStyle> = StyleSheet.create({
   auto: { textAlign: 'auto' },
   left: { textAlign: 'left' },

@@ -32,6 +32,13 @@ export const FONT = {
     color: COLORS.text_secondary,
     lineHeight: 14,
   } as TextStyle,
+  nickname: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.text_primary,
+    letterSpacing: 0.2,
+    lineHeight: 17,
+  } as TextStyle,
 } as const;
 
 export type FontVariant = keyof typeof FONT;

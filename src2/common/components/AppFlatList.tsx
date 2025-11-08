@@ -88,6 +88,8 @@ export default function AppFlatList<T>({
         onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
+        decelerationRate="fast" // ✅ 인스타그램 느낌으로 감속 늘림
+        contentContainerStyle={{ paddingBottom: 300 }}
       />
 
       <Animated.View style={[styles.fabContainer, animatedStyle]}>

@@ -1,9 +1,8 @@
 import React, { useState, useCallback } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import type { TextLayoutEvent } from 'react-native';
 import AppText from './AppText';
-import AppButton from './AppButton';
-import { SPACING } from '../styles/tokens';
+import { SPACING, COLORS } from '../styles/tokens';
 
 type Props = {
   children: string;
@@ -13,12 +12,10 @@ type Props = {
 export default function AppReadMoreBox({ children, numberOfLines = 3 }: Props) {
   const [expanded, setExpanded] = useState(false);
   const [showMoreButton, setShowMoreButton] = useState(false);
-  const [debugLineCount, setDebugLineCount] = useState(0);
 
   const handleTextLayout = useCallback(
     (e: TextLayoutEvent) => {
       const { lines } = e.nativeEvent;
-      setDebugLineCount(lines.length);
       if (lines.length >= numberOfLines) {
         setShowMoreButton(true);
       }
@@ -36,17 +33,12 @@ export default function AppReadMoreBox({ children, numberOfLines = 3 }: Props) {
         {children}
       </AppText>
 
-      {/* ✅ 디버그 표시 */}
-      <AppText variant="caption" align="left" style={styles.debugText}>
-        lines: {debugLineCount}
-      </AppText>
-
       {showMoreButton && (
-        <AppButton
-          variant="ghost"
-          onPress={() => setExpanded(prev => !prev)}
-          tKey={expanded ? 'STR_COMMON_COLLAPSE' : 'STR_COMMON_LOAD_MORE'}
-        />
+        <TouchableOpacity onPress={() => setExpanded(prev => !prev)}>
+          <AppText variant="label" style={styles.moreText}>
+            {expanded ? '접기' : '더보기'}
+          </AppText>
+        </TouchableOpacity>
       )}
     </View>
   );
@@ -55,10 +47,10 @@ export default function AppReadMoreBox({ children, numberOfLines = 3 }: Props) {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: SPACING.xs,
+    alignItems: 'flex-start',
   },
-  debugText: {
-    fontSize: 12,
-    color: 'red',
-    marginTop: 2,
+  moreText: {
+    color: COLORS.text_secondary,
+    marginTop: SPACING.xs,
   },
 });
