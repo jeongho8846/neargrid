@@ -40,18 +40,18 @@ export default function CustomTabBar({
     opacity: withTiming(shouldShow ? 1 : 0, { duration: 200 }),
   }));
 
-  const getIconName = (label: string, focused: boolean) => {
-    switch (label.toLowerCase()) {
-      case 'map':
+  const getIconName = (key: string, focused: boolean) => {
+    switch (key) {
+      case 'mapstack':
         return focused ? 'map' : 'map';
-      case 'feed':
+      case 'feedstack':
         return focused ? 'home' : 'home';
-      case 'create':
-        return focused ? 'plus-circle' : 'plus-circle';
-      case 'ranking':
-        return focused ? 'award' : 'award';
-      case 'profile':
-        return focused ? 'user' : 'user';
+      case 'createstack':
+        return focused ? 'add-circle-outline' : 'add-circle-outline';
+      case 'rankingstack':
+        return focused ? 'diamond-outline' : 'diamond-outline';
+      case 'profilestack':
+        return focused ? 'person-circle-outline' : 'person-circle-outline';
       default:
         return 'circle';
     }
@@ -77,13 +77,13 @@ export default function CustomTabBar({
               target: route.key,
               canPreventDefault: true,
             });
-
             if (!isFocused && !event.defaultPrevented) {
               navigation.navigate(route.name);
             }
           };
 
-          const iconName = getIconName(label.toString(), isFocused);
+          // ✅ 아이콘은 route.name 기준으로
+          const iconName = getIconName(route.name.toLowerCase(), isFocused);
 
           return (
             <TouchableOpacity
@@ -98,10 +98,8 @@ export default function CustomTabBar({
                 size={22}
                 color={isFocused ? COLORS.primary : COLORS.text_secondary}
               />
-              <AppText
-                tKey={`tab.${label.toString().toLowerCase()}`}
-                variant="label"
-              />
+              {/* ✅ 타이틀은 i18n 키니까 그대로 번역 */}
+              <AppText tKey={label.toString()} variant="label" />
             </TouchableOpacity>
           );
         })}

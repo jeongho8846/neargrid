@@ -67,5 +67,11 @@
   "STR_NUMBER_K": "천",
   "STR_NUMBER_M": "백만",
   "STR_NUMBER_B": "억",
-  "STR_NUMBER_T": "조"
+  "STR_NUMBER_T": "조",
+
+  "STR_NAV_MAP": "맵",
+  "STR_NAV_FEED": "피드",
+  "STR_NAV_CREATE": "추가",
+  "STR_NAV_RANKING": "랭킹",
+  "STR_NAV_PROFILE": "프로필"
 }

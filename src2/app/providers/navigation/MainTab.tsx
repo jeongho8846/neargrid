@@ -28,7 +28,7 @@ export default function MainTab() {
         component={MapStack}
         options={({ route }) => ({
           tabBarStyle: { display: getTabBarVisible(route) },
-          title: 'Map',
+          title: 'STR_NAV_MAP',
         })}
       />
       <Tab.Screen
@@ -36,7 +36,7 @@ export default function MainTab() {
         component={FeedStack}
         options={({ route }) => ({
           tabBarStyle: { display: getTabBarVisible(route) },
-          title: 'Feed',
+          title: 'STR_NAV_FEED',
         })}
       />
       <Tab.Screen
@@ -44,7 +44,7 @@ export default function MainTab() {
         component={CreateStack}
         options={({ route }) => ({
           tabBarStyle: { display: getTabBarVisible(route) },
-          title: 'Create',
+          title: 'STR_NAV_CREATE',
         })}
       />
       <Tab.Screen
@@ -52,7 +52,7 @@ export default function MainTab() {
         component={RankingStack}
         options={({ route }) => ({
           tabBarStyle: { display: getTabBarVisible(route) },
-          title: 'Ranking',
+          title: 'STR_NAV_RANKING',
         })}
       />
       <Tab.Screen
@@ -60,7 +60,7 @@ export default function MainTab() {
         component={ProfileStack}
         options={({ route }) => ({
           tabBarStyle: { display: getTabBarVisible(route) },
-          title: 'Profile',
+          title: 'STR_NAV_PROFILE',
         })}
       />
     </Tab.Navigator>
