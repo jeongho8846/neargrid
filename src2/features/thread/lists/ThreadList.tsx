@@ -14,7 +14,10 @@ const mockThreads = Array.from({ length: 50 }).map((_, i) => ({
         ]
       : `https://picsum.photos/400/300?random=${i + 10}`,
   caption:
-    'screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1',
+    'screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1screen.feed.caption1',
+  likeCount: Math.floor(Math.random() * 500),
+  commentCount: Math.floor(Math.random() * 100),
+  isLiked: i % 7 === 0, // 랜덤하게 일부만 좋아요 상태로
 }));
 
 export default function ThreadList() {

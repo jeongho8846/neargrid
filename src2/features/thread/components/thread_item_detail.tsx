@@ -9,6 +9,7 @@ import AppButton from '@/common/components/AppButton';
 import AppCarousel from '@/common/components/AppCarousel';
 import AppReadMoreBox from '@/common/components/AppReadMoreBox';
 import { SPACING } from '@/common/styles/tokens';
+import ActionBar from './actionBar';
 
 type Props = {
   item: {
@@ -63,7 +64,7 @@ export default function ThreadItemDetail({ item }: Props) {
 
       {/* 🧩 Footer */}
       <View style={styles.footer}>
-        <AppDivider />
+        <ActionBar item={item} />
       </View>
     </AppCard>
   );
