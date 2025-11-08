@@ -40,5 +40,6 @@ const styles = StyleSheet.create({
   },
   item: {
     padding: 12,
+    height: 300,
   },
 });

@@ -1,5 +1,5 @@
 // 📄 src/common/components/AppFlatList.tsx
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import {
   FlatList,
   FlatListProps,
@@ -9,6 +9,11 @@ import {
   TouchableOpacity,
   StyleSheet,
 } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { useHeaderStore } from '@/common/state/headerStore';
 import { useTabBarStore } from '@/common/state/tabBarStore';
 import AppIcon from '@/common/components/AppIcon';
@@ -18,7 +23,6 @@ type Props<T> = FlatListProps<T> & {
   headerAutoHide?: boolean;
   tabBarAutoHide?: boolean;
   isLoading?: boolean;
-  /** ✅ 로딩 중일 때 보여줄 뷰 (스켈레톤 프리셋, 커스텀 컴포넌트 등) */
   ListLoadingComponent?: React.ReactNode;
 };
 
@@ -31,11 +35,14 @@ export default function AppFlatList<T>({
 }: Props<T>) {
   const listRef = useRef<FlatList<T>>(null);
   const lastOffsetY = useRef(0);
-  const [showScrollTop, setShowScrollTop] = useState(false);
 
   const setHeaderVisible = useHeaderStore(s => s.setVisible);
   const setTabBarVisible = useTabBarStore(s => s.setVisible);
   const isTabBarVisible = useTabBarStore(s => s.visible);
+
+  // ✅ 애니메이션 상태값
+  const fabVisible = useSharedValue(0);
+  const fabBottom = useSharedValue(SPACING.xl * 2);
 
   const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     const offsetY = e.nativeEvent.contentOffset.y;
@@ -47,15 +54,28 @@ export default function AppFlatList<T>({
       if (tabBarAutoHide) setTabBarVisible(!scrollingDown);
     }
 
-    setShowScrollTop(offsetY > 300);
+    // ✅ 스크롤에 따라 버튼 표시 전환
+    fabVisible.value = withTiming(offsetY > 300 ? 1 : 0, { duration: 250 });
+
     lastOffsetY.current = offsetY;
   };
+
+  // ✅ 탭바 표시 상태에 따른 위치 애니메이션
+  React.useEffect(() => {
+    const targetBottom = isTabBarVisible ? SPACING.xl * 6.5 : SPACING.xl * 2;
+    fabBottom.value = withTiming(targetBottom, { duration: 250 });
+  }, [isTabBarVisible]);
 
   const scrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
   };
 
-  // ✅ 로딩 중이면 외부에서 전달받은 컴포넌트 렌더링
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: fabVisible.value,
+    transform: [{ translateY: withTiming(fabVisible.value ? 0 : 40) }],
+    bottom: fabBottom.value,
+  }));
+
   if (isLoading && ListLoadingComponent) {
     return <View style={styles.container}>{ListLoadingComponent}</View>;
   }
@@ -70,28 +90,26 @@ export default function AppFlatList<T>({
         showsVerticalScrollIndicator={false}
       />
 
-      {showScrollTop && (
+      <Animated.View style={[styles.fabContainer, animatedStyle]}>
         <TouchableOpacity
-          style={[
-            styles.fab,
-            { bottom: isTabBarVisible ? SPACING.xl * 6.5 : SPACING.xl * 2 },
-          ]}
+          style={styles.fab}
           onPress={scrollToTop}
           activeOpacity={0.8}
         >
           <AppIcon name="arrow-up" size={22} color={COLORS.surface_light} />
         </TouchableOpacity>
-      )}
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  fab: {
+  fabContainer: {
     position: 'absolute',
     right: SPACING.lg,
-    bottom: SPACING.xl * 2,
+  },
+  fab: {
     backgroundColor: COLORS.primary,
     borderRadius: RADIUS.round,
     padding: 12,

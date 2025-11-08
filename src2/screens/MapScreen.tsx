@@ -133,5 +133,6 @@ const styles = StyleSheet.create({
     borderRadius: RADIUS.lg,
     marginBottom: SPACING.md,
     padding: SPACING.md,
+    height: 300,
   },
 });
