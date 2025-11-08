@@ -14,7 +14,7 @@ export default function ThreadFeedScreen() {
       <AppHeader
         tKey="screen.feed.title"
         rightIcon="notifications-outline"
-        showBackButton={false}
+        showBackButton={true}
       />
 
       <AppFlatList

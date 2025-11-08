@@ -1,3 +1,4 @@
+// 📄 src/common/components/AppHeader.tsx
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Animated, {
@@ -13,6 +14,7 @@ import { SPACING } from '@/common/styles/tokens/spacing';
 import { RADIUS } from '@/common/styles/tokens/radius';
 import { SHADOW } from '@/common/styles/tokens/shadow';
 import { useHeaderStore } from '@/common/state/headerStore';
+import { WINDOW_WIDTH } from '@gorhom/bottom-sheet';
 
 export const HEADER_HEIGHT = 56;
 
@@ -23,7 +25,7 @@ type Props = {
   transparent?: boolean;
   onPressLeft?: () => void;
   onPressRight?: () => void;
-  showBackButton: boolean; // ✅ 수동 제어 전용
+  showBackButton?: boolean;
 };
 
 export default function AppHeader({
@@ -58,13 +60,8 @@ export default function AppHeader({
       ]}
     >
       <SafeAreaView edges={['top']} style={styles.innerSafe}>
-        <View
-          style={[
-            styles.container,
-            showBackButton ? styles.withBack : styles.centered,
-          ]}
-        >
-          {/* 왼쪽 섹션 */}
+        <View style={styles.container}>
+          {/* 왼쪽 */}
           {showBackButton ? (
             <TouchableOpacity
               onPress={onPressLeft ?? navigation.goBack}
@@ -86,16 +83,18 @@ export default function AppHeader({
             />
           )}
 
-          {/* 오른쪽 섹션 */}
-          <TouchableOpacity
-            onPress={onPressRight}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            style={styles.side}
-          >
-            {rightIcon && (
+          {/* 오른쪽 */}
+          {rightIcon ? (
+            <TouchableOpacity
+              onPress={onPressRight}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              style={styles.side}
+            >
               <AppIcon name={rightIcon} size={22} color={COLORS.text_primary} />
-            )}
-          </TouchableOpacity>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.side} />
+          )}
         </View>
       </SafeAreaView>
     </Animated.View>
@@ -108,7 +107,7 @@ const styles = StyleSheet.create({
   safe: {
     position: 'absolute',
     top: 0,
-    width: '100%',
+    width: WINDOW_WIDTH,
     zIndex: 10,
   },
   innerSafe: {
@@ -117,30 +116,18 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between', // ✅ 핵심
     height: HEADER_HEIGHT,
     paddingHorizontal: SPACING.md,
   },
-  withBack: {
-    justifyContent: 'flex-start',
-  },
-  centered: {
-    justifyContent: 'space-between',
-  },
   titleLeft: {
-    marginLeft: SPACING.sm,
+    flex: 1,
+    marginLeft: SPACING.xs,
+    textAlign: 'left',
   },
   titleCenter: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
+    flex: 1,
     textAlign: 'center',
-  },
-  solid: {
-    backgroundColor: COLORS.surface,
-    ...SHADOW.soft,
-  },
-  transparent: {
-    backgroundColor: 'transparent',
   },
   side: {
     width: 40,
@@ -148,5 +135,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: RADIUS.md,
+  },
+  solid: {
+    backgroundColor: COLORS.surface,
+    ...SHADOW.soft,
+  },
+  transparent: {
+    backgroundColor: 'transparent',
   },
 });

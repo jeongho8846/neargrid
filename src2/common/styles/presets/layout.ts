@@ -6,6 +6,7 @@ export const LAYOUT = {
     flex: 1,
     backgroundColor: COLORS.background,
     paddingHorizontal: SPACING.sm,
+    alignContent: 'center',
   } as ViewStyle,
 
   centered: {
