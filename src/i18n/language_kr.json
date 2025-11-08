@@ -128,5 +128,23 @@
   "STR_ERROR_INVALID_AUTH_CODE": "인증번호가 틀렸습니다",
   "SRT_SIGNUP": "회원가입",
 
-  "STR_MAP_BUTTON_SHOWLIST": "목록 보기"
+  "STR_MAP_BUTTON_SHOWLIST": "목록 보기",
+
+  "STR_ALARM_PARENTTARGETDESCRIPTION": "",
+  "STR_ALARM_TARGETDESCRIPTION": "",
+  "STR_ALARM_BOARD_COMMENT": "님이 보드에 코멘트를 달았습니다.",
+  "STR_ALARM_THREAD_REPLY": "님이 스레드에 댓글을 달았습니다.",
+  "STR_ALARM_COMMENT_THREAD": "님이 스레드에 댓글을 달았습니다.",
+  "STR_ALARM_COMMENT_POST": "님이 포스트에 댓글을 달았습니다.",
+  "STR_ALARM_CHILD_COMMENT_POST": "님이 포스트에 대댓글을 달았습니다.",
+  "STR_ALARM_CHILD_COMMENT": "님이 코멘트에 댓글을 달았습니다.",
+  "STR_ALARM_THREAD_REACTION": "님이 코멘트를 좋아합니다.",
+  "STR_ALARM_PIN_REACTION": "님이 핀을 좋아합니다.",
+  "STR_ALARM_POST_LIKE": "님이 포스트를 좋아합니다.",
+  "STR_ALARM_POST_DISLIKE": "님이 포스트를 싫어합니다.",
+  "STR_ALARM_PIN_VIEW": "님이 핀을 봤습니다.",
+  "STR_ALARM_NEW_FOLLOWER": "님이 팔로우하기 시작했습니다.",
+  "STR_ALARM_DEFAULT": "디폴트값",
+  "STR_ALL_READ": "읽음",
+  "STR_ALARM": "알림"
 }

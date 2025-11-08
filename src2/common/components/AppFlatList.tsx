@@ -14,10 +14,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
-import { useHeaderStore } from '@/common/state/headerStore';
-import { useTabBarStore } from '@/common/state/tabBarStore';
+
 import AppIcon from '@/common/components/AppIcon';
-import { COLORS, RADIUS, SPACING } from '@/common/styles/tokens';
+import { useHeaderStore } from '../state/headerStore';
+import { useTabBarStore } from '../state/tabBarStore';
+import { COLORS, RADIUS, SPACING } from '../styles/tokens';
 
 type Props<T> = FlatListProps<T> & {
   headerAutoHide?: boolean;

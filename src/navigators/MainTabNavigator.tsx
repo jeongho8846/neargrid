@@ -9,6 +9,7 @@ import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher';
 import CreateStack from './stackNavigator/main/CreateStack';
+import AlarmStack from './stackNavigator/main/AlarmStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -68,7 +69,7 @@ const MainTabNavigator = () => {
       />
       <Tab.Screen
         name="Notification"
-        component={MapStack}
+        component={AlarmStack}
         options={{ tabBarLabel: '알림' }}
       />
 
