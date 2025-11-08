@@ -7,7 +7,7 @@
     "jsx": "react-native",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src2/*"] // ✅ src2만
+      "@/*": ["src/*"] //
     }
   }
 }

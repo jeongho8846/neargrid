@@ -23,7 +23,7 @@ module.exports = {
       {
         root: ['./'],
         alias: {
-          '@': './src2', // ✅ "@/..." → src/... 매핑
+          '@': './src', // ✅ "@/..." → src/... 매핑
         },
         extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
       },

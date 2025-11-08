@@ -8,7 +8,6 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { QueryClientProvider } from '@tanstack/react-query';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
-import RootNavigator from '@/navigators/RootNavigator';
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 import { COLORS } from '@/common/styles/colors';
@@ -16,6 +15,7 @@ import { useKeyboardStore } from '@/common/state/keyboardStore';
 import { queryClient } from '@/services/reactQuery/reactQueryClient';
 import '@/i18n';
 import { AppToastContainer } from '@/common/components/AppToast/AppToastManager';
+import RootNavigator from '@/navigators/RootNavigator';
 
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
