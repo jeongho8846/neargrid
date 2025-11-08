@@ -146,5 +146,10 @@
   "STR_ALARM_NEW_FOLLOWER": "님이 팔로우하기 시작했습니다.",
   "STR_ALARM_DEFAULT": "디폴트값",
   "STR_ALL_READ": "읽음",
-  "STR_ALARM": "알림"
+  "STR_ALARM": "알림",
+
+  "STR_CONTENTS_CREATE_TITLE": "새 콘텐츠",
+  "STR_CONTENTS_CREATE_SUBMIT": "게시",
+  "STR_CONTENTS_CREATE_CAPTION_LABEL": "내용",
+  "STR_CONTENTS_CREATE_CAPTION_PLACEHOLDER": "무엇을 공유하시겠어요?"
 }
