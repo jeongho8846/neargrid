@@ -2,26 +2,27 @@ import React, { memo } from 'react';
 import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FONT } from '@/common/styles/tokens/typography';
+import { formatTime } from '@/utils/time';
+import { formatDistance } from '@/utils/distance';
+import { formatCompactNumber } from '@/utils/number';
 
 type Variant = 'title' | 'body' | 'caption' | 'button' | 'label';
 type Align = 'auto' | 'left' | 'right' | 'center' | 'justify';
+type Format = 'time' | 'timeAbsolute' | 'distance' | 'number';
 
 type Props = Omit<TextProps, 'children'> & {
-  /** 번역 키 (정적 텍스트용) */
   tKey?: string;
-  /** 직접 문자열 전달 (데이터 기반 텍스트용) */
-  text?: string;
   values?: Record<string, any>;
+  format?: Format;
   variant?: Variant;
   align?: Align;
-  /** 동적 children 허용 */
   children?: React.ReactNode;
 };
 
 function AppTextBase({
   tKey,
-  text,
   values,
+  format,
   variant = 'body',
   align = 'left',
   numberOfLines,
@@ -32,13 +33,21 @@ function AppTextBase({
   ...rest
 }: Props) {
   const { t } = useTranslation();
+  let content: string | undefined;
 
-  // ✅ 번역 키가 있으면 i18n, 없으면 text 그대로 사용
-  const raw = tKey
-    ? t(tKey, { ...(values ?? {}), returnObjects: false })
-    : text;
-  const content: string | undefined =
-    typeof raw === 'string' ? raw : raw ? String(raw) : undefined;
+  if (format && children != null) {
+    const value = children;
+    if (format === 'time') content = formatTime(value, 'relative');
+    else if (format === 'timeAbsolute')
+      content = formatTime(value, 'absolute'); // ✅ 내부에서 시/날짜 자동 분기
+    else if (format === 'distance') content = formatDistance(Number(value));
+    else if (format === 'number') content = formatCompactNumber(Number(value));
+  } else if (tKey) {
+    const raw = t(tKey, { ...(values ?? {}), returnObjects: false });
+    content = typeof raw === 'string' ? raw : String(raw);
+  } else if (children != null) {
+    content = String(children);
+  }
 
   return (
     <Text
@@ -46,11 +55,15 @@ function AppTextBase({
       onPress={onPress}
       onTextLayout={onTextLayout}
       numberOfLines={numberOfLines}
-      ellipsizeMode={rest.ellipsizeMode ?? 'tail'} // ✅ 기본값 tail
       selectable={selectable}
-      style={[styles.base, variantStyles[variant], alignStyles[align]]}
+      style={[
+        styles.base,
+        variantStyles[variant],
+        alignStyles[align],
+        rest.style,
+      ]}
     >
-      {content ?? children}
+      {content}
     </Text>
   );
 }
@@ -58,15 +71,13 @@ function AppTextBase({
 const AppText = memo(AppTextBase);
 export default AppText;
 
-/* ===================== Styles ===================== */
-
+/* ============ Styles ============ */
 const styles = StyleSheet.create({
   base: {
     includeFontPadding: false,
     textAlignVertical: 'center',
   },
 });
-
 const variantStyles = StyleSheet.create({
   title: { ...FONT.title },
   body: { ...FONT.body },
@@ -74,7 +85,6 @@ const variantStyles = StyleSheet.create({
   button: { ...FONT.button },
   label: { ...FONT.label },
 });
-
 const alignStyles: Record<Align, TextStyle> = StyleSheet.create({
   auto: { textAlign: 'auto' },
   left: { textAlign: 'left' },

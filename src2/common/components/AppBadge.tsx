@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { BADGE } from '../styles/presets';
-import { useTranslation } from 'react-i18next';
+import AppText from './AppText';
 
 type Variant = 'primary' | 'secondary' | 'outline';
 
@@ -11,8 +11,6 @@ type Props = {
 };
 
 export default function AppBadge({ labelTKey, variant = 'primary' }: Props) {
-  const { t } = useTranslation();
-
   const variantStyle =
     variant === 'secondary'
       ? styles.secondary
@@ -22,7 +20,7 @@ export default function AppBadge({ labelTKey, variant = 'primary' }: Props) {
 
   return (
     <View style={[styles.container, variantStyle]}>
-      <Text style={styles.text}>{t(labelTKey).toUpperCase()}</Text>
+      <AppText tKey={labelTKey} variant="label" style={styles.text} />
     </View>
   );
 }

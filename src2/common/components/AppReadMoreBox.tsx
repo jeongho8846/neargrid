@@ -45,7 +45,7 @@ export default function AppReadMoreBox({ children, numberOfLines = 3 }: Props) {
         <AppButton
           variant="ghost"
           onPress={() => setExpanded(prev => !prev)}
-          tKey={expanded ? 'STR_COLLAPSE' : 'STR_MORE'}
+          tKey={expanded ? 'STR_COMMON_COLLAPSE' : 'STR_COMMON_LOAD_MORE'}
         />
       )}
     </View>

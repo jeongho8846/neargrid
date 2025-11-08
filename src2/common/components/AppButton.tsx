@@ -1,7 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { COLORS, RADIUS, SPACING, FONT } from '../styles/tokens';
-import { useTranslation } from 'react-i18next';
+import { TouchableOpacity, StyleSheet } from 'react-native';
+import { COLORS, RADIUS, SPACING } from '../styles/tokens';
+import AppText from './AppText';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
 
@@ -18,8 +18,6 @@ export default function AppButton({
   disabled,
   onPress,
 }: Props) {
-  const { t } = useTranslation();
-
   const bgColor =
     variant === 'secondary'
       ? COLORS.surface_light
@@ -44,7 +42,7 @@ export default function AppButton({
       disabled={disabled}
       onPress={onPress}
     >
-      <Text style={[styles.text, { color: textColor }]}>{t(tKey)}</Text>
+      <AppText tKey={tKey} variant="button" style={{ color: textColor }} />
     </TouchableOpacity>
   );
 }
@@ -56,8 +54,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  text: {
-    ...FONT.button,
   },
 });

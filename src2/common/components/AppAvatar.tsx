@@ -2,13 +2,13 @@ import React from 'react';
 import {
   View,
   StyleSheet,
-  Image,
   TouchableOpacity,
   GestureResponderEvent,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { COLORS, RADIUS } from '../styles/tokens';
 import AppIcon from './AppIcon';
+import AppImage from './AppImage';
 
 type Props = {
   uri?: string | null;
@@ -46,7 +46,7 @@ export default function AppAvatar({
       activeOpacity={0.8}
     >
       {uri ? (
-        <Image source={{ uri }} style={styles.image} />
+        <AppImage source={{ uri }} style={styles.image} />
       ) : (
         <View style={styles.fallback}>
           <AppIcon name="user" size={24} color={COLORS.text_secondary} />
@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   fallback: {
     flex: 1,
