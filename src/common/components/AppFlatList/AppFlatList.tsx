@@ -1,8 +1,6 @@
 // 📄 src/common/components/AppFlatList/AppFlatList.tsx
 import React, { useRef, useState, useEffect } from 'react';
 import {
-  FlatList,
-  FlatListProps,
   RefreshControl,
   StyleProp,
   View,
@@ -19,6 +17,7 @@ import {
   BottomSheetFlatListMethods,
   useBottomSheetInternal,
 } from '@gorhom/bottom-sheet';
+import { FlashList } from '@shopify/flash-list'; // ✅ FlashList 추가
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
@@ -28,7 +27,7 @@ import AppText from '../AppText';
 
 type EmptyType = React.ComponentType<any> | React.ReactElement | null;
 
-export type AppFlatListProps<T> = FlatListProps<T> & {
+export type AppFlatListProps<T> = {
   containerStyle?: StyleProp<ViewStyle>;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -38,9 +37,10 @@ export type AppFlatListProps<T> = FlatListProps<T> & {
   isLoading?: boolean;
   skeletonCount?: number;
   renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
-};
+  estimatedItemSize?: number; // ✅ 추가 (FlashList용)
+} & React.ComponentProps<typeof FlashList<T>>;
 
-// ✅ 기본 Empty 컴포넌트 (번역/스켈레톤 일관)
+// ✅ 기본 Empty 컴포넌트
 const DefaultEmpty: React.FC = () => (
   <View style={styles.emptyWrap}>
     <AppText i18nKey="STR_NO_DATA" variant="caption" />
@@ -67,9 +67,10 @@ function AppFlatList<T>({
   isLoading = false,
   skeletonCount = 5,
   renderSkeletonItem,
+  estimatedItemSize = 400, // ✅ 기본 추정 높이
   ...rest
 }: AppFlatListProps<T>) {
-  const flatRef = useRef<FlatList<T>>(null);
+  const flatRef = useRef<FlashList<T>>(null);
   const bottomRef = useRef<BottomSheetFlatListMethods>(null);
 
   const [showButton, setShowButton] = useState(false);
@@ -79,11 +80,10 @@ function AppFlatList<T>({
 
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
 
-  // ✅ 키보드 & safe area 대응
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
 
-  // ✅ BottomSheet 내부 감지
+  // ✅ BottomSheet 감지
   let isInsideBottomSheet = false;
   try {
     const internal = useBottomSheetInternal();
@@ -110,13 +110,11 @@ function AppFlatList<T>({
     onScroll?.(event);
   };
 
-  // ✅ 위로 스크롤
   const handleScrollToTop = () => {
-    flatRef.current?.scrollToOffset?.({ offset: 0, animated: true });
+    flatRef.current?.scrollToOffset({ offset: 0, animated: true });
     bottomRef.current?.scrollToOffset?.({ offset: 0, animated: true });
   };
 
-  // ✅ 버튼 등장 애니메이션
   useEffect(() => {
     Animated.timing(fadeAnim.current, {
       toValue: showButton ? 1 : 0,
@@ -160,7 +158,7 @@ function AppFlatList<T>({
       {
         flexGrow: 1,
         minHeight: '100%',
-        paddingBottom: bottomPadding + SPACING.xs * 2, // ✅ 하단 여유 동적 계산
+        paddingBottom: bottomPadding + SPACING.xs * 2,
       },
       contentContainerStyle,
     ],
@@ -171,11 +169,6 @@ function AppFlatList<T>({
     onMomentumScrollEnd,
     onScrollEndDrag,
     scrollEventThrottle: 48,
-
-    initialNumToRender: 10,
-    windowSize: 10,
-    maxToRenderPerBatch: 10,
-    removeClippedSubviews: false,
     ListEmptyComponent: resolvedEmpty,
     ListFooterComponent: loadingMore ? (
       <View style={styles.footerWrap}>
@@ -193,30 +186,29 @@ function AppFlatList<T>({
     />
   ) : undefined;
 
-  // ✅ BottomSheet 내부라면 BottomSheetFlatList 사용
+  // ✅ BottomSheet 내부라면 BottomSheetFlatList 유지
   if (isInsideBottomSheet) {
     return (
-      <>
-        <BottomSheetFlatList
-          ref={bottomRef}
-          {...rest}
-          {...baseListProps}
-          refreshControl={refreshControl}
-          style={containerStyle}
-        />
-      </>
+      <BottomSheetFlatList
+        ref={bottomRef}
+        {...(rest as any)}
+        {...baseListProps}
+        refreshControl={refreshControl}
+        style={containerStyle}
+      />
     );
   }
 
-  // ✅ 일반 화면이라면 FlatList 사용
+  // ✅ 일반 화면은 FlashList로 변경
   return (
     <>
-      <FlatList
-        decelerationRate={Platform.OS === 'ios' ? 0.993 : 0.985}
+      <FlashList
         ref={flatRef}
-        {...rest}
+        {...(rest as any)}
         {...baseListProps}
         refreshControl={refreshControl}
+        estimatedItemSize={estimatedItemSize}
+        decelerationRate={Platform.OS === 'ios' ? 0.993 : 0.985}
         style={containerStyle}
       />
 
