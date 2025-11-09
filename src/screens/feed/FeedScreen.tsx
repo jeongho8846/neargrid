@@ -1,7 +1,6 @@
 // 📄 src/features/thread/screens/FeedScreen.tsx
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
-import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
@@ -15,8 +14,6 @@ import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads
  * - 무한 스크롤 / 풀다운 리프레시 지원
  */
 const FeedScreen = () => {
-  const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
-    useCollapsibleHeader(0);
   const { member, loading: memberLoading } = useCurrentMember();
 
   /** 🧭 React Query 피드 훅 */
@@ -53,8 +50,6 @@ const FeedScreen = () => {
     <View style={{ flex: 1 }}>
       <AppCollapsibleHeader
         titleKey="STR_FEED"
-        headerOffset={headerOffset}
-        isAtTop={isAtTop}
         // ✅ Feed는 루트 화면이므로 onBackPress 제거
         right={
           <TouchableOpacity onPress={() => console.log('검색')}>
@@ -68,10 +63,8 @@ const FeedScreen = () => {
         isLoading={isLoading}
         loadingMore={isFetchingNextPage}
         onEndReached={handleLoadMore}
-        onScroll={handleScroll}
         onRefresh={refetch}
         refreshing={isFetching}
-        contentPaddingTop={HEADER_TOTAL}
       />
     </View>
   );

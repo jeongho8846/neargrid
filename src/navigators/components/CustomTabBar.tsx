@@ -1,14 +1,7 @@
-import React, { useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+// 📄 src/navigators/components/CustomTabBar.tsx
+import React from 'react';
+import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  interpolate,
-  Extrapolate,
-  runOnJS,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 
@@ -16,10 +9,7 @@ import { FONT } from '@/common/styles/typography';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_SPACING } from '@/test/styles/spacing';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-import { useScrollStore } from '@/common/state/scrollStore';
-import { useTouchStore } from '@/common/state/touchStore'; // ✅ 터치 감지 추가
-
-const TAB_HEIGHT = 60;
+import { useTouchStore } from '@/common/state/touchStore'; // ✅ 터치 감지만 유지
 
 const CustomTabBar = ({
   state,
@@ -27,13 +17,9 @@ const CustomTabBar = ({
   navigation,
 }: BottomTabBarProps) => {
   const insets = useSafeAreaInsets();
-
-  /** ✅ 상태 구독 */
   const { isOpen } = useBottomSheetStore();
-  const { isScrolling } = useScrollStore();
   const { isTouching } = useTouchStore();
 
-  const isSheetOpen = isOpen;
   const hiddenRoutes = [
     'DetailThread',
     'DetailThreadComment',
@@ -53,44 +39,14 @@ const CustomTabBar = ({
     activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
     activeRoute.name;
 
-  /** ✅ 숨김 여부 */
+  /** ✅ 숨김 여부 (스크롤 제거, 터치/시트만 유지) */
   const shouldHide =
-    hiddenRoutes.includes(nestedRouteName) ||
-    isSheetOpen ||
-    isScrolling ||
-    isTouching;
+    hiddenRoutes.includes(nestedRouteName) || isOpen || isTouching;
 
-  /** ✅ 애니메이션 상태값 */
-  const translateY = useSharedValue(0);
-  const opacity = useSharedValue(1);
-
-  /** ✅ 애니메이션 트리거 */
-  useEffect(() => {
-    if (shouldHide) {
-      // 👇 사라질 때
-      translateY.value = withTiming(80, { duration: 250 }); // 아래로 슬라이드
-      opacity.value = withTiming(0, { duration: 200 });
-    } else {
-      // 👇 나타날 때
-      translateY.value = withTiming(0, { duration: 250 });
-      opacity.value = withTiming(1, { duration: 250 });
-    }
-  }, [shouldHide]);
-
-  /** ✅ 애니메이션 스타일 */
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }));
+  if (shouldHide) return null; // 완전히 숨김
 
   return (
-    <Animated.View
-      style={[
-        styles.wrapper,
-        animatedStyle,
-        { paddingBottom: insets.bottom + 10 },
-      ]}
-    >
+    <View style={[styles.wrapper, { paddingBottom: insets.bottom + 10 }]}>
       <View style={styles.container}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -127,19 +83,19 @@ const CustomTabBar = ({
               activeOpacity={0.7}
             >
               {icon}
-              <Animated.Text
+              <Text
                 style={[
                   FONT.caption,
                   isFocused ? styles.labelFocused : styles.label,
                 ]}
               >
                 {label}
-              </Animated.Text>
+              </Text>
             </TouchableOpacity>
           );
         })}
       </View>
-    </Animated.View>
+    </View>
   );
 };
 

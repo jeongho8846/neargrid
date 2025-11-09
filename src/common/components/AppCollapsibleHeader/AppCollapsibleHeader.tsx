@@ -1,6 +1,6 @@
 // 📄 src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React from 'react';
-import { Animated, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import AppText from '../AppText';
@@ -14,8 +14,6 @@ type Props = {
   backgroundColor?: string;
   onBackPress?: () => void;
   right?: React.ReactNode;
-  headerOffset?: Animated.Value;
-  isAtTop: boolean;
   showBorder?: boolean;
 };
 
@@ -26,15 +24,11 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   backgroundColor = COLORS.background,
   onBackPress,
   right,
-  headerOffset,
-  isAtTop,
   showBorder = true,
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
-
-  const offset = headerOffset ?? new Animated.Value(0);
 
   const HEADER_TOTAL = headerHeight;
   const hideBackButton =
@@ -43,14 +37,13 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const showBackButton = !hideBackButton && canGoBack;
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.header,
         {
           height: HEADER_TOTAL,
           backgroundColor,
-          transform: [{ translateY: offset }],
-          borderBottomWidth: !isAtTop && showBorder ? 0.5 : 0,
+          borderBottomWidth: showBorder ? 0.5 : 0,
         },
       ]}
     >
@@ -66,7 +59,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
                 type="ion"
                 name="arrow-back"
                 size={24}
-                variant="primary" // ✅ 색상 규칙 통일
+                variant="primary"
               />
             </TouchableOpacity>
           )}
@@ -75,7 +68,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         {/* 🏷️ 중앙(또는 왼쪽): 타이틀 */}
         <AppText
           i18nKey={titleKey}
-          variant="title" // ✅ 폰트 규칙 통일
+          variant="title"
           style={showBackButton ? styles.titleLeft : styles.titleCenter}
         >
           {title}
@@ -84,7 +77,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         {/* ⚙️ 오른쪽: 커스텀 영역 */}
         <View style={styles.side}>{right}</View>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
@@ -103,7 +96,6 @@ const styles = StyleSheet.create({
     height: 56,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 0,
   },
   side: {
     width: 48,
@@ -117,6 +109,6 @@ const styles = StyleSheet.create({
   titleLeft: {
     flex: 1,
     textAlign: 'left',
-    marginLeft: 4, // 버튼과 간격
+    marginLeft: 4,
   },
 });

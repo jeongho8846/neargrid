@@ -1,15 +1,13 @@
 // 📄 src/common/components/AppFlatList/AppFlatList.tsx
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef } from 'react';
 import {
   RefreshControl,
   StyleProp,
   View,
   ViewStyle,
-  TouchableOpacity,
   StyleSheet,
   Dimensions,
   ActivityIndicator,
-  Animated,
   Platform,
 } from 'react-native';
 import {
@@ -17,12 +15,11 @@ import {
   BottomSheetFlatListMethods,
   useBottomSheetInternal,
 } from '@gorhom/bottom-sheet';
-import { FlashList } from '@shopify/flash-list'; // ✅ FlashList 추가
+import { FlashList } from '@shopify/flash-list';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import AppIcon from '../AppIcon';
 import AppText from '../AppText';
 
 type EmptyType = React.ComponentType<any> | React.ReactElement | null;
@@ -37,7 +34,7 @@ export type AppFlatListProps<T> = {
   isLoading?: boolean;
   skeletonCount?: number;
   renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
-  estimatedItemSize?: number; // ✅ 추가 (FlashList용)
+  estimatedItemSize?: number;
 } & React.ComponentProps<typeof FlashList<T>>;
 
 // ✅ 기본 Empty 컴포넌트
@@ -59,27 +56,17 @@ function AppFlatList<T>({
   emptyComponent,
   loadingMore = false,
   isHorizontal = false,
-  onScroll,
-  onMomentumScrollBegin,
-  onMomentumScrollEnd,
-  onScrollEndDrag,
   // ✅ Skeleton 관련
   isLoading = false,
   skeletonCount = 5,
   renderSkeletonItem,
-  estimatedItemSize = 400, // ✅ 기본 추정 높이
+  estimatedItemSize = 400,
   ...rest
 }: AppFlatListProps<T>) {
   const flatRef = useRef<FlashList<T>>(null);
   const bottomRef = useRef<BottomSheetFlatListMethods>(null);
 
-  const [showButton, setShowButton] = useState(false);
-  const [lastOffset, setLastOffset] = useState(0);
-  const screenHeight = Dimensions.get('window').height;
-  const fadeAnim = useRef(new Animated.Value(0));
-
   const resolvedEmpty: EmptyType = emptyComponent ?? DefaultEmpty;
-
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
 
@@ -91,37 +78,6 @@ function AppFlatList<T>({
   } catch {
     isInsideBottomSheet = false;
   }
-
-  // ✅ 스크롤 감지
-  const handleScroll = (event: any) => {
-    const offsetY = event.nativeEvent.contentOffset.y;
-    const dy = offsetY - lastOffset;
-    setLastOffset(offsetY);
-
-    if (!isHorizontal) {
-      if (offsetY >= screenHeight * 1) {
-        if (dy < 0 && !showButton) setShowButton(true);
-        if (dy > 10 && showButton) setShowButton(false);
-      } else {
-        if (showButton) setShowButton(false);
-      }
-    }
-
-    onScroll?.(event);
-  };
-
-  const handleScrollToTop = () => {
-    flatRef.current?.scrollToOffset({ offset: 0, animated: true });
-    bottomRef.current?.scrollToOffset?.({ offset: 0, animated: true });
-  };
-
-  useEffect(() => {
-    Animated.timing(fadeAnim.current, {
-      toValue: showButton ? 1 : 0,
-      duration: 250,
-      useNativeDriver: true,
-    }).start();
-  }, [showButton]);
 
   // ✅ Skeleton 렌더링
   if (isLoading && renderSkeletonItem) {
@@ -164,10 +120,6 @@ function AppFlatList<T>({
     ],
     onEndReached,
     onEndReachedThreshold,
-    onScroll: handleScroll,
-    onMomentumScrollBegin,
-    onMomentumScrollEnd,
-    onScrollEndDrag,
     scrollEventThrottle: 48,
     ListEmptyComponent: resolvedEmpty,
     ListFooterComponent: loadingMore ? (
@@ -199,64 +151,23 @@ function AppFlatList<T>({
     );
   }
 
-  // ✅ 일반 화면은 FlashList로 변경
+  // ✅ 일반 화면은 FlashList로
   return (
-    <>
-      <FlashList
-        ref={flatRef}
-        {...(rest as any)}
-        {...baseListProps}
-        refreshControl={refreshControl}
-        estimatedItemSize={estimatedItemSize}
-        decelerationRate={Platform.OS === 'ios' ? 0.993 : 0.985}
-        style={containerStyle}
-      />
-
-      {/* ✅ 스크롤 위로가기 버튼 */}
-      {!isHorizontal && (
-        <Animated.View
-          style={[
-            styles.scrollTopButton,
-            {
-              bottom: isVisible ? height + bottom + 20 : bottom + 20,
-              opacity: fadeAnim.current,
-              transform: [
-                {
-                  translateY: fadeAnim.current.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [50, 0],
-                  }),
-                },
-              ],
-            },
-          ]}
-        >
-          <TouchableOpacity
-            onPress={handleScrollToTop}
-            activeOpacity={0.8}
-            style={styles.topButtonInner}
-          >
-            <AppIcon type="ion" name="arrow-up" size={18} variant="primary" />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
-    </>
+    <FlashList
+      ref={flatRef}
+      {...(rest as any)}
+      {...baseListProps}
+      refreshControl={refreshControl}
+      estimatedItemSize={estimatedItemSize}
+      decelerationRate={Platform.OS === 'ios' ? 0.993 : 0.985}
+      style={containerStyle}
+    />
   );
 }
 
 export default AppFlatList;
 
 const styles = StyleSheet.create({
-  scrollTopButton: {
-    position: 'absolute',
-    right: 10,
-  },
-  topButtonInner: {
-    backgroundColor: COLORS.sheet_background,
-    padding: 12,
-    borderRadius: 24,
-    elevation: 5,
-  },
   emptyWrap: {
     flex: 1,
     alignItems: 'center',
