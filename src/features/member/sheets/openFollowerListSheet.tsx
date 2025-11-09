@@ -111,6 +111,7 @@ const FollowerListSheetContent: React.FC<{
         isLoading={loading}
       />
       <BottomSheetFlatList
+        showsVerticalScrollIndicator={false}
         data={followers}
         renderItem={renderItem}
         keyExtractor={item => item.id.toString()}
