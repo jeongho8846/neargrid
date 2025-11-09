@@ -3,20 +3,24 @@ import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
-import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import ThreadList from '@/features/thread/lists/ThreadList';
 import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 추가
 
 /**
- * ✅ 피드 화면 (React Query 기반)
- * - useFetchFeedThreads 훅으로 피드 로드
- * - Thread 단위 캐싱 자동 처리
- * - 무한 스크롤 / 풀다운 리프레시 지원
+ * ✅ 피드 화면 (React Query + Toss 스타일 헤더)
+ * - 헤더는 스크롤 방향에 따라 숨김/노출
+ * - 리스트는 FlashList 기반
+ * - 모든 스크롤 이벤트는 native-thread에서 처리
  */
 const FeedScreen = () => {
   const { member, loading: memberLoading } = useCurrentMember();
 
-  /** 🧭 React Query 피드 훅 */
+  // ✅ 헤더 스크롤 훅 (Reanimated 기반)
+  const { headerStyle, scrollHandler } = useHeaderScroll(56);
+
+  // ✅ 피드 데이터 쿼리
   const {
     data,
     fetchNextPage,
@@ -28,7 +32,7 @@ const FeedScreen = () => {
   } = useFetchFeedThreads(
     {
       memberId: member?.id ?? '',
-      distance: 100000000, // 기본 거리
+      distance: 100000000,
       latitude: 37.5,
       longitude: 127.0,
       searchType: 'MOSTRECENT',
@@ -36,10 +40,8 @@ const FeedScreen = () => {
     { enabled: !memberLoading && Boolean(member?.id) },
   );
 
-  /** 🧩 threadIds 배열 평탄화 */
-  const threadIds = data?.pages.flatMap(page => page.threadIds) ?? [];
+  const threadIds = data?.pages.flatMap(p => p.threadIds) ?? [];
 
-  /** 🚀 다음 페이지 로드 */
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
       fetchNextPage();
@@ -48,9 +50,10 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* ✅ Toss-style Collapsible Header */}
       <AppCollapsibleHeader
         titleKey="STR_FEED"
-        // ✅ Feed는 루트 화면이므로 onBackPress 제거
+        animatedStyle={headerStyle}
         right={
           <TouchableOpacity onPress={() => console.log('검색')}>
             <AppIcon type="ion" name="search" size={22} variant="primary" />
@@ -58,6 +61,7 @@ const FeedScreen = () => {
         }
       />
 
+      {/* ✅ FlashList 기반 Thread List */}
       <ThreadList
         data={threadIds}
         isLoading={isLoading}
@@ -65,6 +69,8 @@ const FeedScreen = () => {
         onEndReached={handleLoadMore}
         onRefresh={refetch}
         refreshing={isFetching}
+        onScroll={scrollHandler} // ✅ 연결
+        scrollEventThrottle={16}
       />
     </View>
   );

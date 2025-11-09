@@ -1,3 +1,4 @@
+// 📄 src/features/thread/lists/ThreadList.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
@@ -16,6 +17,9 @@ type Props = {
   contentPaddingTop?: number;
   onRefresh?: () => void;
   refreshing?: boolean;
+  /** ✅ Toss-style 헤더 연동용 스크롤 핸들러 */
+  onScroll?: any;
+  scrollEventThrottle?: number;
 };
 
 const ThreadList: React.FC<Props> = ({
@@ -26,6 +30,8 @@ const ThreadList: React.FC<Props> = ({
   contentPaddingTop = 0,
   onRefresh,
   refreshing,
+  onScroll,
+  scrollEventThrottle = 16, // ✅ 추가 (Reanimated에 최적)
 }) => {
   const isEmpty = !isLoading && (data?.length ?? 0) === 0;
 
@@ -47,6 +53,8 @@ const ThreadList: React.FC<Props> = ({
       onEndReached={() => onEndReached?.()}
       onEndReachedThreshold={0.2}
       loadingMore={loadingMore}
+      onScroll={onScroll} // ✅ 헤더 연동
+      scrollEventThrottle={scrollEventThrottle} // ✅ 프레임별 호출
       contentContainerStyle={{
         paddingTop: contentPaddingTop,
         paddingBottom: SPACING.xl * 2,

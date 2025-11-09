@@ -6,7 +6,6 @@ import {
   View,
   ViewStyle,
   StyleSheet,
-  Dimensions,
   ActivityIndicator,
   Platform,
 } from 'react-native';
@@ -16,6 +15,7 @@ import {
   useBottomSheetInternal,
 } from '@gorhom/bottom-sheet';
 import { FlashList } from '@shopify/flash-list';
+import Animated from 'react-native-reanimated'; // ✅ 추가
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
@@ -23,6 +23,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../AppText';
 
 type EmptyType = React.ComponentType<any> | React.ReactElement | null;
+
+// ✅ Reanimated용 FlashList 래퍼
+const AnimatedFlashList = Animated.createAnimatedComponent(
+  FlashList,
+) as typeof FlashList;
 
 export type AppFlatListProps<T> = {
   containerStyle?: StyleProp<ViewStyle>;
@@ -35,6 +40,8 @@ export type AppFlatListProps<T> = {
   skeletonCount?: number;
   renderSkeletonItem?: ({ index }: { index: number }) => React.ReactElement;
   estimatedItemSize?: number;
+  onScroll?: any; // ✅ Reanimated scrollHandler 지원
+  scrollEventThrottle?: number;
 } & React.ComponentProps<typeof FlashList<T>>;
 
 // ✅ 기본 Empty 컴포넌트
@@ -56,11 +63,12 @@ function AppFlatList<T>({
   emptyComponent,
   loadingMore = false,
   isHorizontal = false,
-  // ✅ Skeleton 관련
   isLoading = false,
   skeletonCount = 5,
   renderSkeletonItem,
   estimatedItemSize = 400,
+  onScroll,
+  scrollEventThrottle = 16, // ✅ Reanimated에 최적
   ...rest
 }: AppFlatListProps<T>) {
   const flatRef = useRef<FlashList<T>>(null);
@@ -70,7 +78,7 @@ function AppFlatList<T>({
   const { isVisible, height } = useKeyboardStore();
   const { bottom } = useSafeAreaInsets();
 
-  // ✅ BottomSheet 감지
+  // ✅ BottomSheet 내부 여부 감지
   let isInsideBottomSheet = false;
   try {
     const internal = useBottomSheetInternal();
@@ -79,7 +87,7 @@ function AppFlatList<T>({
     isInsideBottomSheet = false;
   }
 
-  // ✅ Skeleton 렌더링
+  // ✅ 스켈레톤 모드
   if (isLoading && renderSkeletonItem) {
     const skeletonItems = Array.from({ length: skeletonCount }).map((_, i) =>
       React.cloneElement(renderSkeletonItem({ index: i }), {
@@ -100,11 +108,12 @@ function AppFlatList<T>({
     );
   }
 
-  // ✅ 리스트 공통 속성
+  // ✅ 하단 여백 (키보드 + SafeArea 대응)
   const bottomPadding = isVisible
     ? height + bottom + SPACING.xl
     : bottom + SPACING.xl;
 
+  // ✅ 공통 리스트 속성
   const baseListProps = {
     horizontal: isHorizontal,
     showsVerticalScrollIndicator: !isHorizontal && showsVerticalScrollIndicator,
@@ -120,7 +129,8 @@ function AppFlatList<T>({
     ],
     onEndReached,
     onEndReachedThreshold,
-    scrollEventThrottle: 48,
+    onScroll, // ✅ Reanimated scrollHandler 연결
+    scrollEventThrottle,
     ListEmptyComponent: resolvedEmpty,
     ListFooterComponent: loadingMore ? (
       <View style={styles.footerWrap}>
@@ -138,7 +148,7 @@ function AppFlatList<T>({
     />
   ) : undefined;
 
-  // ✅ BottomSheet 내부라면 BottomSheetFlatList 유지
+  // ✅ BottomSheet 내부일 경우 (gorhom)
   if (isInsideBottomSheet) {
     return (
       <BottomSheetFlatList
@@ -151,9 +161,9 @@ function AppFlatList<T>({
     );
   }
 
-  // ✅ 일반 화면은 FlashList로
+  // ✅ 기본 FlashList → Reanimated 래핑 버전 사용
   return (
-    <FlashList
+    <AnimatedFlashList
       ref={flatRef}
       {...(rest as any)}
       {...baseListProps}

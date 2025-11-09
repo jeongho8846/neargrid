@@ -1,8 +1,9 @@
+// 📄 src/features/thread/hooks/useFetchFeedThreads.ts
 import {
   useInfiniteQuery,
   useQueryClient,
   type UseInfiniteQueryResult,
-  type InfiniteData, // ✅ 추가
+  type InfiniteData,
 } from '@tanstack/react-query';
 import { fetchFeedThreads } from '../api/fetchFeedThreads';
 import { THREAD_KEYS } from '../keys/threadKeys';
@@ -33,9 +34,9 @@ export function useFetchFeedThreads(
   const queryClient = useQueryClient();
 
   return useInfiniteQuery<
-    FetchFeedThreadsResult, // 각 페이지의 데이터 구조
+    FetchFeedThreadsResult,
     Error,
-    InfiniteData<FetchFeedThreadsResult>, // ✅ select 이후 data 타입
+    InfiniteData<FetchFeedThreadsResult>,
     ReturnType<typeof THREAD_KEYS.list>,
     string
   >({
@@ -54,9 +55,18 @@ export function useFetchFeedThreads(
         searchType,
       );
 
-      // ✅ Thread 단위 캐시 주입
+      // ✅ 캐시 주입 시 동일 객체면 갱신 Skip
       data.threads.forEach((thread: Thread) => {
-        queryClient.setQueryData(THREAD_KEYS.detail(thread.threadId), thread);
+        queryClient.setQueryData(THREAD_KEYS.detail(thread.threadId), old => {
+          // 캐시가 비어있으면 새로 저장
+          if (!old) return thread;
+
+          // 내용 완전히 같으면 skip
+          if (JSON.stringify(old) === JSON.stringify(thread)) return old;
+
+          // 다를 때만 갱신
+          return thread;
+        });
       });
 
       return data;

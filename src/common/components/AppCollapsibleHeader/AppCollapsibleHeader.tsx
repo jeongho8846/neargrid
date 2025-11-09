@@ -1,6 +1,7 @@
 // 📄 src/common/components/AppCollapsibleHeader/AppCollapsibleHeader.tsx
 import React from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import Animated, { AnimatedStyleProp } from 'react-native-reanimated';
 import { useNavigation, useRoute } from '@react-navigation/native';
 
 import AppText from '../AppText';
@@ -15,6 +16,8 @@ type Props = {
   onBackPress?: () => void;
   right?: React.ReactNode;
   showBorder?: boolean;
+  /** ✅ 헤더 애니메이션 스타일 (Reanimated용) */
+  animatedStyle?: AnimatedStyleProp<any>;
 };
 
 const AppCollapsibleHeader: React.FC<Props> = ({
@@ -25,6 +28,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   onBackPress,
   right,
   showBorder = true,
+  animatedStyle, // ✅ 추가됨
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -37,7 +41,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   const showBackButton = !hideBackButton && canGoBack;
 
   return (
-    <View
+    <Animated.View
       style={[
         styles.header,
         {
@@ -45,6 +49,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
           backgroundColor,
           borderBottomWidth: showBorder ? 0.5 : 0,
         },
+        animatedStyle, // ✅ 외부 애니메이션 스타일 반영
       ]}
     >
       <View style={styles.bar}>
@@ -77,7 +82,7 @@ const AppCollapsibleHeader: React.FC<Props> = ({
         {/* ⚙️ 오른쪽: 커스텀 영역 */}
         <View style={styles.side}>{right}</View>
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
