@@ -36,10 +36,12 @@ const MemberStatsRow: React.FC<Props> = ({
   };
 
   /** ✅ 팔로워 / 팔로잉 시트 열기 */
+  /** ✅ 팔로워 / 팔로잉 시트 열기 */
   const handleOpenFollowSheet = (type: 'followers' | 'followings') => {
-    if (!targetId) return;
-    if (type === 'followers') openFollowerListSheet({ targetId });
-    else openFollowingListSheet({ targetId });
+    if (!targetId || !member?.id) return;
+    if (type === 'followers')
+      openFollowerListSheet({ targetId, currentMemberId: member.id });
+    else openFollowingListSheet({ targetId, currentMemberId: member.id });
   };
 
   /** ✅ 3줄 구성 */
