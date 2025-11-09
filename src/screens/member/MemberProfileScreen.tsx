@@ -1,13 +1,15 @@
 // 📄 src/screens/member/MemberProfileScreen.tsx
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { useAnimatedReaction, runOnJS } from 'react-native-reanimated'; // ✅ 추가
 import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
 import MemberProfileHeader from '@/features/member/components/MemberProfileHeader';
 import { useFetchMemberProfile } from '@/features/member/hooks/useFetchMemberProfile';
 import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFootPrintContents';
-import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 변경된 훅
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
+import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
@@ -17,8 +19,18 @@ export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
   const targetUserId = route?.params?.memberId;
 
-  // ✅ Reanimated 기반 헤더 스크롤
-  const { headerStyle, scrollHandler } = useHeaderScroll(56);
+  // ✅ 헤더 스크롤 (Reanimated 기반)
+  const { headerStyle, scrollHandler, direction } = useHeaderScroll(56);
+
+  // ✅ 탭바 제어 (FeedScreen과 동일한 로직)
+  const { hide, show } = useTabBarStore();
+  useAnimatedReaction(
+    () => direction.value,
+    dir => {
+      runOnJS(dir === 'down' ? hide : show)();
+    },
+    [],
+  );
 
   /** 👤 프로필 정보 */
   const { data: profile, isLoading: isProfileLoading } = useFetchMemberProfile(
@@ -68,7 +80,7 @@ export default function MemberProfileScreen({ route }) {
       {/* ✅ 헤더 (Reanimated 연결) */}
       <AppCollapsibleHeader
         titleKey="STR_PROFILE"
-        animatedStyle={headerStyle} // ✅ 변경
+        animatedStyle={headerStyle}
         onBackPress={() => console.log('뒤로가기')}
         right={
           <TouchableOpacity onPress={() => console.log('설정')}>
@@ -90,8 +102,8 @@ export default function MemberProfileScreen({ route }) {
         ListHeaderComponent={
           <MemberProfileHeader profile={profile} isLoading={isProfileLoading} />
         }
-        onScroll={scrollHandler} // ✅ 변경
-        scrollEventThrottle={16} // ✅ 추가 (필수)
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         isLoading={isProfileLoading || isThreadsLoading}
         ListEmptyComponent={
           !isThreadsLoading && (

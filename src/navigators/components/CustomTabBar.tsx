@@ -1,6 +1,10 @@
 // 📄 src/navigators/components/CustomTabBar.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  withSpring,
+} from 'react-native-reanimated';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
@@ -9,7 +13,10 @@ import { FONT } from '@/common/styles/typography';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_SPACING } from '@/test/styles/spacing';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-import { useTouchStore } from '@/common/state/touchStore'; // ✅ 터치 감지만 유지
+import { useTouchStore } from '@/common/state/touchStore';
+import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가 (FeedScreen 등에서 제어)
+
+const TABBAR_HEIGHT = 80;
 
 const CustomTabBar = ({
   state,
@@ -19,6 +26,7 @@ const CustomTabBar = ({
   const insets = useSafeAreaInsets();
   const { isOpen } = useBottomSheetStore();
   const { isTouching } = useTouchStore();
+  const { visible } = useTabBarStore(); // ✅ Zustand 상태 구독
 
   const hiddenRoutes = [
     'DetailThread',
@@ -39,14 +47,31 @@ const CustomTabBar = ({
     activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
     activeRoute.name;
 
-  /** ✅ 숨김 여부 (스크롤 제거, 터치/시트만 유지) */
-  const shouldHide =
+  /** ✅ 완전히 숨겨야 하는 상황 (예: Detail 화면, BottomSheet 열림 등) */
+  const shouldHideCompletely =
     hiddenRoutes.includes(nestedRouteName) || isOpen || isTouching;
 
-  if (shouldHide) return null; // 완전히 숨김
+  // ✅ 스르륵 애니메이션 스타일 (visible이 false면 아래로 이동)
+  const animatedStyle = useAnimatedStyle(() => {
+    const translateY = withSpring(visible ? 0 : TABBAR_HEIGHT + insets.bottom, {
+      damping: 150,
+      stiffness: 150,
+    });
+    return {
+      transform: [{ translateY }],
+    };
+  }, [visible, insets.bottom]);
+
+  if (shouldHideCompletely) return null;
 
   return (
-    <View style={[styles.wrapper, { paddingBottom: insets.bottom + 10 }]}>
+    <Animated.View
+      style={[
+        styles.wrapper,
+        { paddingBottom: insets.bottom + 10 },
+        animatedStyle,
+      ]}
+    >
       <View style={styles.container}>
         {state.routes.map((route, index) => {
           const { options } = descriptors[route.key];
@@ -95,12 +120,13 @@ const CustomTabBar = ({
           );
         })}
       </View>
-    </View>
+    </Animated.View>
   );
 };
 
 export default CustomTabBar;
 
+/* ──────────────── 스타일 ──────────────── */
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',

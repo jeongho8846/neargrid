@@ -1,26 +1,29 @@
 // 📄 src/features/thread/screens/FeedScreen.tsx
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
+import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
 import ThreadList from '@/features/thread/lists/ThreadList';
 import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
-import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 추가
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
+import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
 
-/**
- * ✅ 피드 화면 (React Query + Toss 스타일 헤더)
- * - 헤더는 스크롤 방향에 따라 숨김/노출
- * - 리스트는 FlashList 기반
- * - 모든 스크롤 이벤트는 native-thread에서 처리
- */
 const FeedScreen = () => {
   const { member, loading: memberLoading } = useCurrentMember();
+  const { headerStyle, scrollHandler, direction } = useHeaderScroll(56);
+  const { hide, show } = useTabBarStore();
 
-  // ✅ 헤더 스크롤 훅 (Reanimated 기반)
-  const { headerStyle, scrollHandler } = useHeaderScroll(56);
+  // ✅ 스크롤 방향 감지 후 탭바 제어
+  useAnimatedReaction(
+    () => direction.value,
+    dir => {
+      runOnJS(dir === 'down' ? hide : show)();
+    },
+    [],
+  );
 
-  // ✅ 피드 데이터 쿼리
   const {
     data,
     fetchNextPage,
@@ -50,7 +53,6 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      {/* ✅ Toss-style Collapsible Header */}
       <AppCollapsibleHeader
         titleKey="STR_FEED"
         animatedStyle={headerStyle}
@@ -60,8 +62,6 @@ const FeedScreen = () => {
           </TouchableOpacity>
         }
       />
-
-      {/* ✅ FlashList 기반 Thread List */}
       <ThreadList
         data={threadIds}
         isLoading={isLoading}
@@ -69,7 +69,7 @@ const FeedScreen = () => {
         onEndReached={handleLoadMore}
         onRefresh={refetch}
         refreshing={isFetching}
-        onScroll={scrollHandler} // ✅ 연결
+        onScroll={scrollHandler}
         scrollEventThrottle={16}
       />
     </View>
