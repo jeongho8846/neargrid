@@ -4,11 +4,11 @@ import type {
   BottomSheetModal as BottomSheetModalType,
   BottomSheetBackdropProps,
 } from '@gorhom/bottom-sheet';
-import { StyleSheet, Platform, View } from 'react-native';
-import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
+import { BackHandler, StyleSheet, Platform, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 
-// ✅ 새로운 테스트 디자인 토큰 기반
+// ✅ 테스트 디자인 토큰
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_RADIUS } from '@/test/styles/radius';
 import { TEST_SPACING } from '@/test/styles/spacing';
@@ -46,11 +46,27 @@ const GlobalBottomSheet = () => {
     autoCloseOnIndexZero,
     backdropPressToClose,
     useBackdrop,
+    isOpen,
   } = useBottomSheetStore();
 
   useEffect(() => {
     setRef(ref);
   }, [setRef]);
+
+  // ✅ 안드로이드 뒤로가기 처리
+  useEffect(() => {
+    const onBackPress = () => {
+      if (isOpen) {
+        ref.current?.dismiss();
+        close();
+        return true; // 뒤로가기 이벤트 소비
+      }
+      return false; // 닫혀있으면 네비게이션 뒤로가기 허용
+    };
+
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [isOpen, close]);
 
   const safeSnapPoints =
     Array.isArray(snapPoints) && snapPoints.length > 0 ? snapPoints : ['50%'];
@@ -61,12 +77,18 @@ const GlobalBottomSheet = () => {
       ref={ref}
       index={resolvedInitialIndex}
       snapPoints={safeSnapPoints}
-      onDismiss={close}
       onChange={idx => {
+        if (idx >= 0) useBottomSheetStore.setState({ isOpen: true });
+        if (idx === -1) useBottomSheetStore.setState({ isOpen: false });
+
         if (autoCloseOnIndexZero && idx === 0) {
           ref.current?.dismiss();
           close();
         }
+      }}
+      onDismiss={() => {
+        useBottomSheetStore.setState({ isOpen: false });
+        close();
       }}
       enableDismissOnClose
       enablePanDownToClose={enablePanDownToClose ?? true}
@@ -97,32 +119,21 @@ const GlobalBottomSheet = () => {
 export default GlobalBottomSheet;
 
 const styles = StyleSheet.create({
-  /** ✅ 시트 배경 */
   sheetBackground: {
-    backgroundColor: TEST_COLORS.surface, // ✅ 카드/시트용 서피스 컬러
+    backgroundColor: TEST_COLORS.surface,
     borderTopLeftRadius: TEST_RADIUS.xl,
     borderTopRightRadius: TEST_RADIUS.xl,
     paddingTop: TEST_SPACING.md,
-    ...TEST_SHADOW.soft, // ✅ 부드러운 그림자 적용
+    ...TEST_SHADOW.soft,
   },
-
-  /** ✅ 핸들바 */
-  handle: {
-    backgroundColor: 'transparent',
-  },
+  handle: { backgroundColor: 'transparent' },
   handleIndicator: {
-    backgroundColor: TEST_COLORS.border, // ✅ 은은한 그레이 라인
+    backgroundColor: TEST_COLORS.border,
     width: 40,
     height: 4,
     borderRadius: 2,
   },
-
-  /** ✅ 백드롭 (뒤 어두운 영역) */
-  backdrop: {
-    backgroundColor: 'rgba(0, 0, 0, 0.55)', // ✅ 반투명 다크 톤
-  },
-
-  /** ✅ 컨텐츠 */
+  backdrop: { backgroundColor: 'rgba(0, 0, 0, 0.55)' },
   content: {
     flex: 1,
     backgroundColor: 'transparent',
