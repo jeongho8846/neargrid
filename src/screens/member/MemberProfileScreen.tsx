@@ -7,7 +7,7 @@ import AppIcon from '@/common/components/AppIcon';
 import MemberProfileHeader from '@/features/member/components/MemberProfileHeader';
 import { useFetchMemberProfile } from '@/features/member/hooks/useFetchMemberProfile';
 import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFootPrintContents';
-import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 변경된 훅
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
@@ -15,30 +15,26 @@ import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
-
-  // ✅ route에서 memberId 직접 받기
   const targetUserId = route?.params?.memberId;
 
-  const { headerOffset, handleScroll, HEADER_TOTAL, isAtTop } =
-    useCollapsibleHeader(0);
+  // ✅ Reanimated 기반 헤더 스크롤
+  const { headerStyle, scrollHandler } = useHeaderScroll(56);
 
   /** 👤 프로필 정보 */
   const { data: profile, isLoading: isProfileLoading } = useFetchMemberProfile(
     currentMember?.id ?? '',
     targetUserId ?? '',
-    { enabled: !!targetUserId }, // ✅ targetUserId 있을 때만 fetch 실행
+    { enabled: !!targetUserId },
   );
 
-  /** 🧭 FootPrint 데이터 가져오기 */
+  /** 🧭 FootPrint 데이터 */
   const { fetchContents, loading: isThreadsLoading } =
     useFetchFootPrintContents();
 
   const [threads, setThreads] = useState([]);
 
   useEffect(() => {
-    if (!targetUserId) return; // ✅ 없으면 아무것도 안함
-
-    // ✅ 날짜 포맷 (Spring 호환)
+    if (!targetUserId) return;
     const toIso = (d: Date) => d.toISOString().slice(0, 19);
     const startDate = new Date('2025-01-01T00:00:00');
     const endDate = new Date();
@@ -53,14 +49,10 @@ export default function MemberProfileScreen({ route }) {
 
         console.log('📦 [ProfileScreen] FootPrint Response:', res);
 
-        // ✅ 불필요한 depth>0 (대댓글/자식 쓰레드) 필터링
         const filtered = res.filter((t: any) => t.depth === 0);
         setThreads(filtered);
       } catch (err: any) {
-        console.error(
-          '❌ [ProfileScreen] FootPrint 데이터 로드 실패:',
-          err.message,
-        );
+        console.error('❌ FootPrint 로드 실패:', err.message);
         console.error(
           '📛 서버 응답:',
           err.response?.data || '(서버 응답 없음)',
@@ -73,11 +65,10 @@ export default function MemberProfileScreen({ route }) {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
-      {/* ✅ 상단 헤더 */}
+      {/* ✅ 헤더 (Reanimated 연결) */}
       <AppCollapsibleHeader
         titleKey="STR_PROFILE"
-        headerOffset={headerOffset}
-        isAtTop={isAtTop}
+        animatedStyle={headerStyle} // ✅ 변경
         onBackPress={() => console.log('뒤로가기')}
         right={
           <TouchableOpacity onPress={() => console.log('설정')}>
@@ -91,7 +82,7 @@ export default function MemberProfileScreen({ route }) {
         }
       />
 
-      {/* ✅ 프로필 + 쓰레드 리스트 */}
+      {/* ✅ 리스트 */}
       <AppFlatList
         data={threads}
         keyExtractor={item => item.threadId.toString()}
@@ -99,8 +90,8 @@ export default function MemberProfileScreen({ route }) {
         ListHeaderComponent={
           <MemberProfileHeader profile={profile} isLoading={isProfileLoading} />
         }
-        onScroll={handleScroll}
-        contentPaddingTop={HEADER_TOTAL}
+        onScroll={scrollHandler} // ✅ 변경
+        scrollEventThrottle={16} // ✅ 추가 (필수)
         isLoading={isProfileLoading || isThreadsLoading}
         ListEmptyComponent={
           !isThreadsLoading && (

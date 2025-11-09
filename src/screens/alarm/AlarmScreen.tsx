@@ -1,3 +1,4 @@
+// 📄 src/screens/alarm/AlarmScreen.tsx
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFetchMemberAlarms } from '@/features/alarm/hooks/useFetchMemberAlarms';
@@ -6,15 +7,17 @@ import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { SPACING } from '@/common/styles';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 교체
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
   const { data } = useFetchMemberAlarms(member?.id);
-  const { headerOffset } = useCollapsibleHeader(0);
   const { markAllAsRead, loading } = useViewAllAlarms();
+
+  // ✅ Reanimated 기반 헤더 제어
+  const { headerStyle, scrollHandler } = useHeaderScroll(56);
 
   const handleAllRead = async () => {
     if (!member?.id || loading) return;
@@ -23,10 +26,10 @@ export default function AlarmScreen() {
 
   return (
     <View style={styles.root}>
+      {/* ✅ Toss-style 헤더 (Reanimated 연결) */}
       <AppCollapsibleHeader
         titleKey="STR_ALARM"
-        headerOffset={headerOffset}
-        isAtTop={true}
+        animatedStyle={headerStyle} // ✅ 변경
         right={
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={handleAllRead}>
@@ -35,8 +38,14 @@ export default function AlarmScreen() {
           </View>
         }
       />
+
+      {/* ✅ 알람 리스트 */}
       <View style={styles.listContainer}>
-        <AlarmList data={data ?? []} />
+        <AlarmList
+          data={data ?? []}
+          onScroll={scrollHandler} // ✅ 연결
+          scrollEventThrottle={16} // ✅ 추가
+        />
       </View>
     </View>
   );
@@ -55,10 +64,10 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   headerRight: {
-    alignItems: 'flex-end', // ✅ 오른쪽 정렬
+    alignItems: 'flex-end',
     justifyContent: 'center',
-    marginLeft: 'auto', // ✅ 남는 공간 밀어내기
-    paddingRight: SPACING.sm, // 살짝 여유
+    marginLeft: 'auto',
+    paddingRight: SPACING.sm,
     padding: 1,
   },
 });
