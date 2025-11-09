@@ -5,6 +5,8 @@ import { SPACING } from '@/common/styles/spacing';
 import { MemberStats } from '../model/MemberStatsModel';
 import { openDonationRankSheet } from '@/features/donation/sheets/openDonationRankSheet';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { openFollowerListSheet } from '@/features/member/sheets/openFollowerListSheet';
+import { openFollowingListSheet } from '@/features/member/sheets/openFollowingListSheet';
 
 type Props = {
   stats?: MemberStats;
@@ -33,7 +35,16 @@ const MemberStatsRow: React.FC<Props> = ({
     });
   };
 
+  /** ✅ 팔로워 / 팔로잉 시트 열기 */
+  const handleOpenFollowSheet = (type: 'followers' | 'followings') => {
+    if (!targetId) return;
+    if (type === 'followers') openFollowerListSheet({ targetId });
+    else openFollowingListSheet({ targetId });
+  };
+
+  /** ✅ 3줄 구성 */
   const rows = [
+    // ① 도네이션
     [
       {
         key: 'STR_RECEIVED_DONATION',
@@ -46,11 +57,21 @@ const MemberStatsRow: React.FC<Props> = ({
         onPress: () => handleOpenRankSheet('recipient'),
       },
     ],
+    // ② 팔로우 관련
     [
-      { key: 'STR_FOLLOWERS', value: stats?.followers ?? 0 },
-      { key: 'STR_FOLLOWINGS', value: stats?.followings ?? 0 },
+      {
+        key: 'STR_FOLLOWERS',
+        value: stats?.followers ?? 0,
+        onPress: () => handleOpenFollowSheet('followers'),
+      },
+      {
+        key: 'STR_FOLLOWINGS',
+        value: stats?.followings ?? 0,
+        onPress: () => handleOpenFollowSheet('followings'),
+      },
       { key: 'STR_CHATBOTS', value: stats?.chatBots ?? 0 },
     ],
+    // ③ 활동 관련
     [
       { key: 'STR_THREADS', value: stats?.threads ?? 0 },
       { key: 'STR_COMMENTS', value: stats?.comments ?? 0 },
@@ -63,7 +84,7 @@ const MemberStatsRow: React.FC<Props> = ({
       {rows.map((row, rowIndex) => (
         <View key={rowIndex} style={styles.row}>
           {row.map((item, colIndex) => {
-            const isDonationRow = rowIndex === 0;
+            const hasPress = typeof item.onPress === 'function';
 
             const Content = (
               <>
@@ -74,7 +95,7 @@ const MemberStatsRow: React.FC<Props> = ({
               </>
             );
 
-            return isDonationRow ? (
+            return hasPress ? (
               <TouchableOpacity
                 key={colIndex}
                 style={styles.item}
