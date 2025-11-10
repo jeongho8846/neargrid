@@ -3,8 +3,6 @@ import React, { useRef } from 'react';
 import {
   FlatList,
   FlatListProps,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
   View,
   TouchableOpacity,
   StyleSheet,
@@ -16,9 +14,8 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import AppIcon from '@/common/components/AppIcon';
-import { useHeaderStore } from '../state/headerStore';
-import { useTabBarStore } from '../state/tabBarStore';
-import { COLORS, RADIUS, SPACING } from '../styles/tokens';
+import { COLORS, SPACING } from '@/common/styles';
+import { RADIUS } from '@/common/styles/radius';
 
 type Props<T> = FlatListProps<T> & {
   headerAutoHide?: boolean;
@@ -28,44 +25,15 @@ type Props<T> = FlatListProps<T> & {
 };
 
 export default function AppFlatList<T>({
-  headerAutoHide = false,
-  tabBarAutoHide = false,
   isLoading = false,
   ListLoadingComponent,
   ...rest
 }: Props<T>) {
   const listRef = useRef<FlatList<T>>(null);
-  const lastOffsetY = useRef(0);
-
-  const setHeaderVisible = useHeaderStore(s => s.setVisible);
-  const setTabBarVisible = useTabBarStore(s => s.setVisible);
-  const isTabBarVisible = useTabBarStore(s => s.visible);
 
   // ✅ 애니메이션 상태값
   const fabVisible = useSharedValue(0);
   const fabBottom = useSharedValue(SPACING.xl * 2);
-
-  const handleScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const offsetY = e.nativeEvent.contentOffset.y;
-    const diff = offsetY - lastOffsetY.current;
-
-    if (Math.abs(diff) > 5) {
-      const scrollingDown = diff > 0;
-      if (headerAutoHide) setHeaderVisible(!scrollingDown);
-      if (tabBarAutoHide) setTabBarVisible(!scrollingDown);
-    }
-
-    // ✅ 스크롤에 따라 버튼 표시 전환
-    fabVisible.value = withTiming(offsetY > 300 ? 1 : 0, { duration: 250 });
-
-    lastOffsetY.current = offsetY;
-  };
-
-  // ✅ 탭바 표시 상태에 따른 위치 애니메이션
-  React.useEffect(() => {
-    const targetBottom = isTabBarVisible ? SPACING.xl * 6.5 : SPACING.xl * 2;
-    fabBottom.value = withTiming(targetBottom, { duration: 250 });
-  }, [isTabBarVisible]);
 
   const scrollToTop = () => {
     listRef.current?.scrollToOffset({ offset: 0, animated: true });
@@ -86,7 +54,6 @@ export default function AppFlatList<T>({
       <FlatList
         ref={listRef}
         {...rest}
-        onScroll={handleScroll}
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         decelerationRate="fast" // ✅ 인스타그램 느낌으로 감속 늘림
@@ -99,7 +66,7 @@ export default function AppFlatList<T>({
           onPress={scrollToTop}
           activeOpacity={0.8}
         >
-          <AppIcon name="arrow-up" size={22} color={COLORS.surface_light} />
+          <AppIcon name="arrow-up" size={22} color={COLORS.button_surface} />
         </TouchableOpacity>
       </Animated.View>
     </View>
@@ -113,7 +80,7 @@ const styles = StyleSheet.create({
     right: SPACING.lg,
   },
   fab: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.background,
     borderRadius: RADIUS.round,
     padding: 12,
     shadowColor: '#000',

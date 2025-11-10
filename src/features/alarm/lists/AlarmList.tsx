@@ -4,7 +4,7 @@ import { View, StyleSheet } from 'react-native';
 import AlarmItem from '../components/AlarmItem';
 import type { AlarmModel } from '../model/AlarmModel';
 import { SPACING } from '@/common/styles';
-import AppFlatList from 'src2/common/components/AppFlatList';
+import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
 
 type Props = {
   data: AlarmModel[];
