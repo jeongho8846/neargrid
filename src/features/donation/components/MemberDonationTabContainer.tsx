@@ -69,8 +69,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    backgroundColor: COLORS.sheet_background,
   },
   tabButton: {
     paddingVertical: SPACING.xs,

@@ -15,6 +15,7 @@ import { TEST_SPACING } from '@/test/styles/spacing';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { useTouchStore } from '@/common/state/touchStore';
 import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가 (FeedScreen 등에서 제어)
+import { COLORS } from '@/common/styles';
 
 const TABBAR_HEIGHT = 80;
 
@@ -130,7 +131,7 @@ export default CustomTabBar;
 const styles = StyleSheet.create({
   wrapper: {
     position: 'absolute',
-    bottom: 0,
+    bottom: -10,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -138,17 +139,18 @@ const styles = StyleSheet.create({
   },
   container: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(24,24,24,0.85)',
+    backgroundColor: COLORS.input_background,
+    // backgroundColor: 'rgba(24, 24, 24, 0.93)',
     borderRadius: 42,
     paddingHorizontal: 28,
-    paddingVertical: 14,
+    paddingVertical: 5,
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '88%',
     shadowColor: TEST_COLORS.overlay_dark,
     shadowOpacity: 0.4,
     shadowRadius: 16,
-    shadowOffset: { width: 0, height: 6 },
+    shadowOffset: { width: 1, height: 6 },
     elevation: 10,
   },
   tabItem: {

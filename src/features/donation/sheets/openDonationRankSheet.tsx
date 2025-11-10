@@ -94,7 +94,6 @@ const DonationRankSheetContent: React.FC<{
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.sheet_background,
   },
   title: {
     marginBottom: SPACING.sm,
