@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   counterText: {
-    color: COLORS.text,
+    color: COLORS.caption,
     fontSize: 12,
     fontWeight: '500',
   },
