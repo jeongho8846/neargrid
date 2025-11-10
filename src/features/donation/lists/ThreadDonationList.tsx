@@ -1,7 +1,7 @@
 import React, { forwardRef, useImperativeHandle, useEffect } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import AppText from '@/common/components/AppText';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import { useGetDonationThreadByThread } from '../hooks/useGetDonationThreadByThread';
@@ -23,7 +23,7 @@ const ThreadDonationList = forwardRef<any, Props>(
 
     return (
       <View style={styles.container}>
-        <AppFlatList
+        <AppFlashList
           data={items}
           keyExtractor={item => item.donationId}
           renderItem={({ item }) => (

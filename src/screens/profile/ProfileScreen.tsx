@@ -6,7 +6,7 @@ import { useCollapsibleHeader } from '@/common/hooks/useCollapsibleHeader';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppTextField from '@/common/components/AppTextField';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
 import { COLORS } from '@/common/styles/colors';

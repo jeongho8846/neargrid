@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppText from '@/common/components/AppText';
 import { useGetDonationRankDonorByRecipient } from '../hooks/useGetDonationRankDonorByRecipient';
 import ThreadDonationRankingItemCard from '../components/ThreadDonationRankingItemCard';
@@ -20,7 +20,7 @@ const DonationRankDonorList: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <AppFlatList
+      <AppFlashList
         data={items}
         keyExtractor={(item, idx) => `${item.memberId}-${idx}`}
         renderItem={({ item, index }) => (

@@ -10,7 +10,7 @@ import React, {
 import { View, StyleSheet } from 'react-native';
 import { fetchChildCommentThreads } from '../api/fetchChildCommentThreads';
 import { ThreadComment } from '../model/ThreadCommentModel';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import ThreadCommentReplyItem from '../components/ThreadComment_Reply_Item_card';
 import ThreadCommentItem from '../components/ThreadComment_item_card';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
@@ -134,7 +134,7 @@ const ThreadCommentReplyList = forwardRef<ThreadCommentReplyListRef, Props>(
 
     return (
       <View style={styles.container}>
-        <AppFlatList
+        <AppFlashList
           data={mergedReplies}
           keyExtractor={(item, index) =>
             item.commentThreadId ?? `temp-${index}`

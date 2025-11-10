@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import AppText from '@/common/components/AppText';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import { useGetDonationRankThreadByDonor } from '../hooks/useGetDonationRankThreadByDonor';
@@ -40,7 +40,7 @@ const ThreadDonationRankingList: React.FC<Props> = ({
 
   return (
     <View style={styles.container}>
-      <AppFlatList
+      <AppFlashList
         data={items}
         keyExtractor={item => item.donorId}
         renderItem={({ item, index }) => (

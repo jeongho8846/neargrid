@@ -3,8 +3,8 @@ import { View, StyleSheet } from 'react-native';
 
 import AlarmItem from '../components/AlarmItem';
 import type { AlarmModel } from '../model/AlarmModel';
-import AppFlatList from 'src2/common/components/AppFlatList';
 import { SPACING } from '@/common/styles';
+import AppFlatList from 'src2/common/components/AppFlatList';
 
 type Props = {
   data: AlarmModel[];

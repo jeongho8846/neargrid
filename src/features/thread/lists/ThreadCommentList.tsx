@@ -9,7 +9,7 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useThreadQuery } from '../hooks/useThreadQuery';
 import { useFetchThreadComments } from '../hooks/useFetchThreadComments';
 import AppText from '@/common/components/AppText';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 
@@ -66,7 +66,7 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
 
     return (
       <View style={styles.container}>
-        <AppFlatList
+        <AppFlashList
           data={mergedComments}
           style={style}
           keyExtractor={item => item.commentThreadId}

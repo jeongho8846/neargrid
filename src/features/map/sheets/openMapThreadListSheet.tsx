@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import AppText from '@/common/components/AppText';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import { useMapThreadStore } from '../state/mapThreadStore';
@@ -24,7 +24,7 @@ export const openMapThreadListSheet = () => {
         <AppText i18nKey="STR_MAP_THREAD_LIST_TITLE" variant="title" />
         <AppText i18nKey="STR_MAP_THREAD_LIST_DESC" variant="caption" />
 
-        <AppFlatList
+        <AppFlashList
           data={threads}
           numColumns={2} // ✅ 3열 자동 분할
           keyExtractor={item => item.threadId}

@@ -1,4 +1,4 @@
-// 📄 src/common/components/AppFlatList/AppFlatList.tsx
+// 📄 src/common/components/AppFlashList/AppFlashList.tsx
 import React, { useRef } from 'react';
 import {
   RefreshControl,
@@ -29,7 +29,7 @@ const AnimatedFlashList = Animated.createAnimatedComponent(
   FlashList,
 ) as typeof FlashList;
 
-export type AppFlatListProps<T> = {
+export type AppFlashListProps<T> = {
   containerStyle?: StyleProp<ViewStyle>;
   refreshing?: boolean;
   onRefresh?: () => void;
@@ -51,7 +51,7 @@ const DefaultEmpty: React.FC = () => (
   </View>
 );
 
-function AppFlatList<T>({
+function AppFlashList<T>({
   containerStyle,
   refreshing = false,
   onRefresh,
@@ -70,7 +70,7 @@ function AppFlatList<T>({
   onScroll,
   scrollEventThrottle = 16, // ✅ Reanimated에 최적
   ...rest
-}: AppFlatListProps<T>) {
+}: AppFlashListProps<T>) {
   const flatRef = useRef<FlashList<T>>(null);
   const bottomRef = useRef<BottomSheetFlatListMethods>(null);
 
@@ -175,7 +175,7 @@ function AppFlatList<T>({
   );
 }
 
-export default AppFlatList;
+export default AppFlashList;
 
 const styles = StyleSheet.create({
   emptyWrap: {

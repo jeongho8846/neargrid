@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated'; // ✅ 추가
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
 import MemberProfileHeader from '@/features/member/components/MemberProfileHeader';
@@ -95,7 +95,7 @@ export default function MemberProfileScreen({ route }) {
       />
 
       {/* ✅ 리스트 */}
-      <AppFlatList
+      <AppFlashList
         data={threads}
         keyExtractor={item => item.threadId.toString()}
         renderItem={({ item }) => <ThreadItemDetail item={item} />}

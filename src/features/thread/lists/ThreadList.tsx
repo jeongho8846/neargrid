@@ -1,7 +1,7 @@
 // 📄 src/features/thread/lists/ThreadList.tsx
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
 import ThreadListItem from './ThreadListItem';
@@ -36,7 +36,7 @@ const ThreadList: React.FC<Props> = ({
   const isEmpty = !isLoading && (data?.length ?? 0) === 0;
 
   return (
-    <AppFlatList
+    <AppFlashList
       data={data ?? []}
       keyExtractor={(id, index) => id?.toString?.() ?? `fallback-${index}`}
       renderItem={({ item }) => <ThreadListItem threadId={item} />}

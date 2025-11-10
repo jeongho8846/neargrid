@@ -8,7 +8,7 @@ import React from 'react';
 import { Alert, StyleSheet, View, TouchableOpacity } from 'react-native';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
-import AppFlatList from '@/common/components/AppFlatList/AppFlatList';
+import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import { postContentReport } from '../api/postContentReport';
@@ -156,7 +156,7 @@ const ReportSheetContent: React.FC<Props> = ({
 
       {/* ✅ 그룹 박스 전체 감싸기 */}
       <View style={styles.groupBox}>
-        <AppFlatList
+        <AppFlashList
           data={reasons}
           keyExtractor={(_, i) => String(i)}
           renderItem={renderItem}
