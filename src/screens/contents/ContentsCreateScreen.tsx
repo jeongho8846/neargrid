@@ -1,5 +1,5 @@
 // 📄 src/screens/contents/ContentsCreateScreen.tsx
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -25,6 +25,7 @@ import { useLocationStore } from '@/features/location/state/locationStore';
 import { COLORS, SPACING } from '@/common/styles';
 import { TEST_RADIUS } from '@/test/styles/radius';
 import AppInput from '@/common/components/Input';
+import { useKeyboardStore } from '@/common/state/keyboardStore';
 
 export default function ContentsCreateScreen() {
   const [caption, setCaption] = useState('');
@@ -35,6 +36,9 @@ export default function ContentsCreateScreen() {
   const { latitude, longitude, altitude } = useLocationStore();
   const { media, openCamera, openGallery, clearMedia, setMedia } =
     useMediaPicker();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const { isVisible, height: keyboardHeight } = useKeyboardStore(); // 👈 전역 키보드 상태 구독
 
   const handleSubmit = async () => {
     console.log('📤 게시 버튼 클릭');
@@ -61,6 +65,15 @@ export default function ContentsCreateScreen() {
     });
   };
 
+  useEffect(() => {
+    if (isVisible) {
+      // 약간의 delay를 주면 커서가 정확히 보임
+      setTimeout(() => {
+        scrollRef.current?.scrollToEnd({ animated: true });
+      }, 120);
+    }
+  }, [isVisible, inputHeight]);
+
   const handleRemoveItem = (uri?: string) => {
     if (!uri) return;
     setMedia(prev => prev.filter(m => m.uri !== uri));
@@ -85,8 +98,12 @@ export default function ContentsCreateScreen() {
 
       {/* 전체 스크롤 영역 */}
       <ScrollView
+        ref={scrollRef}
         style={styles.scrollBody}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[
+          styles.scrollContent,
+          isVisible && { paddingBottom: keyboardHeight + 50 }, // ✅ 키보드가 올라오면 하단 패딩 증가
+        ]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -140,13 +157,20 @@ export default function ContentsCreateScreen() {
           multiline
           value={caption}
           onChangeText={setCaption}
-          scrollEnabled={false} // ✅ 내부 스크롤 비활성화 → 부모 ScrollView 담당
+          scrollEnabled={false}
           onContentSizeChange={e =>
             setInputHeight(e.nativeEvent.contentSize.height)
           }
           style={[styles.input, { height: Math.max(80, inputHeight) }]}
           placeholder="글을 입력하세요..."
           placeholderTextColor={COLORS.caption}
+          onFocus={() => {
+            // 포커스 시 자동으로 하단으로 스크롤
+            setTimeout(
+              () => scrollRef.current?.scrollToEnd({ animated: true }),
+              100,
+            );
+          }}
         />
       </ScrollView>
     </View>
