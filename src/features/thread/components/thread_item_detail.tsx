@@ -87,7 +87,9 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
           </TouchableOpacity>
 
           {/* ⚙️ ACTION BAR */}
-          <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
+          <View style={styles.footer}>
+            <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
+          </View>
         </>
       )}
     </View>
@@ -114,10 +116,7 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    paddingHorizontal: TEST_SPACING.md,
-    paddingVertical: TEST_SPACING.md,
-    borderTopWidth: 1,
-    borderTopColor: TEST_COLORS.border, // ✅ 상단 구분선 추가
+    paddingHorizontal: TEST_SPACING.sm,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -161,7 +160,7 @@ const styles = StyleSheet.create({
     paddingTop: TEST_SPACING.md,
     paddingHorizontal: TEST_SPACING.md,
   },
-  textBox: {},
+  textBox: { paddingHorizontal: TEST_SPACING.sm },
   hiddenBox: {
     backgroundColor: TEST_COLORS.surface,
     borderRadius: 8,
