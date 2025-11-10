@@ -1,7 +1,10 @@
-// src/features/donation/components/Contents_Charge_Viewer.tsx
+// 📄 src/features/donation/components/Contents_Charge_Viewer.tsx
 import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import AppText from '@/common/components/AppText';
+import AppInput from '@/common/components/Input';
+import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
 import { FONT } from '@/common/styles/typography';
 import { SPACING } from '@/common/styles/spacing';
@@ -11,6 +14,7 @@ import {
   type BankCode,
   findBank,
 } from '@/features/donation/api/bankTypes';
+import { useKeyboardStore } from '@/common/state/keyboardStore'; // ✅ 추가
 
 type Props = {
   loading: boolean;
@@ -18,14 +22,14 @@ type Props = {
   product: PointChargeProduct;
   quantity: number;
   payerName: string;
-  bankCode: BankCode; // ✅ 은행 코드
-  accountNo: string; // ✅ 계좌 입력값
+  bankCode: BankCode;
+  accountNo: string;
   onPickProduct: (p: PointChargeProduct) => void;
   onInc: () => void;
   onDec: () => void;
   onChangePayerName: (v: string) => void;
-  onChangeAccountNo: (v: string) => void; // ✅ 추가
-  onPickBank: (code: BankCode) => void; // ✅ 추가
+  onChangeAccountNo: (v: string) => void;
+  onPickBank: (code: BankCode) => void;
   onPressSubmit: () => void;
   onPressBack: () => void;
 };
@@ -60,15 +64,23 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
 }) => {
   const sel = products.find(p => p.key === product)!;
   const total = sel.price * quantity;
-
-  // 간단 드롭다운 토글(뷰어 내부 UI 상태)
   const [open, setOpen] = useState(false);
   const selectedBank = findBank(bankCode);
+  const { isVisible, height } = useKeyboardStore(); // ✅ 전역 키보드 상태 사용
 
   return (
-    <View style={styles.container}>
-      <AppText style={styles.title}>포인트 충전</AppText>
-
+    <BottomSheetScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={[
+        styles.scrollContainer,
+        isVisible && { paddingBottom: height + 100 }, // ✅ 키보드 여백 보정
+      ]}
+    >
+      <View style={styles.header}>
+        <AppText variant="title" i18nKey="STR_CHARGE_TITLE" />
+      </View>
       {/* 상품 선택 */}
       <View style={styles.grid}>
         {products.map(p => {
@@ -80,10 +92,8 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
               onPress={() => onPickProduct(p.key)}
               activeOpacity={0.9}
             >
-              <AppText style={styles.cardTitle}>{p.label}</AppText>
-              <AppText style={styles.cardPrice}>
-                {p.price.toLocaleString()}원
-              </AppText>
+              <AppText variant="body">{p.label}</AppText>
+              <AppText variant="caption">{p.price.toLocaleString()}원</AppText>
             </TouchableOpacity>
           );
         })}
@@ -91,33 +101,33 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
 
       {/* 수량 */}
       <View style={styles.qtyRow}>
-        <AppText style={styles.label}>수량</AppText>
+        <AppText variant="body" i18nKey="STR_CHARGE_QUANTITY" />
         <View style={styles.stepper}>
           <TouchableOpacity style={styles.stepBtn} onPress={onDec}>
-            <AppText style={styles.stepText}>-</AppText>
+            <AppText variant="body">-</AppText>
           </TouchableOpacity>
-          <AppText style={styles.qtyText}>{quantity}</AppText>
+          <AppText variant="body">{quantity}</AppText>
           <TouchableOpacity style={styles.stepBtn} onPress={onInc}>
-            <AppText style={styles.stepText}>+</AppText>
+            <AppText variant="body">+</AppText>
           </TouchableOpacity>
         </View>
       </View>
 
       {/* 합계 */}
       <View style={styles.totalRow}>
-        <AppText style={styles.totalLabel}>결제 금액</AppText>
-        <AppText style={styles.totalValue}>{total.toLocaleString()}원</AppText>
+        <AppText variant="body" i18nKey="STR_CHARGE_TOTAL" />
+        <AppText variant="body">{total.toLocaleString()}원</AppText>
       </View>
 
-      {/* 은행 드롭다운 */}
+      {/* 은행 선택 */}
       <View style={styles.field}>
-        <AppText style={styles.label}>입금 은행</AppText>
+        <AppText variant="body" i18nKey="STR_CHARGE_BANK" />
         <TouchableOpacity
           style={styles.select}
           onPress={() => setOpen(v => !v)}
           activeOpacity={0.9}
         >
-          <AppText style={styles.selectText}>
+          <AppText variant="body">
             {selectedBank
               ? `${selectedBank.ko} (${selectedBank.en})`
               : '은행 선택'}
@@ -138,8 +148,7 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
                   }}
                   activeOpacity={0.9}
                 >
-                  {/* 한 줄만 보여 길이 줄이기 */}
-                  <AppText style={styles.bankKo} numberOfLines={1}>
+                  <AppText variant="caption" numberOfLines={1}>
                     {b.ko}
                   </AppText>
                 </TouchableOpacity>
@@ -149,15 +158,13 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
         )}
       </View>
 
-      {/* 계좌번호 입력 */}
+      {/* 계좌번호 */}
       <View style={styles.field}>
-        <AppText style={styles.label}>입금 계좌</AppText>
-        <TextInput
-          style={styles.input}
+        <AppText variant="body" i18nKey="STR_CHARGE_ACCOUNT" />
+        <AppInput
           value={accountNo}
           onChangeText={onChangeAccountNo}
           placeholder="예: 100-1234-567890"
-          placeholderTextColor={COLORS.text_muted}
           keyboardType="number-pad"
           maxLength={20}
         />
@@ -165,52 +172,52 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
 
       {/* 입금자명 */}
       <View style={styles.field}>
-        <AppText style={styles.label}>입금자명</AppText>
-        <TextInput
-          style={styles.input}
+        <AppText variant="body" i18nKey="STR_CHARGE_PAYER" />
+        <AppInput
           value={payerName}
           onChangeText={onChangePayerName}
           placeholder="예: 홍길동"
-          placeholderTextColor={COLORS.text_muted}
           maxLength={30}
         />
       </View>
 
-      {/* 액션 */}
+      {/* 액션 버튼 */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={[styles.btn, styles.cancelBtn]}
           onPress={onPressBack}
           disabled={loading}
         >
-          <AppText style={styles.btnText}>뒤로가기</AppText>
+          <AppText variant="button" i18nKey="STR_BACK" />
         </TouchableOpacity>
+
         <TouchableOpacity
           style={[styles.btn, styles.submitBtn, disabled && { opacity: 0.6 }]}
           onPress={onPressSubmit}
           disabled={disabled}
           activeOpacity={0.8}
         >
-          <AppText style={[styles.btnText, { fontWeight: '700' }]}>
+          <AppText variant="button">
             {loading ? '신청 중…' : '충전 신청'}
           </AppText>
         </TouchableOpacity>
       </View>
-    </View>
+    </BottomSheetScrollView>
   );
 };
 
 export default Contents_Charge_Viewer;
 
 const styles = StyleSheet.create({
-  container: {
+  container: { flex: 1 },
+  scrollContainer: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
-    paddingBottom: SPACING.md,
-    backgroundColor: COLORS.sheet_background,
+    paddingBottom: 200,
   },
-  title: { ...FONT.title, color: COLORS.text, marginBottom: SPACING.md },
-
+  header: {
+    marginBottom: SPACING.xl,
+    alignItems: 'center',
+  },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -221,21 +228,17 @@ const styles = StyleSheet.create({
     width: '48%',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.text_bubble_border,
-    backgroundColor: COLORS.text_bubble_background,
+    borderColor: COLORS.border,
+    backgroundColor: COLORS.sheet_background,
     padding: 12,
   },
   cardActive: { borderColor: COLORS.button_active },
-  cardTitle: { ...FONT.body, color: COLORS.text },
-  cardPrice: { ...FONT.caption, color: COLORS.text_secondary, marginTop: 4 },
-
   qtyRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.md,
   },
-  label: { ...FONT.caption, color: COLORS.text_secondary },
   stepper: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   stepBtn: {
     width: 36,
@@ -245,54 +248,36 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.text_bubble_background,
+    backgroundColor: COLORS.button_active,
   },
-  stepText: { ...FONT.body, color: COLORS.text },
-  qtyText: { ...FONT.body, color: COLORS.text },
-
   totalRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: SPACING.lg,
   },
-  totalLabel: { ...FONT.body, color: COLORS.text_secondary },
-  totalValue: { ...FONT.body, color: COLORS.text },
-
-  field: { marginBottom: SPACING.lg },
-
+  field: { marginBottom: SPACING.lg, gap: 5 },
   select: {
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.text_bubble_border,
-    backgroundColor: COLORS.text_bubble_background,
+    backgroundColor: COLORS.button_active,
     paddingHorizontal: 14,
     paddingVertical: 12,
   },
-  selectText: { ...FONT.body, color: COLORS.text },
-
-  dropdown: {
-    marginTop: 8,
-    borderRadius: 12,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.text_bubble_border,
-    backgroundColor: COLORS.text_bubble_background,
-  },
-
   dropdownGrid: {
     marginTop: 8,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.text_bubble_border,
-    backgroundColor: COLORS.text_bubble_background,
+    backgroundColor: COLORS.background,
     padding: 8,
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
   bankItem: {
-    width: '32%', // ✅ 3열
+    width: '32%',
     marginBottom: 8,
     paddingVertical: 10,
     borderRadius: 10,
@@ -300,33 +285,14 @@ const styles = StyleSheet.create({
     borderColor: COLORS.border,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: COLORS.text_bubble_background,
+    backgroundColor: COLORS.background,
   },
-  bankItemActive: {
-    borderColor: COLORS.button_active,
+  bankItemActive: { borderColor: COLORS.button_active },
+  footer: {
+    marginTop: SPACING.lg,
+    flexDirection: 'row',
+    gap: SPACING.md,
   },
-  bankKo: { ...FONT.caption, color: COLORS.text },
-  option: {
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
-  },
-  optionText: { ...FONT.body, color: COLORS.text },
-  optionSub: { ...FONT.caption, color: COLORS.text_secondary },
-
-  input: {
-    borderRadius: 12,
-    backgroundColor: COLORS.text_bubble_background,
-    borderWidth: 1,
-    borderColor: COLORS.text_bubble_border,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    ...FONT.body,
-    color: COLORS.text,
-  },
-
-  footer: { marginTop: SPACING.lg, flexDirection: 'row', gap: SPACING.md },
   btn: {
     flex: 1,
     height: 48,
@@ -341,5 +307,4 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.button_active,
     borderColor: COLORS.button_active,
   },
-  btnText: { ...FONT.body, color: COLORS.text },
 });

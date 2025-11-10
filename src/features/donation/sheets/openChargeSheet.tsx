@@ -17,5 +17,7 @@ export const openChargeSheet = (params: OpenChargeSheetParams) => {
   open(<ChargeContainer {...params} />, {
     snapPoints: ['90%'],
     initialIndex: 1,
+    enableHandlePanningGesture: true,
+    enableContentPanningGesture: true,
   });
 };

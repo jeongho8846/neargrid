@@ -21,9 +21,9 @@ export const openDonateSheet = (params: OpenDonateSheetParams) => {
 
   // ✅ 반드시 BottomSheetView로 감싸기 (MenuSheet 구조 통일)
   open(
-    <BottomSheetView style={styles.container}>
+    <>
       <DonateContainer {...params} />
-    </BottomSheetView>,
+    </>,
     {
       snapPoints: ['90%'],
       initialIndex: 1,

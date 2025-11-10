@@ -1,11 +1,13 @@
 ﻿// 📄 src/features/donation/components/Contents_Donate_Viewer.tsx
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { BottomSheetScrollView } from '@gorhom/bottom-sheet';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import AppInput from '@/common/components/Input';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
+import { useKeyboardStore } from '@/common/state/keyboardStore'; // ✅ 전역 키보드 상태 구독
 
 type Props = {
   loading: boolean;
@@ -32,27 +34,37 @@ const Contents_Donate_Viewer: React.FC<Props> = ({
   onPressCancel,
   onPressCharge,
 }) => {
+  const { isVisible, height } = useKeyboardStore();
+
   return (
-    <View style={styles.container}>
+    <BottomSheetScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={[
+        styles.scrollContainer,
+        isVisible && { paddingBottom: height + 100 }, // ✅ 키보드 높이만큼 여백 추가
+      ]}
+    >
+      {/* 헤더 */}
       <View style={styles.header}>
         <AppText variant="title" i18nKey="STR_DONATE_TITLE" />
       </View>
+
       {/* 보유 포인트 + 충전 */}
       <View style={styles.pointRow}>
         <View style={{ gap: 6 }}>
           <AppText variant="body" i18nKey="STR_DONATE_MYPOINT" />
           <AppText variant="body">{currentPoint.toLocaleString()} P</AppText>
         </View>
-        <View>
-          <TouchableOpacity
-            style={styles.chargeBtn}
-            onPress={onPressCharge}
-            activeOpacity={0.8}
-          >
-            <AppIcon type="ion" name="add-circle-outline" size={18} />
-            <AppText variant="body" i18nKey="STR_DONATE_CHARGE" />
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity
+          style={styles.chargeBtn}
+          onPress={onPressCharge}
+          activeOpacity={0.8}
+        >
+          <AppIcon type="ion" name="add-circle-outline" size={18} />
+          <AppText variant="body" i18nKey="STR_DONATE_CHARGE" />
+        </TouchableOpacity>
       </View>
 
       {/* 후원 포인트 입력 */}
@@ -99,7 +111,7 @@ const Contents_Donate_Viewer: React.FC<Props> = ({
           <AppText variant="button">{loading ? '기부중…' : '기부'}</AppText>
         </TouchableOpacity>
       </View>
-    </View>
+    </BottomSheetScrollView>
   );
 };
 
@@ -107,13 +119,14 @@ export default Contents_Donate_Viewer;
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+  },
+  scrollContainer: {
     paddingHorizontal: SPACING.lg,
-
     paddingBottom: SPACING.xl,
   },
   header: {
     marginBottom: SPACING.xl,
-    alignContent: 'center',
     alignItems: 'center',
   },
   pointRow: {
