@@ -1,5 +1,5 @@
 // 📄 src/screens/contents/ContentsCreateScreen.tsx
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -9,7 +9,7 @@ import {
   FlatList,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { Asset } from 'react-native-image-picker';
 
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
@@ -64,6 +64,18 @@ export default function ContentsCreateScreen() {
       altitude,
     });
   };
+  useFocusEffect(
+    useCallback(() => {
+      // ✅ 화면 진입할 때 초기화
+      setCaption('');
+      setMedia([]);
+      setInputHeight(80);
+
+      return () => {
+        // (선택) 화면 나갈 때 추가 정리 로직이 있으면 여기에
+      };
+    }, []),
+  );
 
   useEffect(() => {
     if (isVisible) {
