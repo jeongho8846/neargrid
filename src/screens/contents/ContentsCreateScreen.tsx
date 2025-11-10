@@ -1,18 +1,18 @@
-import React from 'react';
+// 📄 src/screens/contents/ContentsCreateScreen.tsx
+import React, { useState } from 'react';
 import {
-  View,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  View,
   TouchableOpacity,
   Image,
   FlatList,
+  TextInput,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import type { Asset } from 'react-native-image-picker';
 
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import AppInput from '@/common/components/Input';
 import AppText from '@/common/components/AppText';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import AppIcon from '@/common/components/AppIcon';
@@ -24,15 +24,15 @@ import { useCreateThread } from '@/features/thread/hooks/useCreateThread';
 import { useLocationStore } from '@/features/location/state/locationStore';
 import { COLORS, SPACING } from '@/common/styles';
 import { TEST_RADIUS } from '@/test/styles/radius';
+import AppInput from '@/common/components/Input';
 
 export default function ContentsCreateScreen() {
-  const [caption, setCaption] = React.useState('');
+  const [caption, setCaption] = useState('');
+  const [inputHeight, setInputHeight] = useState(80); // ✅ 자동 확장용
   const navigation = useNavigation();
   const { member } = useCurrentMember();
   const { handleThreadSubmit, uploading } = useCreateThread();
   const { latitude, longitude, altitude } = useLocationStore();
-
-  // ✅ media 상태를 직접 사용
   const { media, openCamera, openGallery, clearMedia, setMedia } =
     useMediaPicker();
 
@@ -53,7 +53,7 @@ export default function ContentsCreateScreen() {
       bounty_point: '0',
       remain_in_minute: '0',
       region: null,
-      images: media, // ✅ Asset 배열 그대로
+      images: media,
       navigation,
       latitude,
       longitude,
@@ -67,7 +67,8 @@ export default function ContentsCreateScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.root}>
+    <View style={styles.root}>
+      {/* 상단 고정 헤더 */}
       <AppCollapsibleHeader
         titleKey="STR_CONTENTS_CREATE_TITLE"
         isAtTop={false}
@@ -82,26 +83,31 @@ export default function ContentsCreateScreen() {
         }
       />
 
+      {/* 전체 스크롤 영역 */}
       <ScrollView
         style={styles.scrollBody}
         contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {/* 🧩 프로필 영역 */}
         <View style={styles.profileRow}>
-          <AppProfileImage size={40} source={{ uri: member?.profileImage }} />
+          <AppProfileImage
+            size={40}
+            source={{ uri: member?.profileImageUrl }}
+          />
           <AppText variant="username" style={styles.nickname}>
             {member?.nickname ?? 'Guest'}
           </AppText>
         </View>
 
-        {/* 🧩 사진/카메라 버튼 구역 */}
+        {/* 🧩 미디어 선택 */}
         <View style={styles.mediaRow}>
           <CameraPickerButton onPress={openCamera} />
           <GalleryPickerButton onPress={openGallery} />
         </View>
 
-        {/* 🧩 가로 스크롤 미리보기 */}
+        {/* 🧩 선택된 미디어 미리보기 */}
         {media.length > 0 && (
           <View style={styles.previewSection}>
             <FlatList
@@ -134,10 +140,16 @@ export default function ContentsCreateScreen() {
           multiline
           value={caption}
           onChangeText={setCaption}
-          style={[styles.input, { backgroundColor: COLORS.background }]}
+          scrollEnabled={false} // ✅ 내부 스크롤 비활성화 → 부모 ScrollView 담당
+          onContentSizeChange={e =>
+            setInputHeight(e.nativeEvent.contentSize.height)
+          }
+          style={[styles.input, { height: Math.max(80, inputHeight) }]}
+          placeholder="글을 입력하세요..."
+          placeholderTextColor={COLORS.caption}
         />
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -147,15 +159,19 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.background,
     paddingHorizontal: 8,
   },
-  scrollBody: { flex: 1 },
+  scrollBody: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingTop: 20,
-    paddingBottom: SPACING.xl,
+    flexGrow: 1,
+    paddingTop: 60,
+    paddingBottom: 120,
   },
   profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.sm,
   },
   nickname: { marginLeft: SPACING.sm },
   mediaRow: {
@@ -194,8 +210,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.md,
   },
   input: {
-    minHeight: 200,
+    minHeight: 80,
     textAlignVertical: 'top',
+    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.md,
+    fontSize: 16,
   },
   postButton: {
     paddingHorizontal: SPACING.sm,
