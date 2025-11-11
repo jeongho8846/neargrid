@@ -4,23 +4,23 @@ import { Platform, ToastAndroid, Alert } from 'react-native';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import Contents_Donate_Viewer from '@/features/donation/components/Contents_Donate_Viewer';
 import { useDonate } from '@/features/donation/hooks/useDonate';
-import { openChargeSheet } from '@/features/donation/sheets/openChargeSheet'; // ✅ 추가
+import { openChargeSheet } from '@/features/donation/sheets/openChargeSheet';
+import { useFetchMemberPoint } from '@/features/point/hooks/useFetchMemberPoint'; // ✅ 추가
 
 type Props = {
   currentMemberId: string;
   threadId: string;
-  currentPoint?: number;
 };
 
-const DonateContainer: React.FC<Props> = ({
-  currentMemberId,
-  threadId,
-  currentPoint = 0,
-  // bankType,
-  // accountNo,
-}) => {
+const DonateContainer: React.FC<Props> = ({ currentMemberId, threadId }) => {
   const { close } = useBottomSheetStore();
   const { donate, loading } = useDonate();
+
+  // ✅ 포인트 불러오기
+  const { point: currentPoint, loading: pointLoading } = useFetchMemberPoint(
+    currentMemberId,
+    true,
+  );
 
   const [point, setPoint] = useState<string>('');
   const [message, setMessage] = useState<string>('');
@@ -34,14 +34,16 @@ const DonateContainer: React.FC<Props> = ({
 
   const disabled = useMemo(() => {
     const n = Number(point);
-    return !Number.isFinite(n) || n <= 0 || loading;
-  }, [point, loading]);
+    return (
+      !Number.isFinite(n) || n <= 0 || loading || pointLoading // ✅ 포인트 로딩 중에도 비활성화
+    );
+  }, [point, loading, pointLoading]);
 
   const handleDonate = async () => {
     const n = Number(point);
     if (!Number.isFinite(n) || n <= 0)
       return toast('포인트를 올바르게 입력해 주세요.');
-    if (currentPoint > 0 && n > currentPoint)
+    if ((currentPoint ?? 0) > 0 && n > (currentPoint ?? 0))
       return toast('보유 포인트가 부족합니다.');
 
     try {
@@ -60,22 +62,20 @@ const DonateContainer: React.FC<Props> = ({
 
   return (
     <Contents_Donate_Viewer
-      loading={loading}
+      loading={loading || pointLoading}
       disabled={disabled}
-      currentPoint={currentPoint}
+      currentPoint={currentPoint ?? 0}
       point={point}
       message={message}
       onChangePoint={onChangePoint}
       onChangeMessage={setMessage}
       onPressDonate={handleDonate}
       onPressCancel={close}
-      // ✅ 충전 시트로 전환
       onPressCharge={() =>
         openChargeSheet({
           currentMemberId,
           threadId,
-          currentPoint,
-          // 선택: 초기값
+          currentPoint: currentPoint ?? 0,
           defaultBank: 'SHINHAN',
           defaultAccount: '',
         })

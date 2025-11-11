@@ -12,6 +12,7 @@ import { openLogoutConfirmModal } from '../modals/openLogoutConfirmModal';
 import { openBlockedMemberListSheet } from './openBlockedMemberListSheet';
 import { openBlockConfirmModal } from '../modals/openBlockConfirmModal';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useFetchMemberPoint } from '@/features/point/hooks/useFetchMemberPoint'; // ✅ 단순 API 훅
 
 type Props = {
   isMyProfile: boolean;
@@ -27,10 +28,7 @@ export const openProfileMenuSheet = ({
 }: Props) => {
   const { open } = useBottomSheetStore.getState();
 
-  // ✅ 항목 수 계산
   const itemCount = isMyProfile ? 7 : 1;
-
-  // ✅ 높이 동적 계산
   const snapHeight = Math.min(80 + itemCount * 56, 500);
 
   open(
@@ -51,7 +49,11 @@ const ProfileMenuContent: React.FC<Props> = ({
   isMyProfile,
   targetMemberId,
 }) => {
-  const { member: currentMember } = useCurrentMember(); // ✅ 현재 로그인 유저
+  const { member: currentMember } = useCurrentMember();
+  const { point, loading, error } = useFetchMemberPoint(
+    currentMember?.id ?? '',
+    true,
+  );
 
   const menuItems = isMyProfile
     ? [
@@ -64,6 +66,15 @@ const ProfileMenuContent: React.FC<Props> = ({
           icon: 'wallet-outline',
           labelKey: 'STR_VIEW_POINTS',
           onPress: () => {},
+          extra: (
+            <AppText variant="body" style={styles.pointText}>
+              {loading
+                ? '...'
+                : error
+                ? '-'
+                : `${point?.toLocaleString?.() ?? 0} P`}
+            </AppText>
+          ),
         },
         {
           icon: 'ban-outline',
@@ -113,7 +124,7 @@ const ProfileMenuContent: React.FC<Props> = ({
         <TouchableOpacity
           key={index}
           style={styles.row}
-          activeOpacity={0.7}
+          activeOpacity={item.onPress ? 0.7 : 1}
           onPress={item.onPress}
         >
           <AppIcon
@@ -122,11 +133,14 @@ const ProfileMenuContent: React.FC<Props> = ({
             size={22}
             variant={item.isDanger ? 'danger' : 'primary'}
           />
-          <AppText
-            variant="body"
-            i18nKey={item.labelKey}
-            style={[styles.text, item.isDanger && { color: COLORS.error }]}
-          />
+          <View style={styles.textRow}>
+            <AppText
+              variant="body"
+              i18nKey={item.labelKey}
+              style={[styles.text, item.isDanger && { color: COLORS.error }]}
+            />
+            {item.extra}
+          </View>
         </TouchableOpacity>
       ))}
     </BottomSheetView>
@@ -146,8 +160,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: SPACING.lg,
     paddingVertical: SPACING.md,
   },
-  text: {
+  textRow: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginLeft: 12,
+    alignItems: 'center',
+  },
+  text: {
     color: COLORS.body,
   },
+  pointText: {},
 });
