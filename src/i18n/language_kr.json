@@ -193,5 +193,16 @@
   "STR_BLOCK_USER": "차단 / 차단 해제",
   "STR_LOGOUT_CONFIRM": "로그아웃 확인",
   "STR_UNBLOCK": "차단해제",
-  "STR_BLOCKED_LIST": "차단 리스트"
+  "STR_BLOCKED_LIST": "차단 리스트",
+  "STR_BLOCK": "차단",
+  "STR_BLOCK_CONFIRM": "사용자를 차단하시겠습니까?",
+  "STR_BLOCK_EMPTY": "차단된 사용자가 없습니다.",
+
+  "STR_BLOCK_USER_CONFIRM": "이 사용자를 차단하시겠습니까?",
+  "STR_BLOCK_SUCCESS": "사용자를 차단했습니다.",
+
+  "STR_UNBLOCK_SUCCESS": "차단이 해제되었습니다.",
+  "STR_UNBLOCK_CONFIRM": "이 사용자의 차단을 해제하시겠습니까?",
+  "STR_BLOCK_FAILED": "사용자 차단에 실패했습니다.",
+  "STR_UNBLOCK_FAILED": "차단 해제에 실패했습니다."
 }
