@@ -33,14 +33,12 @@ const MemberBlockedItemCard: React.FC<Props> = ({
       {/* 닉네임 및 설명 */}
       <View style={styles.info}>
         <AppText variant="username">{nickName}</AppText>
-        <AppText i18nKey="STR_BLOCKED_MEMBER" variant="caption" />
       </View>
 
       {/* 차단 해제 버튼 */}
       <AppButton
         labelKey="STR_UNBLOCK"
-        size="sm"
-        variant="secondary"
+        variant="filled"
         onPress={() => onUnblockPress?.(id)}
         style={styles.unblockButton}
       />
@@ -55,14 +53,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.md,
+    paddingHorizontal: SPACING.xs,
   },
   info: {
     flex: 1,
     marginHorizontal: SPACING.sm,
   },
-  unblockButton: {
-    minWidth: 90,
-    paddingVertical: 4,
-  },
+  unblockButton: {},
 });

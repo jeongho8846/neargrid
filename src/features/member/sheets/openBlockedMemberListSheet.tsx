@@ -8,6 +8,7 @@ import { COLORS } from '@/common/styles/colors';
 import MemberBlockedItemCard from '../components/MemberBlockedItemCard';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useGetBlockedMember } from '@/features/member/hooks/useGetBlockedMember';
+import { useBlockMemberCancel } from '@/features/member/hooks/useBlockMemberCancel';
 
 export const openBlockedMemberListSheet = () => {
   const { open } = useBottomSheetStore.getState();
@@ -23,8 +24,17 @@ export const openBlockedMemberListSheet = () => {
 const BlockedMemberListSheetContent: React.FC = () => {
   const { member: currentMember } = useCurrentMember(); // ✅ 현재 로그인 유저
   const { data, isLoading } = useGetBlockedMember(currentMember?.id ?? '');
+  const { mutate: unblockMember } = useBlockMemberCancel(); // ✅ 훅은 루트에서만 호출
 
   const members = data ?? [];
+
+  const handleUnblockPress = (targetId: string) => {
+    if (!currentMember?.id) return;
+    unblockMember({
+      currentMemberId: currentMember.id,
+      targetMemberId: targetId,
+    });
+  };
 
   const renderItem = ({ item }: any) => (
     <MemberBlockedItemCard
@@ -32,7 +42,7 @@ const BlockedMemberListSheetContent: React.FC = () => {
       nickName={item.nickName}
       profileImageUrl={item.profileImageUrl}
       onPressProfile={memberId => console.log('🔹 프로필 이동:', memberId)}
-      onUnblockPress={memberId => console.log('🚫 차단 해제:', memberId)}
+      onUnblockPress={handleUnblockPress}
     />
   );
 

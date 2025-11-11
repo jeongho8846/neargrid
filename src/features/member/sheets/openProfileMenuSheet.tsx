@@ -1,20 +1,26 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { BottomSheetView } from '@gorhom/bottom-sheet';
+
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
-import { BottomSheetView } from '@gorhom/bottom-sheet';
+
 import { openLogoutConfirmModal } from '../modals/openLogoutConfirmModal';
 import { openBlockedMemberListSheet } from './openBlockedMemberListSheet';
 import { openBlockConfirmModal } from '../modals/openBlockConfirmModal';
+import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 
 type Props = {
   isMyProfile: boolean;
-  targetMemberId?: string; // ✅ 추가
+  targetMemberId?: string;
 };
 
+/**
+ * ✅ 프로필 메뉴 바텀시트 오픈 함수
+ */
 export const openProfileMenuSheet = ({
   isMyProfile,
   targetMemberId,
@@ -24,7 +30,7 @@ export const openProfileMenuSheet = ({
   // ✅ 항목 수 계산
   const itemCount = isMyProfile ? 7 : 1;
 
-  // ✅ 아이템 수에 따라 높이 동적 계산
+  // ✅ 높이 동적 계산
   const snapHeight = Math.min(80 + itemCount * 56, 500);
 
   open(
@@ -45,6 +51,8 @@ const ProfileMenuContent: React.FC<Props> = ({
   isMyProfile,
   targetMemberId,
 }) => {
+  const { member: currentMember } = useCurrentMember(); // ✅ 현재 로그인 유저
+
   const menuItems = isMyProfile
     ? [
         {
@@ -60,9 +68,7 @@ const ProfileMenuContent: React.FC<Props> = ({
         {
           icon: 'ban-outline',
           labelKey: 'STR_BLOCK_LIST',
-          onPress: () => {
-            openBlockedMemberListSheet();
-          },
+          onPress: () => openBlockedMemberListSheet(),
         },
         {
           icon: 'language-outline',
@@ -91,16 +97,21 @@ const ProfileMenuContent: React.FC<Props> = ({
         {
           icon: 'ban-outline',
           labelKey: 'STR_BLOCK_USER',
-          onPress: () => openBlockConfirmModal({ isMyProfile, targetMemberId }), // ✅ 전달 연결
+          onPress: () =>
+            openBlockConfirmModal({
+              isMyProfile,
+              currentMemberId: currentMember?.id ?? '',
+              targetMemberId,
+            }),
           isDanger: true,
         },
       ];
 
   return (
     <BottomSheetView style={styles.container}>
-      {menuItems.map((item, i) => (
+      {menuItems.map((item, index) => (
         <TouchableOpacity
-          key={i}
+          key={index}
           style={styles.row}
           activeOpacity={0.7}
           onPress={item.onPress}

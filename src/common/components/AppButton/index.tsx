@@ -72,8 +72,8 @@ export default function AppButton({
 
 const styles = StyleSheet.create({
   base: {
-    height: 48,
-    paddingHorizontal: SPACING.lg,
+    height: 36,
+    paddingHorizontal: SPACING.md,
     borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',

@@ -191,5 +191,7 @@
   "STR_LOGOUT": "로그아웃",
   "STR_DELETE_ACCOUNT": "계정삭제",
   "STR_BLOCK_USER": "차단 / 차단 해제",
-  "STR_LOGOUT_CONFIRM": "로그아웃 확인"
+  "STR_LOGOUT_CONFIRM": "로그아웃 확인",
+  "STR_UNBLOCK": "차단해제",
+  "STR_BLOCKED_LIST": "차단 리스트"
 }
