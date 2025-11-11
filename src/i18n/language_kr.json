@@ -182,5 +182,13 @@
   "STR_CHARGE_ACCOUNT_PLACEHOLDER": "예: 100-1234-567890",
   "STR_CHARGE_PAYER_PLACEHOLDER": "예: 홍길동",
   "STR_PROFILE_EDIT": "프로필 수정",
-  "STR_SAVE": "저장"
+  "STR_SAVE": "저장",
+  "STR_VIEW_PAYMENTS": "결제내역 보기",
+  "STR_VIEW_POINTS": "보유 포인트 보기",
+  "STR_BLOCK_LIST": "차단 목록 보기",
+  "STR_LANGUAGE_SETTING": "언어 설정",
+  "STR_CHANGE_PASSWORD": "비밀번호 변경",
+  "STR_LOGOUT": "로그아웃",
+  "STR_DELETE_ACCOUNT": "계정삭제",
+  "STR_BLOCK_USER": "차단 / 차단 해제"
 }

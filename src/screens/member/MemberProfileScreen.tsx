@@ -15,6 +15,7 @@ import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 import { useNavigation } from '@react-navigation/native';
+import { openProfileMenuSheet } from '@/features/member/sheets/openProfileMenuSheet';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
@@ -91,22 +92,39 @@ export default function MemberProfileScreen({ route }) {
         animatedStyle={headerStyle}
         onBackPress={() => navigation.goBack()}
         right={
-          currentMember?.id === targetUserId ? ( // ✅ 조건부 렌더링
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            {/* ✅ 내 프로필일 때만 보이는 수정 버튼 */}
+            {currentMember?.id === targetUserId && (
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate('ProfileEdit', { memberId: targetUserId })
+                }
+              >
+                <AppIcon
+                  type="ion"
+                  name="create-outline"
+                  size={22}
+                  variant="primary"
+                />
+              </TouchableOpacity>
+            )}
+
+            {/* ✅ 모든 프로필에서 보이는 메뉴 버튼 */}
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('ProfileEdit', {
-                  memberId: targetUserId,
+                openProfileMenuSheet({
+                  isMyProfile: currentMember?.id === targetUserId,
                 })
               }
             >
               <AppIcon
                 type="ion"
-                name="create-outline"
+                name="ellipsis-vertical"
                 size={22}
                 variant="primary"
               />
             </TouchableOpacity>
-          ) : undefined // ⚙️ 다를 경우 prop 자체를 전달하지 않음
+          </View>
         }
       />
 
