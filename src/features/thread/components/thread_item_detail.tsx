@@ -41,7 +41,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
       {/* 🧩 HEADER */}
       <View style={styles.header}>
         <View style={styles.row}>
-          <AppProfileImage size={36} />
+          <AppProfileImage size={36} imageUrl={item.memberProfileImageUrl} />
           <View style={styles.userInfo}>
             <AppText variant="username">{item.memberNickName}</AppText>
             <AppText variant="caption">{createdMMDD}</AppText>
