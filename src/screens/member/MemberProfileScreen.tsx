@@ -89,22 +89,24 @@ export default function MemberProfileScreen({ route }) {
       <AppCollapsibleHeader
         titleKey="STR_PROFILE"
         animatedStyle={headerStyle}
-        onBackPress={() => console.log('뒤로가기')}
+        onBackPress={() => navigation.goBack()}
         right={
-          <TouchableOpacity
-            onPress={() =>
-              navigation.navigate('ProfileEdit', {
-                memberId: targetUserId,
-              })
-            }
-          >
-            <AppIcon
-              type="ion"
-              name="create-outline"
-              size={22}
-              variant="primary"
-            />
-          </TouchableOpacity>
+          currentMember?.id === targetUserId ? ( // ✅ 조건부 렌더링
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate('ProfileEdit', {
+                  memberId: targetUserId,
+                })
+              }
+            >
+              <AppIcon
+                type="ion"
+                name="create-outline"
+                size={22}
+                variant="primary"
+              />
+            </TouchableOpacity>
+          ) : undefined // ⚙️ 다를 경우 prop 자체를 전달하지 않음
         }
       />
 
