@@ -16,7 +16,7 @@ export const useRefresh = () => {
       if (!refreshToken) return { success: false };
 
       const dto = await refreshTokenApi(refreshToken);
-
+      console.log('프로필 갱신 데이터', dto);
       // 🔹 토큰/멤버 갱신
       await tokenStorage.saveTokens(dto.accessToken, dto.refreshToken);
       const member = toMember(dto);

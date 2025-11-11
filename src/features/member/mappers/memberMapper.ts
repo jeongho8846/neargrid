@@ -16,6 +16,9 @@ export type MemberProfileResponse = {
     followingCount?: number;
     originThreadCount?: number;
     commentThreadCount?: number;
+    memberType?: string;
+    createDateTime?: string;
+    lastLoginDateTime?: string;
   };
   chatBot: any;
   followedByCurrentMember: boolean;
@@ -37,13 +40,35 @@ export const mapMemberProfileDto = (
   };
 
   return {
+    /** 기본 정보 */
     id: m.id,
     nickname: m.nickName,
+    realName: m.realName, // ✅ 추가됨
     description: m.profileText,
+    memberType: m.memberType,
+
+    /** 이미지 */
     profileImageUrl: m.profileImageUrl,
     backgroundUrl: m.coverImageUrl,
+
+    /** 포인트 */
     receivedPoint: m.donationPointReceivedCount ?? 0,
     givenPoint: m.donationPointGivenCount ?? 0,
+
+    /** 통계 */
     stats,
+
+    /** 메타데이터 */
+    followerCount: m.followerCount,
+    followingCount: m.followingCount,
+    originThreadCount: m.originThreadCount,
+    commentThreadCount: m.commentThreadCount,
+    createDateTime: m.createDateTime,
+    lastLoginDateTime: m.lastLoginDateTime,
+
+    /** 관계 정보 */
+    followedByCurrentMember: dto.followedByCurrentMember,
+    followingCurrentMember: dto.followingCurrentMember,
+    blockedByCurrentMember: dto.blockedByCurrentMember,
   };
 };

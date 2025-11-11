@@ -1,6 +1,12 @@
 // 📄 src/screens/member/ProfileEditScreen.tsx
-import React from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
+import React, { useEffect, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  findNodeHandle,
+  Dimensions,
+} from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppText from '@/common/components/AppText';
@@ -9,43 +15,72 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { COLORS, SPACING } from '@/common/styles';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
 import { useFetchMemberProfile } from '@/features/member/hooks/useFetchMemberProfile';
+import { useKeyboardStore } from '@/common/state/keyboardStore';
 
 export default function ProfileEditScreen() {
   const navigation = useNavigation();
   const { member: currentMember } = useCurrentMember();
   const route = useRoute();
+  const scrollRef = useRef<ScrollView>(null);
+
+  const { isVisible, height: keyboardHeight } = useKeyboardStore();
+
   const targetUserId = route?.params?.memberId ?? currentMember?.id;
 
-  /** 👤 프로필 데이터 */
   const { data: profile, isLoading } = useFetchMemberProfile(
     currentMember?.id ?? '',
     targetUserId ?? '',
     { enabled: !!targetUserId },
   );
 
+  // ✅ 포커스된 인풋 위치로 스크롤
+  const handleFocusScroll = (inputRef: React.RefObject<any>) => {
+    if (!scrollRef.current || !inputRef.current) return;
+
+    const windowHeight = Dimensions.get('window').height;
+
+    inputRef.current.measureLayout(
+      findNodeHandle(scrollRef.current),
+      (x, y, width, height) => {
+        // 중앙 근처로 이동: y - (화면의 절반 - 입력 필드 높이의 절반)
+        const targetY = Math.max(0, y - windowHeight / 2 + height / 2);
+        scrollRef.current?.scrollTo({ y: targetY, animated: true });
+      },
+      () => {},
+    );
+  };
+
+  useEffect(() => {
+    if (isVisible) {
+      setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+    }
+  }, [isVisible]);
+
   return (
     <View style={styles.container}>
-      {/* ✅ 고정 헤더 */}
       <AppCollapsibleHeader
         titleKey="STR_PROFILE_EDIT"
         onBackPress={() => navigation.goBack()}
       />
 
-      {/* ✅ 로딩 상태 */}
       {isLoading && (
         <View style={styles.loadingContainer}>
           <AppSkeletonPreset type="profile" />
         </View>
       )}
 
-      {/* ✅ ScrollView로 변경 */}
       {!isLoading && profile ? (
         <ScrollView
+          ref={scrollRef}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isVisible && { paddingBottom: keyboardHeight + 50 },
+          ]}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <ProfileEditForm profile={profile} />
+          {/* ✅ 콜백 전달 */}
+          <ProfileEditForm profile={profile} onInputFocus={handleFocusScroll} />
         </ScrollView>
       ) : (
         !isLoading && (
@@ -62,10 +97,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+    paddingBottom: 50,
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 80,
+    paddingBottom: 100,
   },
   loadingContainer: {
     flex: 1,

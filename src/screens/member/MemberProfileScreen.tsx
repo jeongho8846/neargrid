@@ -41,6 +41,12 @@ export default function MemberProfileScreen({ route }) {
     { enabled: !!targetUserId },
   );
 
+  useEffect(() => {
+    if (profile) {
+      console.log('🧭 [MemberProfileScreen] profile:', profile);
+    }
+  }, [profile]);
+
   /** 🧭 FootPrint 데이터 */
   const { fetchContents, loading: isThreadsLoading } =
     useFetchFootPrintContents();

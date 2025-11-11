@@ -28,7 +28,7 @@ export const fetchMemberProfile = async (
     const duration = Date.now() - start;
 
     console.log(`✅ [fetchMemberProfile] 응답 성공 (${duration}ms)`);
-    console.log('📥 [Response Data]:', res.data);
+    console.log('📥 [Response Data!!!]:', res.data);
 
     const mapped = mapMemberProfileDto(res.data);
     console.log('🧭 [Mapped Domain Model]:', mapped);

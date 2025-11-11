@@ -8,6 +8,7 @@ export type AuthResponseDto = {
   roleType?: string; // 로그인에는 있지만 refresh에서는 없을 수도 있음
   lastUsedDistanceForThreadFeed?: string;
   accessToken: string;
+  description?: string;
   refreshToken: string;
 };
 
@@ -18,5 +19,6 @@ export type Member = {
   nickname: string;
   role?: string;
   lastUsedDistance?: number;
+  description?: string;
   profileImageUrl?: string;
 };

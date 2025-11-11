@@ -35,6 +35,7 @@ export const useFetchMemberProfile = (
         console.log('📦 받은 데이터:', data);
 
         setProfile(data);
+        console.log('API에서 가져온 프로필 raw', data);
       } catch (err) {
         console.error('❌ [useFetchMemberProfile] API 에러:', err);
         setError(err as Error);

@@ -6,6 +6,7 @@ const MEMBER_KEY = 'current_member';
 
 export const memberStorage = {
   async saveMember(member: Member) {
+    console.log('스토어에 저장된 유저 데이터', member);
     try {
       await AsyncStorage.setItem(MEMBER_KEY, JSON.stringify(member));
     } catch (e) {
