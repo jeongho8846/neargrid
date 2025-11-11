@@ -1,22 +1,22 @@
 import React, { useEffect, useState } from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-
 import AuthStack from './AuthStack';
 import MainTabNavigator from './MainTabNavigator';
 import { useRefresh } from '@/features/member/hooks/useRefresh';
 import { memberStorage } from '@/features/member/utils/memberStorage';
+import { useAuthStore } from '@/common/state/authStore'; // ✅ 추가
 
 const Stack = createNativeStackNavigator();
 
 const RootNavigator = () => {
-  const [isAuth, setIsAuth] = useState<boolean | null>(null);
+  const [booting, setBooting] = useState(true);
   const { refresh } = useRefresh();
+  const { isAuth, setIsAuth } = useAuthStore(); // ✅ Zustand 상태
 
   useEffect(() => {
     const bootstrap = async () => {
       try {
-        // ✅ 사용자 정보 확인 및 자동 로그인
         const user = await memberStorage.getMember();
         if (user) {
           setIsAuth(true);
@@ -28,13 +28,14 @@ const RootNavigator = () => {
       } catch (error) {
         console.error('Root bootstrap error:', error);
         setIsAuth(false);
+      } finally {
+        setBooting(false);
       }
     };
-
     bootstrap();
-  }, [refresh]);
+  }, [refresh, setIsAuth]);
 
-  if (isAuth === null) {
+  if (booting) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" />
@@ -47,15 +48,7 @@ const RootNavigator = () => {
       {isAuth ? (
         <Stack.Screen name="Main" component={MainTabNavigator} />
       ) : (
-        <Stack.Screen name="Auth">
-          {() => (
-            <AuthStack
-              setIsAuth={
-                setIsAuth as React.Dispatch<React.SetStateAction<boolean>>
-              }
-            />
-          )}
-        </Stack.Screen>
+        <Stack.Screen name="Auth" component={AuthStack} />
       )}
     </Stack.Navigator>
   );
