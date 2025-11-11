@@ -7,6 +7,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import AppText from '../AppText';
 import AppIcon from '../AppIcon';
 import { COLORS } from '@/common/styles/colors';
+import { SPACING } from '@/common/styles';
 
 type Props = {
   title?: string;
@@ -16,7 +17,6 @@ type Props = {
   onBackPress?: () => void;
   right?: React.ReactNode;
   showBorder?: boolean;
-  /** ✅ 헤더 애니메이션 스타일 (Reanimated용) */
   animatedStyle?: AnimatedStyleProp<any>;
 };
 
@@ -28,16 +28,15 @@ const AppCollapsibleHeader: React.FC<Props> = ({
   onBackPress,
   right,
   showBorder = true,
-  animatedStyle, // ✅ 추가됨
+  animatedStyle,
 }) => {
   const navigation = useNavigation();
   const route = useRoute();
   const canGoBack = navigation.canGoBack();
 
-  const HEADER_TOTAL = headerHeight;
+  // ✅ 루트 스크린에서는 화살표 숨김
   const hideBackButton =
     route.name === 'Feed' || route.name === 'Map' || route.name === 'Profile';
-
   const showBackButton = !hideBackButton && canGoBack;
 
   return (
@@ -45,17 +44,17 @@ const AppCollapsibleHeader: React.FC<Props> = ({
       style={[
         styles.header,
         {
-          height: HEADER_TOTAL,
+          height: headerHeight,
           backgroundColor,
-          borderBottomWidth: showBorder ? 0.5 : 0,
+          borderBottomWidth: showBorder ? StyleSheet.hairlineWidth : 0,
         },
-        animatedStyle, // ✅ 외부 애니메이션 스타일 반영
+        animatedStyle,
       ]}
     >
       <View style={styles.bar}>
-        {/* 🔙 왼쪽: 뒤로가기 */}
-        <View style={styles.side}>
-          {showBackButton && (
+        {/* 🔙 좌측 */}
+        {showBackButton && (
+          <View style={styles.left}>
             <TouchableOpacity
               onPress={onBackPress || (() => navigation.goBack())}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
@@ -67,20 +66,23 @@ const AppCollapsibleHeader: React.FC<Props> = ({
                 variant="primary"
               />
             </TouchableOpacity>
-          )}
+          </View>
+        )}
+
+        {/* 🏷️ 중앙 (항상 시각적으로 정확한 중앙) */}
+        <View style={styles.centerContainer} pointerEvents="none">
+          <AppText
+            i18nKey={titleKey}
+            variant="title"
+            numberOfLines={1}
+            style={styles.title}
+          >
+            {title}
+          </AppText>
         </View>
 
-        {/* 🏷️ 중앙(또는 왼쪽): 타이틀 */}
-        <AppText
-          i18nKey={titleKey}
-          variant="title"
-          style={showBackButton ? styles.titleLeft : styles.titleCenter}
-        >
-          {title}
-        </AppText>
-
-        {/* ⚙️ 오른쪽: 커스텀 영역 */}
-        <View style={styles.side}>{right}</View>
+        {/* ⚙️ 우측 */}
+        <View style={styles.right}>{right}</View>
       </View>
     </Animated.View>
   );
@@ -96,24 +98,38 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
     borderBottomColor: COLORS.border,
+    paddingHorizontal: SPACING.sm,
   },
   bar: {
-    height: 56,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    height: 56,
+    paddingHorizontal: SPACING.sm,
   },
-  side: {
-    width: 48,
+  left: {
+    position: 'absolute',
+    left: SPACING.sm,
+    height: '100%',
+    justifyContent: 'center',
+  },
+  right: {
+    position: 'absolute',
+    right: SPACING.sm,
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  centerContainer: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  titleCenter: {
-    flex: 1,
+  title: {
     textAlign: 'center',
-  },
-  titleLeft: {
-    flex: 1,
-    textAlign: 'left',
-    marginLeft: 4,
   },
 });
