@@ -7,6 +7,7 @@ import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { openLogoutConfirmModal } from '../modals/openLogoutConfirmModal';
+import { openBlockedMemberListSheet } from './openBlockedMemberListSheet';
 
 type Props = { isMyProfile: boolean };
 
@@ -40,7 +41,13 @@ const ProfileMenuContent: React.FC<Props> = ({ isMyProfile }) => {
           labelKey: 'STR_VIEW_POINTS',
           onPress: () => {},
         },
-        { icon: 'ban-outline', labelKey: 'STR_BLOCK_LIST', onPress: () => {} },
+        {
+          icon: 'ban-outline',
+          labelKey: 'STR_BLOCK_LIST',
+          onPress: () => {
+            openBlockedMemberListSheet();
+          },
+        },
         {
           icon: 'language-outline',
           labelKey: 'STR_LANGUAGE_SETTING',
