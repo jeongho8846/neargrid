@@ -114,6 +114,7 @@ export default function MemberProfileScreen({ route }) {
               onPress={() =>
                 openProfileMenuSheet({
                   isMyProfile: currentMember?.id === targetUserId,
+                  targetMemberId: targetUserId, // ✅ 전달 추가
                 })
               }
             >

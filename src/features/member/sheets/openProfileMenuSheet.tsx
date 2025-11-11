@@ -8,27 +8,43 @@ import { COLORS } from '@/common/styles/colors';
 import { BottomSheetView } from '@gorhom/bottom-sheet';
 import { openLogoutConfirmModal } from '../modals/openLogoutConfirmModal';
 import { openBlockedMemberListSheet } from './openBlockedMemberListSheet';
+import { openBlockConfirmModal } from '../modals/openBlockConfirmModal';
 
-type Props = { isMyProfile: boolean };
+type Props = {
+  isMyProfile: boolean;
+  targetMemberId?: string; // ✅ 추가
+};
 
-export const openProfileMenuSheet = ({ isMyProfile }: Props) => {
+export const openProfileMenuSheet = ({
+  isMyProfile,
+  targetMemberId,
+}: Props) => {
   const { open } = useBottomSheetStore.getState();
 
   // ✅ 항목 수 계산
   const itemCount = isMyProfile ? 7 : 1;
 
   // ✅ 아이템 수에 따라 높이 동적 계산
-  const snapHeight = Math.min(80 + itemCount * 56, 500); // px 단위 예시 (최대 500px 제한)
+  const snapHeight = Math.min(80 + itemCount * 56, 500);
 
-  open(<ProfileMenuContent isMyProfile={isMyProfile} />, {
-    snapPoints: [snapHeight],
-    initialIndex: 1,
-    enableHandlePanningGesture: true,
-    enableContentPanningGesture: true,
-  });
+  open(
+    <ProfileMenuContent
+      isMyProfile={isMyProfile}
+      targetMemberId={targetMemberId}
+    />,
+    {
+      snapPoints: [snapHeight],
+      initialIndex: 1,
+      enableHandlePanningGesture: true,
+      enableContentPanningGesture: true,
+    },
+  );
 };
 
-const ProfileMenuContent: React.FC<Props> = ({ isMyProfile }) => {
+const ProfileMenuContent: React.FC<Props> = ({
+  isMyProfile,
+  targetMemberId,
+}) => {
   const menuItems = isMyProfile
     ? [
         {
@@ -62,17 +78,23 @@ const ProfileMenuContent: React.FC<Props> = ({ isMyProfile }) => {
           icon: 'log-out-outline',
           labelKey: 'STR_LOGOUT',
           onPress: () => openLogoutConfirmModal({ isMyProfile }),
-          isDanger: true, // ✅ 파괴적 액션
+          isDanger: true,
         },
-
         {
           icon: 'trash-outline',
           labelKey: 'STR_DELETE_ACCOUNT',
           onPress: () => {},
-          isDanger: true, // ✅ 파괴적 액션
+          isDanger: true,
         },
       ]
-    : [{ icon: 'ban-outline', labelKey: 'STR_BLOCK_USER', onPress: () => {} }];
+    : [
+        {
+          icon: 'ban-outline',
+          labelKey: 'STR_BLOCK_USER',
+          onPress: () => openBlockConfirmModal({ isMyProfile, targetMemberId }), // ✅ 전달 연결
+          isDanger: true,
+        },
+      ];
 
   return (
     <BottomSheetView style={styles.container}>
@@ -87,21 +109,20 @@ const ProfileMenuContent: React.FC<Props> = ({ isMyProfile }) => {
             type="ion"
             name={item.icon}
             size={22}
-            variant={item.isDanger ? 'danger' : 'primary'} // ✅ 아이콘 색상도 같이 바뀜
+            variant={item.isDanger ? 'danger' : 'primary'}
           />
           <AppText
             variant="body"
             i18nKey={item.labelKey}
-            style={[
-              styles.text,
-              item.isDanger && { color: COLORS.error }, // ✅ 텍스트 색상 변경
-            ]}
+            style={[styles.text, item.isDanger && { color: COLORS.error }]}
           />
         </TouchableOpacity>
       ))}
     </BottomSheetView>
   );
 };
+
+export default ProfileMenuContent;
 
 const styles = StyleSheet.create({
   container: {
