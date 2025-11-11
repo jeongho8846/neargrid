@@ -14,6 +14,7 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
+import { useNavigation } from '@react-navigation/native';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
@@ -21,6 +22,7 @@ export default function MemberProfileScreen({ route }) {
 
   // ✅ 헤더 스크롤 (Reanimated 기반)
   const { headerStyle, scrollHandler, direction } = useHeaderScroll(56);
+  const navigation = useNavigation();
 
   // ✅ 탭바 제어 (FeedScreen과 동일한 로직)
   const { hide, show } = useTabBarStore();
@@ -83,10 +85,16 @@ export default function MemberProfileScreen({ route }) {
         animatedStyle={headerStyle}
         onBackPress={() => console.log('뒤로가기')}
         right={
-          <TouchableOpacity onPress={() => console.log('설정')}>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('ProfileEdit', {
+                memberId: targetUserId,
+              })
+            }
+          >
             <AppIcon
               type="ion"
-              name="settings-outline"
+              name="create-outline"
               size={22}
               variant="primary"
             />

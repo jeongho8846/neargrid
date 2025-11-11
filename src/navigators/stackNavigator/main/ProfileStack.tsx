@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
 import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
+import ProfileEditScreen from '@/screens/member/ProfileEditScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ const ProfileStack = ({ route }) => {
         component={MemberProfileScreen}
         initialParams={{ memberId }}
       />
+      <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
       <Stack.Screen name="DetailThread" component={DetailThreadScreen} />
       <Stack.Screen
         name="DetailThreadComment"
