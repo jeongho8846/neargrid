@@ -6,7 +6,7 @@ import {
   ActivityIndicator,
   TouchableOpacity,
 } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
 import ChatMessageList from '@/features/chat/lists/ChatMessageList';
 import AppText from '@/common/components/AppText';
@@ -21,6 +21,7 @@ import AppIcon from '@/common/components/AppIcon';
  */
 const ChatRoomScreen = () => {
   const route = useRoute<any>();
+  const navigation = useNavigation<any>();
   const { chatRoomId } = route.params;
 
   const {
@@ -35,6 +36,11 @@ const ChatRoomScreen = () => {
 
   // 🔹 messages 평탄화
   const messages = data?.pages.flatMap(page => page.messages || []) ?? [];
+
+  // 🔹 메뉴로 이동
+  const handleOpenMenu = () => {
+    navigation.navigate('ChatRoomMenuScreen', { roomId: chatRoomId });
+  };
 
   if (isLoading)
     return (
@@ -56,7 +62,7 @@ const ChatRoomScreen = () => {
         titleKey="STR_CHAT"
         right={
           <View style={styles.headerRight}>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={handleOpenMenu}>
               <AppIcon
                 type="ion"
                 name="ellipsis-vertical"
@@ -67,6 +73,7 @@ const ChatRoomScreen = () => {
           </View>
         }
       />
+
       <View style={styles.body}>
         <ChatMessageList
           data={messages}
@@ -85,7 +92,6 @@ export default ChatRoomScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-
     paddingHorizontal: SPACING.xs,
   },
   center: {

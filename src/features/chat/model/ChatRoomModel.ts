@@ -1,6 +1,15 @@
 // 📄 src/features/chat/model/ChatRoomModel.ts
-export type ChatRoomType = 'PRIVATE' | 'GROUP';
 
+/* ======================================================
+   🔹 채팅방 타입 정의
+====================================================== */
+
+export type ChatRoomType = 'PRIVATE' | 'GROUP';
+export type ChatMemberType = 'GENERAL' | 'CHAT_BOT';
+
+/* ======================================================
+   🔹 멤버
+====================================================== */
 export type ChatMember = {
   memberId: string;
   nickName: string;
@@ -10,9 +19,13 @@ export type ChatMember = {
   unreadChatMessageCount: number;
   lastReadChatMessageId?: string | null;
   lastReadDateTime?: string | null;
-  isMine?: boolean; // ✅ 내가 보낸 멤버인지 여부
+  isMine?: boolean; // ✅ 현재 로그인한 사용자 여부
+  memberType?: ChatMemberType; // ✅ 추가
 };
 
+/* ======================================================
+   🔹 마지막 메시지 (미리보기)
+====================================================== */
 export type ChatMessagePreview = {
   id: string;
   senderId: string;
@@ -21,20 +34,22 @@ export type ChatMessagePreview = {
   createdAt: string;
 };
 
+/* ======================================================
+   🔹 채팅방 도메인 모델
+====================================================== */
 export type ChatRoom = {
   id: string;
   type: ChatRoomType;
   name?: string | null;
   members: ChatMember[];
   lastMessage?: ChatMessagePreview | null;
-  unreadCount: number; // ✅ 현재 로그인한 사용자의 unread 합산
+  unreadCount: number; // ✅ 현재 로그인한 사용자의 안읽은 메시지 수
   updatedAt?: string | null;
 };
 
 /* ======================================================
    🔹 서버 응답 DTO 타입
 ====================================================== */
-
 export type ChatRoomResponseDto = {
   chatRoomId: string;
   chatRoomType: ChatRoomType;
@@ -42,7 +57,7 @@ export type ChatRoomResponseDto = {
   memberChatRoomResponseDtos: {
     alarmType: string | null;
     memberId: string;
-    memberType: string;
+    memberType: ChatMemberType | string; // ✅ 타입 보강
     nickName: string;
     chatRoomId: string;
     profileImage: string | null;
@@ -75,11 +90,11 @@ export type ChatRoomResponseDto = {
 /* ======================================================
    🔹 DTO → Domain Model 변환 함수
 ====================================================== */
-
 export const mapChatRoomDto = (
   dto: ChatRoomResponseDto,
   currentMemberId: string,
 ): ChatRoom => {
+  // 🔹 멤버 변환
   const members: ChatMember[] =
     dto.memberChatRoomResponseDtos?.map(m => ({
       memberId: m.memberId,
@@ -90,14 +105,16 @@ export const mapChatRoomDto = (
       unreadChatMessageCount: m.unreadChatMessageCount ?? 0,
       lastReadChatMessageId: m.lastReadChatMessageId,
       lastReadDateTime: m.lastReadDateTime,
-      isMine: m.memberId === currentMemberId, // ✅ 현재 사용자 구분 추가
+      memberType: (m.memberType as ChatMemberType) ?? undefined, // ✅ 매핑
+      isMine: m.memberId === currentMemberId,
     })) ?? [];
 
+  // 🔹 내 정보 기반 unread 계산
   const myInfo = members.find(m => m.isMine);
   const unreadCount = myInfo?.unreadChatMessageCount ?? 0;
 
+  // 🔹 마지막 메시지 매핑
   const lastMessageDto = dto.lastChatMessageResponseDto;
-
   const lastMessage: ChatMessagePreview | null = lastMessageDto
     ? {
         id: lastMessageDto.id,
@@ -108,6 +125,7 @@ export const mapChatRoomDto = (
       }
     : null;
 
+  // 🔹 Domain 반환
   return {
     id: dto.chatRoomId,
     type: dto.chatRoomType,

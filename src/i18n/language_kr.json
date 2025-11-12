@@ -206,5 +206,8 @@
   "STR_BLOCK_FAILED": "사용자 차단에 실패했습니다.",
   "STR_UNBLOCK_FAILED": "차단 해제에 실패했습니다.",
 
-  "STR_CHAT_SEND_MESSAGE": "메시지 보내기"
+  "STR_CHAT_SEND_MESSAGE": "메시지 보내기",
+  "STR_CHAT_INVITE_MEMBER": "초대하기",
+  "STR_CHAT_LEAVE_CHATROOM": "채팅방 떠나기",
+  "STR_CHAT_CREATE_DATE_TIME": "생성일"
 }

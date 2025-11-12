@@ -7,6 +7,7 @@ import ProfileEditScreen from '@/screens/member/ProfileEditScreen';
 import PaymentHistoryScreen from '@/screens/payment/PaymentHistoryScreen';
 import ChatListScreen from '@/screens/chat/ChatListScreen';
 import ChatRoomScreen from '@/screens/chat/ChatRoomScreen';
+import ChatRoomMenuScreen from '@/screens/chat/ChatRoomMenuScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -35,6 +36,7 @@ const ProfileStack = ({ route }) => {
       />
       <Stack.Screen name="ChatListScreen" component={ChatListScreen} />
       <Stack.Screen name="ChatRoomScreen" component={ChatRoomScreen} />
+      <Stack.Screen name="ChatRoomMenuScreen" component={ChatRoomMenuScreen} />
     </Stack.Navigator>
   );
 };
