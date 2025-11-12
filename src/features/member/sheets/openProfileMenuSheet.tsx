@@ -13,6 +13,7 @@ import { openBlockedMemberListSheet } from './openBlockedMemberListSheet';
 import { openBlockConfirmModal } from '../modals/openBlockConfirmModal';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useFetchMemberPoint } from '@/features/point/hooks/useFetchMemberPoint'; // ✅ 단순 API 훅
+import { useNavigation } from '@react-navigation/native';
 
 type Props = {
   isMyProfile: boolean;
@@ -50,17 +51,22 @@ const ProfileMenuContent: React.FC<Props> = ({
   targetMemberId,
 }) => {
   const { member: currentMember } = useCurrentMember();
+  const { close } = useBottomSheetStore(); // ✅ 훅으로 접근 (getState() 아님)
+
   const { point, loading, error } = useFetchMemberPoint(
     currentMember?.id ?? '',
     true,
   );
-
+  const navigation = useNavigation(); // ✅ 추가
   const menuItems = isMyProfile
     ? [
         {
           icon: 'card-outline',
           labelKey: 'STR_VIEW_PAYMENTS',
-          onPress: () => {},
+          onPress: () => {
+            close(); // ✅ 바텀시트 닫기
+            navigation.navigate('PaymentHistoryScreen' as never); // ✅ 이동
+          },
         },
         {
           icon: 'wallet-outline',

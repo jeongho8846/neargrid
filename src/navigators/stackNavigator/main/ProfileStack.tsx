@@ -4,6 +4,7 @@ import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
 import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
 import ProfileEditScreen from '@/screens/member/ProfileEditScreen';
+import PaymentHistoryScreen from '@/screens/payment/PaymentHistoryScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,10 @@ const ProfileStack = ({ route }) => {
       <Stack.Screen
         name="DetailThreadComment"
         component={DetailThreadCommentScreen}
+      />
+      <Stack.Screen
+        name="PaymentHistoryScreen"
+        component={PaymentHistoryScreen}
       />
     </Stack.Navigator>
   );

@@ -46,6 +46,7 @@ export const COLORS = {
 
   // ⚙️ System
   error: '#FF3B30',
+  success: '#00b35fff',
 
   // 🎖️ Badge
   badge_background: '#FF6259',
