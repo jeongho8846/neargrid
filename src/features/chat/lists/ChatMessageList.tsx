@@ -63,6 +63,7 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     transform: [{ scaleY: -1 }],
+    paddingBottom: 50,
   },
   itemWrap: {
     transform: [{ scaleY: -1 }],
