@@ -21,6 +21,7 @@ export type ChatMessage = {
   createdAt: string;
   isMine: boolean;
   reactions?: ChatReaction[];
+  unreadChatMessageCount: number | null;
 };
 
 /* ======================================================
@@ -74,11 +75,13 @@ export const mapChatMessageDto = (
     content: dto.message,
     createdAt: dto.createDateTime,
     isMine: dto.memberId === currentMemberId,
+
     reactions:
       dto.reactionCountDtos?.map(r => ({
         type: r.reactionType,
         count: r.count,
       })) ?? [],
+    unreadChatMessageCount: dto.unreadChatMessageCount ?? null, // ✅ 추가
   };
 };
 
