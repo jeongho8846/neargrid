@@ -5,6 +5,8 @@ import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
 import ProfileEditScreen from '@/screens/member/ProfileEditScreen';
 import PaymentHistoryScreen from '@/screens/payment/PaymentHistoryScreen';
+import ChatListScreen from '@/screens/chat/ChatListScreen';
+import ChatRoomScreen from '@/screens/chat/ChatRoomScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +33,8 @@ const ProfileStack = ({ route }) => {
         name="PaymentHistoryScreen"
         component={PaymentHistoryScreen}
       />
+      <Stack.Screen name="ChatListScreen" component={ChatListScreen} />
+      <Stack.Screen name="ChatRoomScreen" component={ChatRoomScreen} />
     </Stack.Navigator>
   );
 };

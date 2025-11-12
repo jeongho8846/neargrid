@@ -204,5 +204,7 @@
   "STR_UNBLOCK_SUCCESS": "차단이 해제되었습니다.",
   "STR_UNBLOCK_CONFIRM": "이 사용자의 차단을 해제하시겠습니까?",
   "STR_BLOCK_FAILED": "사용자 차단에 실패했습니다.",
-  "STR_UNBLOCK_FAILED": "차단 해제에 실패했습니다."
+  "STR_UNBLOCK_FAILED": "차단 해제에 실패했습니다.",
+
+  "STR_CHAT_SEND_MESSAGE": "메시지 보내기"
 }

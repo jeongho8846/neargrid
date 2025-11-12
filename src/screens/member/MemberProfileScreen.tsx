@@ -135,7 +135,11 @@ export default function MemberProfileScreen({ route }) {
         keyExtractor={item => item.threadId.toString()}
         renderItem={({ item }) => <ThreadItemDetail item={item} />}
         ListHeaderComponent={
-          <MemberProfileHeader profile={profile} isLoading={isProfileLoading} />
+          <MemberProfileHeader
+            currentMemberId={currentMember?.id}
+            profile={profile}
+            isLoading={isProfileLoading}
+          />
         }
         onScroll={scrollHandler}
         scrollEventThrottle={16}

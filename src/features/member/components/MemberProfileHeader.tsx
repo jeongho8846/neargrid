@@ -9,10 +9,13 @@ import AppImageCarousel from '@/common/components/AppImageCarousel';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import AppTextField from '@/common/components/AppTextField'; // ✅ 추가
 import FastImage from '@d11/react-native-fast-image';
+import AppButton from '@/common/components/AppButton';
+import { useOpenPrivateChatRoom } from '@/features/chat/hooks/useOpenPrivateChatRoom';
 
 const { width } = Dimensions.get('window');
 
 type Props = {
+  currentMemberId?: string;
   profile?: MemberProfile;
   isLoading?: boolean;
 };
@@ -23,9 +26,15 @@ type Props = {
  * - Middle: 이름 + 프로필 이미지 + 설명(AppTextField)
  * - Bottom: 포인트 + 통계
  */
-const MemberProfileHeader: React.FC<Props> = ({ profile, isLoading }) => {
+const MemberProfileHeader: React.FC<Props> = ({
+  currentMemberId,
+  profile,
+  isLoading,
+}) => {
   const coverImage = profile?.backgroundUrl;
   const profileImage = profile?.profileImageUrl;
+  const { openPrivateChat } = useOpenPrivateChatRoom();
+
   console.log(
     '프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필',
     profile,
@@ -79,6 +88,24 @@ const MemberProfileHeader: React.FC<Props> = ({ profile, isLoading }) => {
           />
         </View>
       </View>
+      <View style={styles.middleSection_foot}>
+        <AppButton
+          labelKey="STR_FOLLOWINGS"
+          onPress={() => {
+            if (profile?.id) {
+              openPrivateChat(profile.id);
+            }
+          }}
+        />
+        <AppButton
+          labelKey="STR_CHAT_SEND_MESSAGE"
+          onPress={() => {
+            if (profile?.id) {
+              openPrivateChat(profile.id);
+            }
+          }}
+        />
+      </View>
 
       {/* 🔹 Bottom - 포인트 + 통계 */}
       <View style={styles.bottomSection}>
@@ -122,6 +149,13 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     paddingHorizontal: SPACING.sm,
     marginBottom: SPACING.md,
+  },
+  middleSection_foot: {
+    width: '100%',
+    marginBottom: SPACING.md,
+    flexDirection: 'row',
+    alignContent: 'space-between',
+    gap: 5,
   },
   nameArea: {
     flex: 1,
