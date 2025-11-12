@@ -36,87 +36,94 @@ const ChatMessageItem: React.FC<Props> = ({ message, hideNick, hideTime }) => {
   }
 
   return (
-    <View style={[styles.row, isMine ? styles.rowRight : styles.rowLeft]}>
-      {/* 🔹 Left (상대방만 프로필 표시) */}
-      {!isMine && !hideNick ? (
-        <View style={[styles.row, isMine ? styles.left_isMine : styles.left]}>
-          <AppProfileImage
-            imageUrl={message.senderProfileImageUrl}
-            canGoToProfileScreen
-            memberId={message.senderId}
+    <View
+      style={[hideNick ? styles.card_SameSender : styles.card_NoSameSender]}
+    >
+      <View style={[styles.row, isMine ? styles.rowRight : styles.rowLeft]}>
+        {/* 🔹 Left (상대방만 프로필 표시) */}
+        {!isMine && !hideNick ? (
+          <View style={[styles.row, isMine ? styles.left_isMine : styles.left]}>
+            <AppProfileImage
+              imageUrl={message.senderProfileImageUrl}
+              canGoToProfileScreen
+              memberId={message.senderId}
+            />
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.row,
+              isMine ? styles.left_isMine : styles.leftPlaceholder,
+            ]}
           />
-        </View>
-      ) : (
-        <View
-          style={[
-            styles.row,
-            isMine ? styles.left_isMine : styles.leftPlaceholder,
-          ]}
-        />
-      )}
-
-      {/* 🔹 Center */}
-      <View style={[styles.center, isMine && { alignItems: 'flex-end' }]}>
-        {/* 닉네임 (상대방만 표시) */}
-        {!isMine && !hideNick && message.senderNickName && (
-          <AppText variant="username" style={styles.nickName}>
-            {message.senderNickName}
-          </AppText>
         )}
 
-        {/* 메시지 말풍선 */}
-        <View
-          style={[styles.bubble, isMine ? styles.myBubble : styles.otherBubble]}
-        >
-          {message.type === 'IMAGE' ? (
-            <Image
-              source={{ uri: message.content }}
-              style={styles.imageBubble}
-              resizeMode="cover"
-            />
-          ) : (
-            <AppText variant="body" style={styles.messageText}>
-              {message.content}
+        {/* 🔹 Center */}
+        <View style={[styles.center, isMine && { alignItems: 'flex-end' }]}>
+          {/* 닉네임 (상대방만 표시) */}
+          {!isMine && !hideNick && message.senderNickName && (
+            <AppText variant="username" style={styles.nickName}>
+              {message.senderNickName}
             </AppText>
+          )}
+
+          {/* 메시지 말풍선 */}
+          <View
+            style={[
+              styles.bubble,
+              isMine ? styles.myBubble : styles.otherBubble,
+            ]}
+          >
+            {message.type === 'IMAGE' ? (
+              <Image
+                source={{ uri: message.content }}
+                style={styles.imageBubble}
+                resizeMode="cover"
+              />
+            ) : (
+              <AppText variant="body" style={styles.messageText}>
+                {message.content}
+              </AppText>
+            )}
+          </View>
+
+          {/* 리액션 박스 자리 */}
+          {message.reactions && message.reactions.length > 0 && (
+            <View style={styles.reactionBox}>
+              {message.reactions.map(r => (
+                <AppText
+                  key={r.type}
+                  variant="caption"
+                  style={styles.reactionText}
+                >
+                  {r.type} {r.count}
+                </AppText>
+              ))}
+            </View>
           )}
         </View>
 
-        {/* 리액션 박스 자리 */}
-        {message.reactions && message.reactions.length > 0 && (
-          <View style={styles.reactionBox}>
-            {message.reactions.map(r => (
-              <AppText
-                key={r.type}
-                variant="caption"
-                style={styles.reactionText}
-              >
-                {r.type} {r.count}
-              </AppText>
-            ))}
-          </View>
-        )}
-      </View>
+        {/* 🔹 Right (안읽은 수 + 시간) */}
+        <View
+          style={[
+            styles.right,
+            isMine ? { alignItems: 'flex-end' } : { alignItems: 'flex-start' },
+          ]}
+        >
+          {/* 안읽은 사람 수 */}
+          {message.unreadChatMessageCount ? (
+            <AppText variant="caption" style={styles.unreadCount}>
+              {message.unreadChatMessageCount}
+            </AppText>
+          ) : null}
 
-      {/* 🔹 Right (안읽은 수 + 시간) */}
-      <View
-        style={[
-          styles.right,
-          isMine ? { alignItems: 'flex-end' } : { alignItems: 'flex-start' },
-        ]}
-      >
-        {/* 안읽은 사람 수 */}
-        {message.unreadChatMessageCount ? (
-          <AppText variant="caption" style={styles.unreadCount}>
-            {message.unreadChatMessageCount}
-          </AppText>
-        ) : null}
-
-        {/* 시간 (hideTime이 false일 때만 표시) */}
-        {!hideTime && (
-          <AppText variant="caption" style={styles.timeText}>
-            {time}
-          </AppText>
-        )}
+          {/* 시간 (hideTime이 false일 때만 표시) */}
+          {!hideTime && (
+            <AppText variant="caption" style={styles.timeText}>
+              {time}
+            </AppText>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -125,10 +132,18 @@ const ChatMessageItem: React.FC<Props> = ({ message, hideNick, hideTime }) => {
 export default ChatMessageItem;
 
 const styles = StyleSheet.create({
+  card_SameSender: {
+    paddingHorizontal: SPACING.xs,
+    marginTop: 4,
+    width: '95%',
+  },
+  card_NoSameSender: {
+    paddingHorizontal: SPACING.xs,
+    marginTop: 20,
+    width: '95%',
+  },
   row: {
     flexDirection: 'row',
-    paddingVertical: 2,
-    paddingHorizontal: SPACING.xs,
   },
   rowLeft: {
     justifyContent: 'flex-start',
