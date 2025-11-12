@@ -1,11 +1,18 @@
 // 📄 src/features/chat/screens/ChatRoomScreen.tsx
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
 import ChatMessageList from '@/features/chat/lists/ChatMessageList';
 import AppText from '@/common/components/AppText';
 import { COLORS, SPACING } from '@/common/styles';
+import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
+import AppIcon from '@/common/components/AppIcon';
 
 /**
  * ✅ 채팅방 화면
@@ -45,13 +52,30 @@ const ChatRoomScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ChatMessageList
-        data={messages}
-        onEndReached={() => {
-          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
-        }}
-        loadingMore={isFetchingNextPage}
+      <AppCollapsibleHeader
+        titleKey="STR_CHAT"
+        right={
+          <View style={styles.headerRight}>
+            <TouchableOpacity>
+              <AppIcon
+                type="ion"
+                name="ellipsis-vertical"
+                size={22}
+                color={COLORS.body}
+              />
+            </TouchableOpacity>
+          </View>
+        }
       />
+      <View style={styles.body}>
+        <ChatMessageList
+          data={messages}
+          onEndReached={() => {
+            if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+          }}
+          loadingMore={isFetchingNextPage}
+        />
+      </View>
     </View>
   );
 };
@@ -61,7 +85,7 @@ export default ChatRoomScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+
     paddingHorizontal: SPACING.xs,
   },
   center: {
@@ -69,4 +93,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  headerRight: {
+    alignItems: 'flex-end',
+    justifyContent: 'center',
+    marginLeft: 'auto',
+    paddingRight: SPACING.sm,
+    padding: 1,
+  },
+  body: { flex: 1, paddingBottom: 108 },
 });

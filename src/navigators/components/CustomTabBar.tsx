@@ -149,9 +149,9 @@ const styles = StyleSheet.create({
     width: '88%',
     shadowColor: TEST_COLORS.overlay_dark,
     shadowOpacity: 0.4,
-    shadowRadius: 16,
+    shadowRadius: 1,
     shadowOffset: { width: 1, height: 6 },
-    elevation: 10,
+    elevation: 2,
   },
   tabItem: {
     flex: 1,
