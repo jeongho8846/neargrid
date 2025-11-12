@@ -3,7 +3,7 @@ import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
-import ChatMessageList from '@/features/chat/components/ChatMessageList';
+import ChatMessageList from '@/features/chat/lists/ChatMessageList';
 import AppText from '@/common/components/AppText';
 import { COLORS, SPACING } from '@/common/styles';
 
