@@ -1,21 +1,21 @@
 // 📄 src/features/chat/screens/ChatRoomMenuScreen.tsx
 import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 
 import AppText from '@/common/components/AppText';
 import { COLORS, SPACING } from '@/common/styles';
 import { useFetchChatRoomInfo } from '@/features/chat/hooks/useGetChatRoomInfo';
 import ChatRoomMemberList from '@/features/chat/components/ChatRoomMemberList';
 import AppGroupAvatar from '@/features/chat/components/ChatRoomAvatarGroup'; // ✅ 그룹 아바타 컴포넌트
+import { useLeaveChatRoom } from '@/features/chat/hooks/useLeaveChatRoom';
 
 const ChatRoomMenuScreen = () => {
   const route = useRoute<any>();
-  const navigation = useNavigation();
   const { roomId } = route.params;
 
   const { data: room, isLoading, isError } = useFetchChatRoomInfo(roomId);
-
+  const { leaveRoom, loading: leaving } = useLeaveChatRoom();
   const handleInviteBot = () => {
     console.log('챗봇 초대');
   };
@@ -25,10 +25,9 @@ const ChatRoomMenuScreen = () => {
   };
 
   const handleLeave = async () => {
-    console.log('채팅방 나가기');
-    navigation.goBack();
+    if (!room) return;
+    await leaveRoom(room.id, room.type); // ✅ 여기서 호출
   };
-
   if (isLoading)
     return (
       <View style={styles.center}>
