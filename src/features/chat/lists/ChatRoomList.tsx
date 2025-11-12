@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import type { ChatRoom } from '../model/ChatRoomModel';
+import ChatRoomItemCard from '../components/ChatRoomItemCard';
 
 type Props = {
   data: ChatRoom[];
@@ -19,38 +20,12 @@ const ChatRoomList: React.FC<Props> = ({ data, onPressItem }) => {
       data={data}
       keyExtractor={item => item.id}
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.itemContainer}
-          onPress={() => onPressItem?.(item.id)}
-        >
-          <View style={styles.profileCircle} />
-          <View style={styles.textContainer}>
-            <Text style={styles.roomName}>
-              {item.name || getRoomDisplayName(item)}
-            </Text>
-            <Text style={styles.lastMessage} numberOfLines={1}>
-              {item.lastMessage?.message || '(메시지 없음)'}
-            </Text>
-          </View>
-          {item.unreadCount > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.unreadCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+        <ChatRoomItemCard item={item} onPress={onPressItem} />
       )}
       contentContainerStyle={{ paddingVertical: 12 }}
       showsVerticalScrollIndicator={false}
     />
   );
-};
-
-// ✅ 방 이름이 없으면 상대방 닉네임으로 표시
-const getRoomDisplayName = (room: ChatRoom) => {
-  const other = room.members.find(
-    m => !m.isAvailableMember || !m.activeNow === false,
-  );
-  return other?.nickName ?? '알 수 없는 사용자';
 };
 
 const styles = StyleSheet.create({

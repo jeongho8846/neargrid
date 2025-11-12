@@ -10,6 +10,7 @@ export type ChatMember = {
   unreadChatMessageCount: number;
   lastReadChatMessageId?: string | null;
   lastReadDateTime?: string | null;
+  isMine?: boolean; // ✅ 내가 보낸 멤버인지 여부
 };
 
 export type ChatMessagePreview = {
@@ -89,9 +90,10 @@ export const mapChatRoomDto = (
       unreadChatMessageCount: m.unreadChatMessageCount ?? 0,
       lastReadChatMessageId: m.lastReadChatMessageId,
       lastReadDateTime: m.lastReadDateTime,
+      isMine: m.memberId === currentMemberId, // ✅ 현재 사용자 구분 추가
     })) ?? [];
 
-  const myInfo = members.find(m => m.memberId === currentMemberId);
+  const myInfo = members.find(m => m.isMine);
   const unreadCount = myInfo?.unreadChatMessageCount ?? 0;
 
   const lastMessageDto = dto.lastChatMessageResponseDto;
