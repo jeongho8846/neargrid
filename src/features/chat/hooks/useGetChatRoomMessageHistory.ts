@@ -24,7 +24,7 @@ export const useGetChatRoomMessageHistory = (chatRoomId: string) => {
       lastPage.nextPagingState ? lastPage.nextPagingState : undefined,
     initialPageParam: '', // ✅ v5 필수 옵션
     enabled: !!memberId && !!chatRoomId,
-    staleTime: 10 * 1000,
-    gcTime: 5 * 60 * 1000,
+    staleTime: 10 * 1000, //신선시간 10초
+    gcTime: 5 * 60 * 1000, // 5분 후 삭제
   });
 };

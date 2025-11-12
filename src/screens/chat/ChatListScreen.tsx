@@ -1,16 +1,33 @@
+// 📄 src/screens/chat/ChatListScreen.tsx
 import React from 'react';
-import { View, StyleSheet, ActivityIndicator, Text } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+  SafeAreaView,
+} from 'react-native';
 import { useGetCurrentMemberChatRooms } from '@/features/chat/hooks/useGetCurrentMemberChatRooms';
 import ChatRoomList from '@/features/chat/lists/ChatRoomList';
 import { COLORS } from '@/common/styles';
+import { useNavigation } from '@react-navigation/native';
 
 const ChatListScreen = () => {
+  const navigation = useNavigation();
   const {
     data: rooms,
     isLoading,
     isError,
     refetch,
   } = useGetCurrentMemberChatRooms();
+
+  // ✅ 채팅방 클릭 → ChatRoomScreen 이동
+  const handlePressRoom = (roomId: string) => {
+    navigation.navigate(
+      'ChatRoomScreen' as never,
+      { chatRoomId: roomId } as never,
+    );
+  };
 
   if (isLoading)
     return (
@@ -34,9 +51,9 @@ const ChatListScreen = () => {
     );
 
   return (
-    <View style={styles.container}>
-      <ChatRoomList data={rooms} />
-    </View>
+    <SafeAreaView style={styles.container}>
+      <ChatRoomList data={rooms} onPressItem={handlePressRoom} />
+    </SafeAreaView>
   );
 };
 
@@ -45,7 +62,7 @@ export default ChatListScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 8, // ✅ 네이티브 테스트용 패딩
+    paddingHorizontal: 8, // ✅ 테스트 스크린 패딩 규칙
     backgroundColor: COLORS.background,
   },
   center: {

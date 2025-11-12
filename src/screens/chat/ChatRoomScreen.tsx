@@ -1,66 +1,58 @@
-// 📄 src/screens/chat/ChatRoomScreen.tsx
+// 📄 src/features/chat/screens/ChatRoomScreen.tsx
 import React from 'react';
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  SafeAreaView,
-  ActivityIndicator,
-} from 'react-native';
-import { useRoute, RouteProp } from '@react-navigation/native';
+import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
+import ChatMessageList from '@/features/chat/components/ChatMessageList';
 import AppText from '@/common/components/AppText';
-import { SPACING } from '@/common/styles';
-import type { ChatMessage } from '@/features/chat/model/ChatMessageModel';
+import { COLORS, SPACING } from '@/common/styles';
 
-type RouteParams = {
-  ChatRoomScreen: { chatRoomId: string };
-};
+/**
+ * ✅ 채팅방 화면
+ * - route.params.chatRoomId 기반 메시지 불러오기
+ * - AppFlashList 기반 ChatMessageList 사용
+ */
+const ChatRoomScreen = () => {
+  const route = useRoute<any>();
+  const { chatRoomId } = route.params;
 
-const ChatRoomScreen: React.FC = () => {
-  const route = useRoute<RouteProp<RouteParams, 'ChatRoomScreen'>>();
-  const chatRoomId = route.params.chatRoomId;
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetChatRoomMessageHistory(chatRoomId);
 
-  // 🔹 메시지 히스토리 불러오기
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useGetChatRoomMessageHistory(chatRoomId);
+  // 🔹 messages 평탄화
+  const messages = data?.pages.flatMap(page => page.messages || []) ?? [];
 
-  // 🔹 무한스크롤 데이터 병합
-  const messages: ChatMessage[] =
-    data?.pages.flatMap(page => page.messages) ?? [];
+  if (isLoading)
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={COLORS.icon_primary} />
+      </View>
+    );
 
-  // 🔹 위로 스크롤 시 이전 페이지 로드
-  const handleEndReached = () => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  };
+  if (isError)
+    return (
+      <View style={styles.center}>
+        <AppText onPress={() => refetch()}>불러오기 실패. 다시 시도</AppText>
+      </View>
+    );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {isLoading ? (
-        <ActivityIndicator style={styles.loader} />
-      ) : (
-        <FlatList
-          data={messages}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                styles.messageBubble,
-                item.isMine ? styles.myMessage : styles.otherMessage,
-              ]}
-            >
-              <AppText style={styles.messageText}>{item.message}</AppText>
-            </View>
-          )}
-          contentContainerStyle={styles.listContainer}
-          inverted // ✅ 최신 메시지가 아래로 오게
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.2}
-        />
-      )}
-    </SafeAreaView>
+    <View style={styles.container}>
+      <ChatMessageList
+        data={messages}
+        onEndReached={() => {
+          if (hasNextPage && !isFetchingNextPage) fetchNextPage();
+        }}
+        loadingMore={isFetchingNextPage}
+      />
+    </View>
   );
 };
 
@@ -69,32 +61,12 @@ export default ChatRoomScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.background,
+    paddingHorizontal: SPACING.xs,
   },
-  loader: {
+  center: {
     flex: 1,
     justifyContent: 'center',
-  },
-  listContainer: {
-    paddingVertical: SPACING.sm,
-    paddingHorizontal: SPACING.sm,
-  },
-  messageBubble: {
-    maxWidth: '75%',
-    marginVertical: 4,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-  },
-  myMessage: {
-    backgroundColor: '#DCF8C6',
-    alignSelf: 'flex-end',
-  },
-  otherMessage: {
-    backgroundColor: '#f1f1f1',
-    alignSelf: 'flex-start',
-  },
-  messageText: {
-    fontSize: 15,
+    alignItems: 'center',
   },
 });
