@@ -16,7 +16,8 @@ import { queryClient } from '@/services/reactQuery/reactQueryClient';
 import '@/i18n';
 import { AppToastContainer } from '@/common/components/AppToast/AppToastManager';
 import RootNavigator from '@/navigators/RootNavigator';
-
+import messaging from '@react-native-firebase/messaging';
+import { initFCM } from '@/services/notification/fcmService';
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
   ...DefaultTheme,
@@ -40,6 +41,10 @@ const App = () => {
       StatusBar.setBackgroundColor('transparent');
       StatusBar.setBarStyle('light-content');
     }
+  }, []);
+
+  useEffect(() => {
+    initFCM(); // 로그인 전 → 토큰만 생성해서 cachedToken 저장
   }, []);
 
   /* ⌨️ 전역 키보드 상태 감지 */

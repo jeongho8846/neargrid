@@ -3,6 +3,7 @@ import { memberStorage } from '../utils/memberStorage';
 import { signOutApi } from '../api/signOutApi';
 import { useCurrentMember } from './useCurrentMember';
 import { useAuthStore } from '@/common/state/authStore'; // ✅ 추가
+import { unregisterFcmToken } from '@/services/notification/fcmTokenApi';
 
 export const useLogout = () => {
   const { member } = useCurrentMember();
@@ -10,23 +11,27 @@ export const useLogout = () => {
 
   const logout = async () => {
     try {
+      // 🔥 서버의 FCM 토큰 삭제(= 빈값으로 대체)
       if (member?.id) {
         try {
-          await signOutApi(member.id);
-          console.log('✅ 서버 로그아웃 성공');
+          await unregisterFcmToken(member.id);
+          await signOutApi(member?.id);
+          console.log('🗑️ 서버 FCM 토큰 제거 성공');
         } catch {
-          console.warn('⚠️ 서버 로그아웃 실패, 로컬 세션만 정리');
+          console.log('⚠️ 서버 FCM 토큰 제거 실패');
         }
       }
+
+      // 기존 로그아웃 그대로
 
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('refreshToken');
       await memberStorage.clearMember();
 
-      console.log('🧹 로컬 세션 정리 완료');
-      setIsAuth(false); // ✅ RootNavigator에서 AuthStack으로 전환
-    } catch (err) {
-      console.error('❌ 로그아웃 실패:', err);
+      setIsAuth(false);
+      console.log('🧹 로그아웃 완료');
+    } catch (e) {
+      console.error('❌ 로그아웃 실패:', e);
     }
   };
 

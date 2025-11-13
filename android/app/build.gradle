@@ -90,6 +90,10 @@ dependencies {
     // React Native 코어 의존성
     implementation("com.facebook.react:react-android")
 
+    // 🔥 여기에 추가!
+    implementation platform('com.google.firebase:firebase-bom:33.1.2')
+    implementation 'com.google.firebase:firebase-messaging'
+
     // Hermes / JSC 선택
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")
