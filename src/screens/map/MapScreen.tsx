@@ -1,4 +1,10 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useEffect,
+} from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
@@ -15,10 +21,12 @@ import { useMapThreadStore } from '@/features/map/state/mapThreadStore';
 import AppMapZoomControls from '@/common/components/AppMapView/controls/AppMapZoomControls';
 import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import AppIcon from '@/common/components/AppIcon';
-import { useBottomSheetStore } from '@/common/state/bottomSheetStore'; // ✅ 추가
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_PRESETS } from '@/test/styles/presets';
 import { TEST_SPACING } from '@/test/styles/spacing';
+import { usePermission } from '@/common/hooks/usePermission';
+import PermissionDialog from '@/common/components/PermissionDialog';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
@@ -27,8 +35,12 @@ const MapScreen = () => {
   const sheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<MapViewContainerRef>(null);
   const navigation = useNavigation();
-  const { setRef, isOpen } = useBottomSheetStore(); // ✅ 전역 store 가져오기
+  const { setRef, isOpen } = useBottomSheetStore();
   const snapPoints = useMemo(() => [1, '50%', '90%'], []);
+
+  // ✅ 위치 권한
+  const locationPermission = usePermission('location');
+  const [locationGranted, setLocationGranted] = useState(false);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [searchParams, setSearchParams] = useState({
@@ -44,19 +56,33 @@ const MapScreen = () => {
     includePastRemainTime: false,
   });
 
-  /** ✅ 바텀시트 상태 감지 */
+  // ✅ 최초 진입 시 위치 권한 요청
+  useEffect(() => {
+    const requestLocation = async () => {
+      const status = await locationPermission.check();
+
+      if (status === 'granted') {
+        setLocationGranted(true);
+        return;
+      }
+
+      // 권한 다이얼로그 표시
+      const result = await locationPermission.request();
+      setLocationGranted(result.granted);
+    };
+
+    requestLocation();
+  }, []);
+
   const { isOpen: sheetOpen, close, open } = useBottomSheetStore();
   const handleSheetChange = useCallback((index: number) => {
     if (index === 0) {
-      // 닫힘
       useBottomSheetStore.setState({ isOpen: false });
     } else {
-      // 열림
       useBottomSheetStore.setState({ isOpen: true });
     }
   }, []);
 
-  /** ✅ 스레드 데이터 로드 */
   const loadThreads = useCallback(
     async (params = searchParams, lat?: number, lon?: number) => {
       if (!member?.id) return;
@@ -134,27 +160,22 @@ const MapScreen = () => {
         }}
       />
 
-      {/* ✅ Footprint 리스트보기 버튼 */}
       <TouchableOpacity
         style={styles.showListButton}
         activeOpacity={0.8}
-        onPress={() => sheetRef.current?.snapToIndex(1)} // ✅ 인덱스 1로 이동
+        onPress={() => sheetRef.current?.snapToIndex(1)}
       >
         <AppText i18nKey="STR_MAP_BUTTON_SHOWLIST" variant="button" />
       </TouchableOpacity>
 
-      {/* ✅ Footprint 이동 버튼 */}
       <TouchableOpacity
         style={styles.leftButton}
-        onPress={() => {
-          // navigation.navigate('FootPrint' as never);
-        }}
+        onPress={() => {}}
         activeOpacity={0.8}
       >
         <AppIcon name="footsteps" type="ion" size={24} variant="primary" />
       </TouchableOpacity>
 
-      {/* ✅ 검색창 */}
       <View style={styles.searchBar}>
         <TouchableOpacity
           style={styles.searchArea}
@@ -183,13 +204,12 @@ const MapScreen = () => {
         )}
       </View>
 
-      {/* ✅ 바텀시트 */}
       <BottomSheet
         ref={sheetRef}
         index={1}
         snapPoints={snapPoints}
         backgroundStyle={styles.sheetBackground}
-        onChange={handleSheetChange} // ✅ 추가: 열림/닫힘 감지
+        onChange={handleSheetChange}
         handleComponent={() => (
           <View style={styles.handleContainer}>
             <View style={styles.handleIndicator} />
@@ -219,6 +239,14 @@ const MapScreen = () => {
           showsVerticalScrollIndicator={false}
         />
       </BottomSheet>
+
+      {/* ✅ 위치 권한 다이얼로그 */}
+      <PermissionDialog
+        visible={locationPermission.dialogVisible}
+        type="location"
+        onConfirm={locationPermission.handleConfirm}
+        onClose={locationPermission.handleClose}
+      />
     </View>
   );
 };
@@ -262,14 +290,13 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   showListButton: {
-    ...TEST_PRESETS.buttonBase, // ✅ 버튼 기본 프리셋 사용
-    backgroundColor: TEST_COLORS.primary, // ✅ 메인 버튼 색상
+    ...TEST_PRESETS.buttonBase,
+    backgroundColor: TEST_COLORS.primary,
     position: 'absolute',
     bottom: 140,
     alignSelf: 'center',
     borderRadius: 24,
   },
-
   sheetBackground: {
     backgroundColor: COLORS.background,
     borderTopLeftRadius: 18,

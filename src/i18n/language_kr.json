@@ -209,5 +209,19 @@
   "STR_CHAT_SEND_MESSAGE": "메시지 보내기",
   "STR_CHAT_INVITE_MEMBER": "초대하기",
   "STR_CHAT_LEAVE_CHATROOM": "채팅방 떠나기",
-  "STR_CHAT_CREATE_DATE_TIME": "생성일"
+  "STR_CHAT_CREATE_DATE_TIME": "생성일",
+
+  "STR_PERMISSION_CAMERA_TITLE": "카메라 권한 필요",
+  "STR_PERMISSION_CAMERA_RATIONALE": "게시물에 사진과 동영상을 추가하기 위해 카메라 접근 권한이 필요합니다.",
+
+  "STR_PERMISSION_GALLERY_TITLE": "사진첩 권한 필요",
+  "STR_PERMISSION_GALLERY_RATIONALE": "게시물에 저장된 사진과 동영상을 추가하기 위해 사진첩 접근 권한이 필요합니다.",
+
+  "STR_PERMISSION_LOCATION_TITLE": "위치 권한 필요",
+  "STR_PERMISSION_LOCATION_RATIONALE": "주변 게시물을 지도에 표시하고, 위치 기반 콘텐츠를 공유하기 위해 위치 정보가 필요합니다.",
+
+  "STR_PERMISSION_NOTIFICATION_TITLE": "알림 권한 필요",
+  "STR_PERMISSION_NOTIFICATION_RATIONALE": "새로운 댓글, 좋아요, 팔로우 알림 등 중요한 활동을 알려드리기 위해 알림 권한이 필요합니다.",
+
+  "STR_PERMISSION_ALLOW": "확인"
 }

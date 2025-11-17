@@ -15,8 +15,8 @@ const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
   const { member } = useCurrentMember(); // ✅ 현재 로그인된 사용자 정보
-  const granted = true; // (예시) 위치 권한 생략
-  useLocationWatcher(granted);
+  // const granted = true; // (예시) 위치 권한 생략
+  // useLocationWatcher(granted);
 
   React.useEffect(() => {
     console.log('🧭 [MainTabNavigator] member 변경됨:', member);

@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">neargrid</string>
+    
+    <!-- 카메라 권한 -->
+    <string name="camera_permission_rationale">NEARGRID는 게시물에 사진과 동영상을 추가하기 위해 카메라 접근 권한이 필요합니다. 이 권한은 콘텐츠 촬영 시에만 사용됩니다.</string>
+    
+    <!-- 사진첩 권한 -->
+    <string name="photo_library_permission_rationale">NEARGRID는 게시물에 저장된 사진과 동영상을 추가하기 위해 사진첩 접근 권한이 필요합니다. 사용자가 선택한 미디어 파일에만 접근합니다.</string>
+    
+    <!-- 위치 권한 -->
+    <string name="location_permission_rationale">NEARGRID는 주변 게시물을 지도에 표시하고, 위치 기반 콘텐츠를 공유하기 위해 위치 정보가 필요합니다. 위치 정보는 지도 탐색과 게시물 작성 시에만 사용됩니다.</string>
+    
+    <!-- 알림 권한 -->
+    <string name="notification_permission_rationale">NEARGRID는 새로운 댓글, 좋아요, 팔로우 알림 등 중요한 활동을 알려드리기 위해 알림 권한이 필요합니다. 알림은 설정에서 언제든지 끄거나 켤 수 있습니다.</string>
+</resources>

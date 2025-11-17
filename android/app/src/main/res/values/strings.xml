@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">neargrid</string>
+    
+    <!-- Camera Permission -->
+    <string name="camera_permission_rationale">NEARGRID needs camera access to capture photos and videos for your posts. This permission is only used when you actively take photos or videos.</string>
+    
+    <!-- Photo Library Permission -->
+    <string name="photo_library_permission_rationale">NEARGRID needs photo library access to add your saved photos and videos to posts. We only access the media files you select.</string>
+    
+    <!-- Location Permission -->
+    <string name="location_permission_rationale">NEARGRID needs location access to show nearby posts on the map and share location-based content. Location data is only used for map navigation and creating posts.</string>
+    
+    <!-- Notification Permission -->
+    <string name="notification_permission_rationale">NEARGRID needs notification permission to notify you about new comments, likes, follows, and other important activities. You can turn notifications on or off in settings at any time.</string>
 </resources>
