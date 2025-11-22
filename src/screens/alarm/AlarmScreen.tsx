@@ -1,6 +1,6 @@
 // 📄 src/screens/alarm/AlarmScreen.tsx
 import React, { useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFetchMemberAlarms } from '@/features/alarm/hooks/useFetchMemberAlarms';
 import AlarmList from '@/features/alarm/lists/AlarmList';
@@ -16,11 +16,14 @@ import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCo
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 교체
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
+import type { AlarmModel } from '@/features/alarm/model/AlarmModel';
+import { createEmptyThread } from '@/features/thread/model/ThreadModel';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
   const { data } = useFetchMemberAlarms(member?.id);
   const { markAllAsRead, loading } = useViewAllAlarms();
+  const navigation = useNavigation<any>();
 
   // ✅ Reanimated 기반 헤더 제어
   const { headerStyle, scrollHandler } = useHeaderScroll(56);
@@ -29,6 +32,53 @@ export default function AlarmScreen() {
     if (!member?.id || loading) return;
     await markAllAsRead(member.id);
   };
+
+  const handleAlarmPress = useCallback(
+    (alarm: AlarmModel) => {
+      if (!alarm) return;
+
+      switch (alarm.alarmType) {
+        case 'NEW_FOLLOWER':
+          if (alarm.sendMemberId) {
+            navigation.navigate('Profile', { memberId: alarm.sendMemberId });
+          }
+          break;
+        case 'THREAD_REPLY':
+        case 'COMMENT_THREAD':
+        case 'CHILD_COMMENT_THREAD':
+        case 'THREAD_REACTION':
+        case 'COMMENT_THREAD_REACTION': {
+          const threadId =
+            alarm.parentParentTargetId ??
+            alarm.parentTargetId ??
+            alarm.targetId ??
+            null;
+
+          if (!threadId) {
+            break;
+          }
+
+          const thread = {
+            ...createEmptyThread(threadId),
+            description:
+              alarm.targetDescription ?? alarm.parentTargetDescription ?? '',
+            contentImageUrls: alarm.targetImageUrl
+              ? [alarm.targetImageUrl]
+              : [],
+            memberId: alarm.sendMemberId ?? '',
+            memberNickName: alarm.sendMemberNickName ?? '',
+            memberProfileImageUrl: alarm.sendMemberProfileImageUrl ?? '',
+          };
+
+          navigation.navigate('DetailThread', { thread });
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [navigation],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -86,6 +136,7 @@ export default function AlarmScreen() {
       <View style={styles.listContainer}>
         <AlarmList
           data={data ?? []}
+          onItemPress={handleAlarmPress}
           onScroll={scrollHandler} // ✅ 연결
           scrollEventThrottle={16} // ✅ 추가
         />

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import AppText from '@/common/components/AppText';
 import AppProfileImage from '@/common/components/AppProfileImage';
 import { COLORS } from '@/common/styles/colors';
@@ -16,19 +16,29 @@ import { useTranslation } from 'react-i18next';
  * │ [Profile🔴]   [Nickname + Message]   [Thumb] │
  * └────────────────────────────────────────────┘
  */
-export default function AlarmItem({ item }: { item: AlarmModel }) {
+type AlarmItemProps = {
+  item: AlarmModel;
+  onPress?: (alarm: AlarmModel) => void;
+};
+
+export default function AlarmItem({ item, onPress }: AlarmItemProps) {
   const { t } = useTranslation();
   const key = `STR_ALARM_${item.alarmType ?? 'DEFAULT'}`;
 
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => onPress?.(item)}
+      disabled={!onPress}
+    >
       {/* ───────────── ① Left Section ───────────── */}
       <View style={styles.leftSection}>
         <View style={styles.profileWrapper}>
           <AppProfileImage
             imageUrl={item.sendMemberProfileImageUrl}
             size={44}
-            memberId={item.receiveMemberId}
+            memberId={item.sendMemberId}
             canGoToProfileScreen
           />
           {!item.viewedByMember && <View style={styles.unreadDot} />}
@@ -53,7 +63,7 @@ export default function AlarmItem({ item }: { item: AlarmModel }) {
           />
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -66,7 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: TEST_RADIUS.md,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
-    marginBottom: SPACING.xs,
+    marginVertical: SPACING.xs,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -100,9 +110,9 @@ const styles = StyleSheet.create({
     width: DOT_SIZE,
     height: DOT_SIZE,
     borderRadius: DOT_SIZE / 2,
-    backgroundColor: COLORS.danger_variant, // 🔴 빨간색 토큰
+    backgroundColor: COLORS.danger_variant,
     borderWidth: 1.5,
-    borderColor: COLORS.sheet_background, // ✅ 외곽선 보정
+    borderColor: COLORS.sheet_background,
   },
 
   contentImageBox: {
