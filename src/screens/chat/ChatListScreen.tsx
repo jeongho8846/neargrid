@@ -6,11 +6,13 @@ import {
   ActivityIndicator,
   Text,
   SafeAreaView,
+  TouchableOpacity,
 } from 'react-native';
 import { useGetCurrentMemberChatRooms } from '@/features/chat/hooks/useGetCurrentMemberChatRooms';
 import ChatRoomList from '@/features/chat/lists/ChatRoomList';
 import { COLORS } from '@/common/styles';
 import { useNavigation } from '@react-navigation/native';
+import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 
 const ChatListScreen = () => {
   const navigation = useNavigation();
@@ -52,6 +54,7 @@ const ChatListScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <AppCollapsibleHeader titleKey="STR_CHAT" />
       <ChatRoomList data={rooms} onPressItem={handlePressRoom} />
     </SafeAreaView>
   );
@@ -64,6 +67,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 8, // ✅ 테스트 스크린 패딩 규칙
     backgroundColor: COLORS.background,
+    paddingTop: 56,
   },
   center: {
     flex: 1,
