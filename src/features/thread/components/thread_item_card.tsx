@@ -42,8 +42,8 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
             {/* 상단: 좋아요 / 댓글 */}
             <View style={styles.topRightBox}>
               <View style={styles.statGroup}>
-                <AppIcon name="heart" type="ion" size={14} variant="onDark" />
-                <AppText variant="button" style={styles.statText}>
+                <AppIcon name="heart" type="ion" size={11} variant="onDark" />
+                <AppText variant="body" style={styles.statText}>
                   {thread.reactionCount ?? 0}
                 </AppText>
               </View>
@@ -52,10 +52,10 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
                 <AppIcon
                   name="chatbubble"
                   type="ion"
-                  size={14}
+                  size={10}
                   variant="onDark"
                 />
-                <AppText variant="button" style={styles.statText}>
+                <AppText variant="body" style={styles.statText}>
                   {thread.commentCount ?? 0}
                 </AppText>
               </View>
@@ -66,6 +66,7 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
               <AppText
                 variant="caption_bold"
                 threadType={thread.threadType as keyof typeof COLORS}
+                style={styles.statText}
               />
             </View>
           </View>
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
   /** 👇 하단 프로필 오버레이 */
   overlay: {
     backgroundColor: COLORS.overlay_dark,
-    padding: SPACING.sm,
+    padding: SPACING.xs,
     borderRadius: 16,
   },
   profileRow: {
@@ -136,20 +137,21 @@ const styles = StyleSheet.create({
   /** ❤️ 좋아요/댓글 반투명 박스 */
   topRightBox: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignContent: 'space-between',
     backgroundColor: COLORS.overlay_strong,
-    paddingVertical: 4,
+    paddingVertical: 1,
     paddingHorizontal: 8,
     borderRadius: 12,
-    marginBottom: 6, // ✅ threadType 박스와 간격
+    marginBottom: SPACING.xs, // ✅ threadType 박스와 간격
+    gap: SPACING.sm,
   },
   statGroup: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: SPACING.sm,
   },
   statText: {
     marginLeft: 3,
+    fontSize: 10,
   },
 
   /** 🧩 threadType 박스 */

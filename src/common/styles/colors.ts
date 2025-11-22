@@ -71,12 +71,12 @@ export const COLORS = {
   // 🔹 Overlay / Transparency
   overlay_light: 'rgba(255,255,255,0.25)', // 밝은 배경용 오버레이
   overlay_dark: 'rgba(0,0,0,0.35)', // 어두운 배경용 오버레이 ✅
-  overlay_strong: 'rgba(0,0,0,0.55)', // 강조용 (이미지 어둡게)
+  overlay_strong: 'rgba(0, 0, 0, 0.52)', // 강조용 (이미지 어둡게)
 
   /** 🧩 Thread Type Colors (텍스트 색상용) */
   GENERAL_THREAD: '#E0E0E0', // 일반
   ROUTE_THREAD: '#fdbb40ff', // 기부
-  PLAN_TO_VISIT_THREAD: '#8840fdff', // 이벤트
+  PLAN_TO_VISIT_THREAD: '#aa75ffff', // 이벤트
   MOMENT_THREAD: '#00d1d8ff', // 공지
 } as const;
 
