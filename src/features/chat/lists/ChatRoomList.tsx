@@ -25,7 +25,7 @@ const ChatRoomList: React.FC<Props> = ({ data, onPressItem }) => {
       renderItem={({ item }) => (
         <ChatRoomItemCard item={item} onPress={onPressItem} />
       )}
-      contentContainerStyle={{ paddingVertical: 12 }}
+      contentContainerStyle={{ paddingVertical: 12, paddingBottom: 110 }}
       showsVerticalScrollIndicator={false}
     />
   );

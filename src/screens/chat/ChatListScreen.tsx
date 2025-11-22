@@ -7,7 +7,10 @@ import {
   Text,
   SafeAreaView,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
+import { BlurView } from '@react-native-community/blur';
+import LinearGradient from 'react-native-linear-gradient';
 import { useGetCurrentMemberChatRooms } from '@/features/chat/hooks/useGetCurrentMemberChatRooms';
 import ChatRoomList from '@/features/chat/lists/ChatRoomList';
 import { COLORS } from '@/common/styles';
@@ -56,6 +59,29 @@ const ChatListScreen = () => {
     <SafeAreaView style={styles.container}>
       <AppCollapsibleHeader titleKey="STR_CHAT" />
       <ChatRoomList data={rooms} onPressItem={handlePressRoom} />
+
+      {/* 하단 블러 + 그라데이션 효과 */}
+      <View style={styles.bottomBlurContainer}>
+        <LinearGradient
+          colors={[
+            'rgba(0, 0, 0, 0)',
+            'rgba(0, 0, 0, 0.3)',
+            'rgba(0, 0, 0, 0.7)',
+            'rgba(0, 0, 0, 0.95)',
+            'rgba(0, 0, 0, 1)',
+          ]}
+          locations={[0, 0.3, 0.5, 0.8, 1]}
+          style={styles.gradient}
+        />
+        {Platform.OS === 'ios' && (
+          <BlurView
+            style={styles.blurView}
+            blurType="dark"
+            blurAmount={100}
+            reducedTransparencyFallbackColor="darkgray"
+          />
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -70,6 +96,33 @@ const styles = StyleSheet.create({
     paddingTop: 56,
   },
   center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  bottomBlurContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+  },
+  gradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  blurView: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.1,
+  },
+  bottomContent: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
