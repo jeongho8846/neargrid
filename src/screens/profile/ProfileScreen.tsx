@@ -10,6 +10,7 @@ import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppTextField from '@/common/components/AppTextField';
 import AppImageCarousel from '@/common/components/AppImageCarousel';
 import { COLORS } from '@/common/styles/colors';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 // ✅ 더미 텍스트 생성 함수
 const generateText = (length: number) => '가'.repeat(length);
@@ -97,6 +98,7 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         }
       />
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 };

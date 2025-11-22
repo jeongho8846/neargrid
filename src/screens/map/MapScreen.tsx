@@ -27,6 +27,7 @@ import { TEST_PRESETS } from '@/test/styles/presets';
 import { TEST_SPACING } from '@/test/styles/spacing';
 import { usePermission } from '@/common/hooks/usePermission';
 import PermissionDialog from '@/common/components/PermissionDialog';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
@@ -234,7 +235,7 @@ const MapScreen = () => {
           ListHeaderComponent={renderHeader}
           contentContainerStyle={{
             paddingHorizontal: SPACING.sm,
-            paddingBottom: 40,
+            paddingBottom: 110,
           }}
           showsVerticalScrollIndicator={false}
         />
@@ -247,6 +248,7 @@ const MapScreen = () => {
         onConfirm={locationPermission.handleConfirm}
         onClose={locationPermission.handleClose}
       />
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 };

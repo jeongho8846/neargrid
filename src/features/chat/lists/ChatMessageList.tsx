@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     justifyContent: 'flex-end',
-    paddingTop: 5,
+    paddingTop: 110,
   },
 });

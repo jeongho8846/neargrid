@@ -6,6 +6,7 @@ import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCo
 import { COLORS } from '@/common/styles/colors';
 import type { ThreadComment } from '@/features/thread/model/ThreadCommentModel'; // ✅ 타입 import로 변경
 import ThreadCommentReplyList from '@/features/thread/lists/ThreadCommnetReplyList'; // ✅ 오타 수정
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 type RouteParams = {
   DetailThreadComment: {
@@ -31,6 +32,7 @@ const DetailThreadCommentScreen = () => {
         onBackPress={() => navigation.goBack()}
       />
       <ThreadCommentReplyList parentComment={comment} />
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 };

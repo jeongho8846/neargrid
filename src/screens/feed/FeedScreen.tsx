@@ -9,6 +9,7 @@ import { useFetchFeedThreads } from '@/features/thread/hooks/useFetchFeedThreads
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
 import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 const FeedScreen = () => {
   const { member, loading: memberLoading } = useCurrentMember();
@@ -72,6 +73,7 @@ const FeedScreen = () => {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       />
+      <BottomBlurGradient height={80}> </BottomBlurGradient>
     </View>
   );
 };

@@ -16,6 +16,7 @@ import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 import { useNavigation } from '@react-navigation/native';
 import { openProfileMenuSheet } from '@/features/member/sheets/openProfileMenuSheet';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
@@ -155,6 +156,7 @@ export default function MemberProfileScreen({ route }) {
           paddingBottom: 80,
         }}
       />
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 }

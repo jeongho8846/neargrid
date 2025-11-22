@@ -15,6 +15,7 @@ import ThreadCommentList, {
 } from '@/features/thread/lists/ThreadCommentList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import { COLORS } from '@/common/styles/colors';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 type RouteParams = {
   DetailThread: {
@@ -66,6 +67,7 @@ const DetailThreadScreen = () => {
         threadId={thread.threadId}
         headerThread={thread}
       />
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 };

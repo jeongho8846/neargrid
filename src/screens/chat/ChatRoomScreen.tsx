@@ -13,6 +13,7 @@ import AppText from '@/common/components/AppText';
 import { COLORS, SPACING } from '@/common/styles';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 /**
  * ✅ 채팅방 화면
@@ -83,6 +84,7 @@ const ChatRoomScreen = () => {
           loadingMore={isFetchingNextPage}
         />
       </View>
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 };
@@ -106,5 +108,5 @@ const styles = StyleSheet.create({
     paddingRight: SPACING.sm,
     padding: 1,
   },
-  body: { flex: 1, paddingBottom: 108 },
+  body: { flex: 1 },
 });
