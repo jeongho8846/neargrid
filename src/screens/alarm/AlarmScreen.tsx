@@ -1,8 +1,14 @@
 // 📄 src/screens/alarm/AlarmScreen.tsx
-import React from 'react';
+import React, { useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useFetchMemberAlarms } from '@/features/alarm/hooks/useFetchMemberAlarms';
 import AlarmList from '@/features/alarm/lists/AlarmList';
+import {
+  checkPermission,
+  requestNotificationPermission,
+} from '@/services/device/permissionService';
+import { initFCM } from '@/services/notification/fcmService';
 import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { SPACING } from '@/common/styles';
@@ -10,7 +16,6 @@ import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCo
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 교체
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
-import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
@@ -24,6 +29,43 @@ export default function AlarmScreen() {
     if (!member?.id || loading) return;
     await markAllAsRead(member.id);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      const ensureNotificationPermission = async () => {
+        try {
+          const currentStatus = await checkPermission('notification');
+
+          if (!isActive) {
+            return;
+          }
+
+          if (currentStatus === 'granted') {
+            return;
+          }
+
+          const granted = await requestNotificationPermission();
+
+          if (isActive && granted) {
+            await initFCM(member?.id);
+          }
+        } catch (error) {
+          console.log(
+            '[AlarmScreen] Failed to ensure notification permission',
+            error,
+          );
+        }
+      };
+
+      void ensureNotificationPermission();
+
+      return () => {
+        isActive = false;
+      };
+    }, [member?.id]),
+  );
 
   return (
     <View style={styles.root}>
@@ -48,7 +90,6 @@ export default function AlarmScreen() {
           scrollEventThrottle={16} // ✅ 추가
         />
       </View>
-      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 }

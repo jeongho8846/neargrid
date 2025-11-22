@@ -6,6 +6,8 @@ import {
   PERMISSIONS,
   RESULTS,
   Permission,
+  checkNotifications,
+  requestNotifications,
 } from 'react-native-permissions';
 import { Platform, Alert } from 'react-native';
 
@@ -20,10 +22,15 @@ export interface PermissionResult {
 
 export type PermissionType = 'camera' | 'gallery' | 'location' | 'notification';
 
+// Android POST_NOTIFICATIONS 폴백 (낮은 버전의 react-native-permissions 대응)
+const ANDROID_POST_NOTIFICATIONS =
+  (PERMISSIONS.ANDROID as any).POST_NOTIFICATIONS ??
+  ('android.permission.POST_NOTIFICATIONS' as Permission);
+
 // 권한별 설정
 const PERMISSION_CONFIG: Record<
   PermissionType,
-  { ios: Permission; android: Permission }
+  { ios?: Permission; android?: Permission }
 > = {
   camera: {
     ios: PERMISSIONS.IOS.CAMERA,
@@ -38,9 +45,18 @@ const PERMISSION_CONFIG: Record<
     android: PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
   },
   notification: {
-    ios: PERMISSIONS.IOS.NOTIFICATIONS,
-    android: PERMISSIONS.ANDROID.POST_NOTIFICATIONS,
+    android: ANDROID_POST_NOTIFICATIONS,
   },
+};
+
+// Android API 레벨 변환
+const getAndroidApiLevel = () => {
+  const version = Platform.Version;
+  if (typeof version === 'number') {
+    return version;
+  }
+  const parsed = Number(version);
+  return Number.isNaN(parsed) ? 0 : parsed;
 };
 
 // 권한 상태 변환
@@ -62,8 +78,23 @@ const mapPermissionStatus = (status: string): PermissionStatus => {
 export const checkPermission = async (
   type: PermissionType,
 ): Promise<PermissionStatus> => {
+  if (type === 'notification') {
+    if (Platform.OS === 'android') {
+      const apiLevel = getAndroidApiLevel();
+      if (apiLevel > 0 && apiLevel < 33) {
+        return 'granted';
+      }
+      const permission = PERMISSION_CONFIG.notification.android!;
+      const status = await check(permission);
+      return mapPermissionStatus(status);
+    }
+
+    const { status } = await checkNotifications();
+    return mapPermissionStatus(status);
+  }
+
   const config = PERMISSION_CONFIG[type];
-  const permission = Platform.OS === 'ios' ? config.ios : config.android;
+  const permission = Platform.OS === 'ios' ? config.ios! : config.android!;
   const status = await check(permission);
   return mapPermissionStatus(status);
 };
@@ -92,8 +123,74 @@ const showSettingsAlert = (type: PermissionType): Promise<boolean> => {
 export const requestPermission = async (
   type: PermissionType,
 ): Promise<PermissionResult> => {
+  if (type === 'notification') {
+    if (Platform.OS === 'android') {
+      const apiLevel = getAndroidApiLevel();
+      if (apiLevel > 0 && apiLevel < 33) {
+        return { granted: true, status: 'granted', shouldShowSettings: false };
+      }
+
+      const permission = PERMISSION_CONFIG.notification.android!;
+      const currentStatus = await check(permission);
+      const mappedStatus = mapPermissionStatus(currentStatus);
+
+      if (mappedStatus === 'granted') {
+        return { granted: true, status: 'granted', shouldShowSettings: false };
+      }
+
+      if (mappedStatus === 'blocked') {
+        await showSettingsAlert(type);
+        return { granted: false, status: 'blocked', shouldShowSettings: true };
+      }
+
+      const result = await request(permission);
+      const finalStatus = mapPermissionStatus(result);
+
+      if (finalStatus === 'blocked') {
+        await showSettingsAlert(type);
+        return { granted: false, status: 'blocked', shouldShowSettings: true };
+      }
+
+      return {
+        granted: finalStatus === 'granted',
+        status: finalStatus,
+        shouldShowSettings: false,
+      };
+    }
+
+    const { status: currentStatus } = await checkNotifications();
+    const mappedStatus = mapPermissionStatus(currentStatus);
+
+    if (mappedStatus === 'granted') {
+      return { granted: true, status: 'granted', shouldShowSettings: false };
+    }
+
+    if (mappedStatus === 'blocked') {
+      await showSettingsAlert(type);
+      return { granted: false, status: 'blocked', shouldShowSettings: true };
+    }
+
+    const { status: requestStatus } = await requestNotifications([
+      'alert',
+      'badge',
+      'sound',
+    ]);
+    const finalStatus = mapPermissionStatus(requestStatus);
+
+    if (finalStatus === 'blocked') {
+      await showSettingsAlert(type);
+      return { granted: false, status: 'blocked', shouldShowSettings: true };
+    }
+
+    return {
+      granted: finalStatus === 'granted',
+      status: finalStatus,
+      shouldShowSettings: false,
+    };
+  }
+
   const config = PERMISSION_CONFIG[type];
-  const permission = Platform.OS === 'ios' ? config.ios : config.android;
+  const permission = Platform.OS === 'ios' ? config.ios! : config.android!;
 
   const currentStatus = await check(permission);
   const mappedStatus = mapPermissionStatus(currentStatus);
