@@ -61,7 +61,7 @@ const ContentsHeartButtonComponent: React.FC<Props> = ({
           type="ion"
           name={liked ? 'heart' : 'heart-outline'}
           size={size}
-          variant={liked ? 'liked' : 'primary'} // ✅ variant 기반 통일
+          variant={liked ? 'liked' : 'secondary'} // ✅ variant 기반 통일
         />
       </Animated.View>
     </TouchableOpacity>

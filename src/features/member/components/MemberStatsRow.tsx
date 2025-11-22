@@ -123,8 +123,7 @@ export default MemberStatsRow;
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    marginTop: SPACING.md,
-    gap: SPACING.sm,
+    gap: SPACING.md,
   },
   row: {
     flexDirection: 'row',

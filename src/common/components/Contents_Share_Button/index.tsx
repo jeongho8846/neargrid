@@ -23,7 +23,7 @@ const ContentsShareButton: React.FC<Props> = ({
   isLoading,
   disabled,
   accessibilityLabel = '공유하기',
-  variant = 'primary',
+  variant = 'secondary',
 }) => (
   <TouchableOpacity
     activeOpacity={0.7}

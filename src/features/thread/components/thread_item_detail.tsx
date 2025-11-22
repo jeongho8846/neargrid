@@ -101,9 +101,9 @@ export default ThreadItemDetail;
 const styles = StyleSheet.create({
   card: {
     backgroundColor: TEST_COLORS.surface,
-    borderRadius: TEST_RADIUS.lg,
+    borderRadius: TEST_RADIUS.md,
     overflow: 'hidden',
-    marginBottom: TEST_SPACING.lg,
+    marginBottom: TEST_SPACING.xs,
   },
   header: {
     flexDirection: 'row',

@@ -49,11 +49,11 @@ const ContentsIconCountButton: React.FC<Props> = ({
           type={icon.type ?? 'ion'}
           name={icon.name}
           size={icon.size ?? 22}
-          variant={icon.variant ?? 'primary'}
+          variant={icon.variant ?? 'secondary'}
         />
       )}
 
-      <AppText variant="body" isLoading={isLoading}>
+      <AppText variant="caption" isLoading={isLoading}>
         {count}
       </AppText>
     </TouchableOpacity>

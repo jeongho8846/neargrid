@@ -62,7 +62,7 @@ const MemberProfileHeader: React.FC<Props> = ({
           </AppText>
 
           {/* ✅ description 영역 - AppTextField 사용 */}
-          <View style={{ marginTop: SPACING.xs }}>
+          <View style={{ marginTop: SPACING.lg }}>
             {profile?.description ? (
               <AppTextField
                 text={profile.description}
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
     height: '100%',
   },
   coverPlaceholder: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.sheet_background,
   },
 
   /** ──────── MIDDLE ──────── **/
@@ -147,8 +147,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    paddingHorizontal: SPACING.sm,
-    marginBottom: SPACING.md,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.md,
+
+    backgroundColor: COLORS.sheet_background,
+    borderRadius: SPACING.md,
+    bottom: 15,
   },
   middleSection_foot: {
     width: '100%',
@@ -166,15 +170,24 @@ const styles = StyleSheet.create({
   },
   profileImageBox: {
     bottom: 50,
+    backgroundColor: COLORS.sheet_background,
+    width: 108,
+    height: 108,
+    padding: 8,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   /** ──────── BOTTOM ──────── **/
   bottomSection: {
     alignItems: 'center',
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.md,
+    paddingVertical: SPACING.md,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: COLORS.gray3,
+    borderRadius: 20,
+    width: '100%',
+    backgroundColor: COLORS.sheet_background,
   },
   pointRow: {
     flexDirection: 'row',

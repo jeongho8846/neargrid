@@ -113,7 +113,7 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
               type: 'ion',
               name: 'chatbubble-outline',
               size: 20,
-              variant: 'primary', // ✅ AppIcon 규칙 기반
+              variant: 'secondary', // ✅ AppIcon 규칙 기반
             }}
             count={thread.commentThreadCount ?? 0}
             onPress={onPressComment}
@@ -133,7 +133,7 @@ const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
         <ContentsDonationButton onPress={onPressDonate} isLoading={isLoading} />
 
         <TouchableOpacity onPress={onPressDonationCount} activeOpacity={0.8}>
-          <AppText variant="body">
+          <AppText variant="caption">
             {thread.donationPointReceivedCount} P
           </AppText>
         </TouchableOpacity>

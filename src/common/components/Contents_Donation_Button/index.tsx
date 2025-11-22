@@ -31,7 +31,7 @@ const ContentsDonationButton: React.FC<Props> = ({
     accessibilityRole="button"
     accessibilityLabel={accessibilityLabel}
   >
-    <AppIcon type="ion" name="gift-outline" size={size} variant="primary" />
+    <AppIcon type="ion" name="gift-outline" size={size} variant="secondary" />
   </TouchableOpacity>
 );
 
