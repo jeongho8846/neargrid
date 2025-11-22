@@ -10,6 +10,7 @@ import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCo
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 교체
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
@@ -47,6 +48,7 @@ export default function AlarmScreen() {
           scrollEventThrottle={16} // ✅ 추가
         />
       </View>
+      <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
 }

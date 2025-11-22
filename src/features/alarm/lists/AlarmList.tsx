@@ -18,7 +18,7 @@ export default function AlarmList({ data }: Props) {
         keyExtractor={item => item.alarmId}
         renderItem={({ item }) => <AlarmItem item={item} />}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
       />
     </View>
   );

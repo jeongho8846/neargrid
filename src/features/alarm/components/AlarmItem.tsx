@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     borderRadius: TEST_RADIUS.md,
     paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.sm,
-    marginVertical: SPACING.xs,
+    marginBottom: SPACING.xs,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',

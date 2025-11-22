@@ -10,6 +10,7 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher';
 import CreateStack from './stackNavigator/main/CreateStack';
 import ChatStack from './stackNavigator/main/ChatStack';
+import AlarmStack from './stackNavigator/main/AlarmStack';
 
 const Tab = createBottomTabNavigator();
 
@@ -44,6 +45,9 @@ const MainTabNavigator = () => {
             case 'Chat':
               iconName = 'chatbubbles-outline';
               break;
+            case 'Alarm':
+              iconName = 'notifications-outline';
+              break;
             case 'Profile':
               iconName = 'person-outline';
               break;
@@ -71,6 +75,12 @@ const MainTabNavigator = () => {
         name="Chat"
         component={ChatStack}
         options={{ tabBarLabel: '채팅' }}
+      />
+
+      <Tab.Screen
+        name="Alarm"
+        component={AlarmStack}
+        options={{ tabBarLabel: '알람' }}
       />
 
       {/* ✅ member.id만 전달 (MemberProfileScreen에서 memberId로 받음) */}
