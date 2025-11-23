@@ -38,13 +38,28 @@ type Props = {
   threads: any[];
   isLoading: boolean;
   onMarkerPress?: (ids: string[]) => void;
-
-  // ✅ [ADD] 위치로 이동 완료시 MapScreen에 알림
   onMoveToLocation?: (lat: number, lon: number) => void;
+  // ✅ 추가
+  searchParams?: {
+    keyword: string;
+    threadTypes: string[];
+    recentTimeMinute: number;
+    remainTimeMinute: number;
+    includePastRemainTime: boolean;
+  };
 };
-
 const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
-  ({ memberId, threads, isLoading, onMarkerPress, onMoveToLocation }, ref) => {
+  (
+    {
+      memberId,
+      threads,
+      isLoading,
+      onMarkerPress,
+      onMoveToLocation,
+      searchParams,
+    },
+    ref,
+  ) => {
     const mapRef = useRef<any>(null);
     const zoomRef = useRef(0.05);
     const { latitude, longitude } = useLocationStore();
@@ -148,9 +163,13 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
         longitude: centerLon,
         distance: radius,
         memberId: memberId ?? member?.id ?? '',
+        keyword: searchParams?.keyword || '',
+        threadTypes: searchParams?.threadTypes || [],
+        recentTimeMinute: searchParams?.recentTimeMinute || 0,
+        remainTimeMinute: searchParams?.remainTimeMinute || 0,
+        includePastRemainTime: searchParams?.includePastRemainTime || false,
       });
     };
-
     return (
       <View style={styles.container}>
         <AppMapView

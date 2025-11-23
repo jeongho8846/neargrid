@@ -24,7 +24,7 @@ export const fetchMapThreads = async ({
   longitude,
   distance = 3000,
   memberId,
-  keyword = '',
+  keyword,
   timeFilter = 0,
   remainTime = '',
   threadTypes = [],

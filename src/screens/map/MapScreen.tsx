@@ -234,6 +234,7 @@ const MapScreen = () => {
           console.log('🗺️ [MapScreen] onMoveToLocation:', { lat, lon });
           loadThreads(searchParams, lat, lon);
         }}
+        searchParams={searchParams} // ✅ 추가
       />
 
       <TouchableOpacity
