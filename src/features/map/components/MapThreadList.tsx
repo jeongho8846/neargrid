@@ -1,12 +1,6 @@
 // src/features/map/components/MapThreadList.tsx
 
-import React, {
-  useRef,
-  useMemo,
-  useCallback,
-  useImperativeHandle,
-  forwardRef,
-} from 'react';
+import React, { useRef, useMemo, useCallback, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
@@ -36,8 +30,10 @@ const MapThreadList: React.FC<Props> = ({
   const sheetRef = externalSheetRef || internalSheetRef;
   const navigation = useNavigation();
   const snapPoints = useMemo(() => [1, '50%', '90%'], []);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
   const handleSheetChange = useCallback((index: number) => {
+    setCurrentIndex(index);
     if (index === 0) {
       useBottomSheetStore.setState({ isOpen: false });
     } else {
@@ -78,9 +74,12 @@ const MapThreadList: React.FC<Props> = ({
       handleComponent={() => (
         <View style={styles.handleContainer}>
           <View style={styles.handleIndicator} />
-          <View style={styles.controlsRow}>
-            <AppMapCurrentLocationButton onPress={onCurrentLocationPress} />
-          </View>
+          {/* ✅ index가 1 이상일 때만 버튼 표시 */}
+          {currentIndex >= 1 && (
+            <View style={styles.controlsRow}>
+              <AppMapCurrentLocationButton onPress={onCurrentLocationPress} />
+            </View>
+          )}
         </View>
       )}
     >
@@ -126,7 +125,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 14,
     right: -11,
-    bottom: 150,
+    bottom: 10,
   },
   headerContainer: {
     flexDirection: 'row',

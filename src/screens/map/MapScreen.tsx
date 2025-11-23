@@ -14,6 +14,7 @@ import MapShowListButton from '@/features/map/components/MapShowListButton';
 import MapSearchBottomSheet, {
   MapSearchBottomSheetRef,
 } from '@/features/map/components/MapSearchBottomSheet';
+import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 import PermissionDialog from '@/common/components/PermissionDialog';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
@@ -30,7 +31,7 @@ const MapScreen = () => {
   const { isOpen } = useBottomSheetStore();
 
   const { region, handleRegionChange } = useMapRegion();
-  const { searchParams, handleClearKeyword, setSearchParams } = useMapSearch();
+  const { searchParams, setSearchParams } = useMapSearch();
   const {
     threads,
     loading,
@@ -43,12 +44,10 @@ const MapScreen = () => {
   const { dialogVisible, handleConfirm, handleClose } =
     useMapLocationPermission();
 
-  // ✅ 검색 BottomSheet 열기
   const handleSearchPress = () => {
     searchSheetRef.current?.open();
   };
 
-  // ✅ X 버튼 클릭 시 keyword만 초기화하고 다시 검색
   const handleClearKeywordAndSearch = () => {
     const defaultParams = {
       keyword: '',
@@ -88,8 +87,6 @@ const MapScreen = () => {
 
     if (region) {
       const radius = calcMapSearchRadius(region);
-      console.log('🔍 [MapScreen] 검색 radius:', radius);
-
       loadThreads(
         {
           keyword: params.keyword,
@@ -132,11 +129,19 @@ const MapScreen = () => {
 
       <MapShowListButton onPress={() => sheetRef.current?.snapToIndex(1)} />
 
+      {/* ✅ 바텀시트가 열려있을 때만 현재 위치 버튼 표시 */}
+      {!isOpen && (
+        <View style={styles.currentLocationButtonContainer}>
+          <AppMapCurrentLocationButton
+            onPress={() => mapRef.current?.moveToCurrent()}
+          />
+        </View>
+      )}
+
       <MapThreadList
         threads={filteredThreads}
         selectedCount={selectedIds.length}
         onClearFilter={clearFilter}
-        onCurrentLocationPress={() => mapRef.current?.moveToCurrent()}
         sheetRef={sheetRef}
       />
 
@@ -181,5 +186,11 @@ const styles = StyleSheet.create({
   header_right: {
     flex: 8,
     justifyContent: 'flex-end',
+  },
+  currentLocationButtonContainer: {
+    position: 'absolute',
+    right: -10,
+    bottom: 100, // ✅ 특정 위치에 고정
+    zIndex: 0,
   },
 });
