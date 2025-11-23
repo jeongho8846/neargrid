@@ -18,6 +18,7 @@ import RouteThread_ChildThreadList from '@/features/thread/lists/RouteThread_Chi
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import { COLORS } from '@/common/styles/colors';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
+import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 
 type RouteParams = {
   DetailThread: {
@@ -121,6 +122,9 @@ const DetailThreadScreen = () => {
       )}
 
       <BottomBlurGradient height={120} />
+
+      {/* ✅ GlobalInputBar 추가 */}
+      <GlobalInputBar />
     </View>
   );
 };
