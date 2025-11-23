@@ -27,7 +27,7 @@ const ThreadList: React.FC<Props> = ({
   isLoading,
   loadingMore,
   onEndReached,
-  contentPaddingTop = 0,
+  contentPaddingTop = 56,
   onRefresh,
   refreshing,
   onScroll,
