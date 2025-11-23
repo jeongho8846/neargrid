@@ -4,8 +4,15 @@ import React, {
   forwardRef,
   useImperativeHandle,
   useState,
+  useEffect,
 } from 'react';
-import { View, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  Keyboard,
+} from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
@@ -62,10 +69,17 @@ type Props = {
     remainTimeMinute: number;
     includePastRemainTime: boolean;
   }) => void;
+  currentSearchParams: {
+    keyword: string;
+    threadTypes: string[];
+    recentTimeMinute: number;
+    remainTimeMinute: number;
+    includePastRemainTime: boolean;
+  };
 };
 
 const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
-  ({ onSearch }, ref) => {
+  ({ onSearch, currentSearchParams }, ref) => {
     const sheetRef = useRef<BottomSheet>(null);
     const [searchText, setSearchText] = useState('');
     const [selectedThreadTypes, setSelectedThreadTypes] =
@@ -73,6 +87,15 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
     const [recentTime, setRecentTime] = useState<number>(60 * 24 * 365 * 999);
     const [remainTime, setRemainTime] = useState<number>(60 * 24 * 365);
     const [includePastRemainTime, setIncludePastRemainTime] = useState(false);
+
+    // ✅ currentSearchParams가 변경되면 상태 동기화
+    useEffect(() => {
+      setSearchText(currentSearchParams.keyword);
+      setSelectedThreadTypes(currentSearchParams.threadTypes);
+      setRecentTime(currentSearchParams.recentTimeMinute);
+      setRemainTime(currentSearchParams.remainTimeMinute);
+      setIncludePastRemainTime(currentSearchParams.includePastRemainTime);
+    }, [currentSearchParams]);
 
     useImperativeHandle(ref, () => ({
       open: () => sheetRef.current?.snapToIndex(1),
@@ -86,6 +109,9 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
     };
 
     const handleSearch = () => {
+      // ✅ 키보드 닫기
+      Keyboard.dismiss();
+
       onSearch({
         keyword: searchText.trim(),
         threadTypes: selectedThreadTypes,
@@ -93,6 +119,7 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
         remainTimeMinute: remainTime,
         includePastRemainTime,
       });
+
       sheetRef.current?.close();
     };
 

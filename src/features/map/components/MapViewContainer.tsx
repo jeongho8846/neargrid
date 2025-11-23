@@ -43,6 +43,10 @@ type Props = {
   onRegionChange: (region: Region) => void;
   searchParams?: {
     keyword: string;
+    threadTypes: string[];
+    recentTimeMinute: number;
+    remainTimeMinute: number;
+    includePastRemainTime: boolean;
     preserveRegion?: Region | null;
   };
 };
@@ -114,15 +118,23 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
       }
     }, [searchParams?.preserveRegion]);
 
-    // ✅ threads가 바뀌면 클러스터링 재실행
+    // ✅ threads가 바뀌면 클러스터링 재실행 (빈 배열도 처리)
     useEffect(() => {
-      if (!mapRef.current || !region || threads.length === 0) return;
+      if (!mapRef.current || !region) return;
+
+      // ✅ threads가 0개여도 클러스터를 빈 배열로 업데이트
+      if (threads.length === 0) {
+        console.log('🧹 검색 결과 없음 - 클러스터 초기화');
+        setClusters([]);
+        return;
+      }
+
       console.log('🧩 검색 완료 후 클러스터링 재실행:', threads.length);
       InteractionManager.runAfterInteractions(async () => {
         const grouped = await clusterMarkersByScreen(mapRef, threads, 35);
         setClusters(grouped);
       });
-    }, [threads]);
+    }, [threads, region]);
 
     /** ✅ 지도 핸들러를 외부로 노출 */
     useImperativeHandle(ref, () => ({
@@ -181,11 +193,23 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
       const { latitude: centerLat, longitude: centerLon } =
         getMapCenter(region);
       const radius = calcMapSearchRadius(region);
+
+      // ✅ 현재 검색 조건 유지하면서 위치만 변경
       await fetchThreads({
         latitude: centerLat,
         longitude: centerLon,
         distance: radius,
         memberId: memberId ?? member?.id ?? '',
+        keyword: searchParams?.keyword || '',
+        threadTypes: searchParams?.threadTypes || [
+          'GENERAL_THREAD',
+          'MOMENT_THREAD',
+          'PLAN_TO_VISIT_THREAD',
+          'ROUTE_THREAD',
+        ],
+        recentTimeMinute: searchParams?.recentTimeMinute ?? 60 * 24 * 365 * 999,
+        remainTimeMinute: searchParams?.remainTimeMinute ?? 60 * 24 * 365,
+        includePastRemainTime: searchParams?.includePastRemainTime ?? false,
       });
     };
 

@@ -29,14 +29,19 @@ export const useMapThreads = (searchParams: SearchParams) => {
   }, [latitude, longitude, member?.id]);
 
   const loadThreads = useCallback(
-    async (params: SearchParams, lat: number, lon: number) => {
+    async (
+      params: SearchParams,
+      lat: number,
+      lon: number,
+      distance?: number,
+    ) => {
       if (!member?.id) return;
 
       try {
         const res = await fetchThreads({
           latitude: lat,
           longitude: lon,
-          distance: 3000,
+          distance: distance ?? 3000, // ✅ distance 파라미터 받아서 사용, 기본값 3000
           memberId: member.id,
           keyword: params.keyword,
           threadTypes: params.threadTypes,

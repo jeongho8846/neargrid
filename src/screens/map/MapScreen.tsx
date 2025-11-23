@@ -3,6 +3,7 @@ import React, { useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { COLORS } from '@/common/styles/colors';
+import { calcMapSearchRadius } from '@/utils/mapUtils'; // ✅ 추가
 import MapViewContainer, {
   MapViewContainerRef,
 } from '@/features/map/components/MapViewContainer';
@@ -63,6 +64,10 @@ const MapScreen = () => {
     });
 
     if (region) {
+      // ✅ region 기반으로 radius 동적 계산
+      const radius = calcMapSearchRadius(region);
+      console.log('🔍 [MapScreen] 검색 radius:', radius);
+
       loadThreads(
         {
           keyword: params.keyword,
@@ -73,6 +78,7 @@ const MapScreen = () => {
         },
         region.latitude,
         region.longitude,
+        radius, // ✅ 동적으로 계산된 거리 전달
       );
     }
   };
@@ -114,7 +120,7 @@ const MapScreen = () => {
       <MapSearchBottomSheet
         ref={searchSheetRef}
         onSearch={handleSearch}
-        onClearKeyword={handleClearKeyword}
+        currentSearchParams={searchParams}
       />
 
       <PermissionDialog
