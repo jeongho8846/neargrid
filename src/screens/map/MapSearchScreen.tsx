@@ -54,9 +54,31 @@ const MapSearchScreen = () => {
   const [includePastRemainTime, setIncludePastRemainTime] = useState(false);
 
   const toggleThreadType = (type: string) => {
-    setSelectedThreadTypes(prev =>
-      prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type],
-    );
+    setSelectedThreadTypes(prev => {
+      const newTypes = prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type];
+      console.log('✅ Thread Types Changed:', newTypes);
+      return newTypes;
+    });
+  };
+
+  const handleRecentTimeChange = (value: number) => {
+    console.log('✅ Recent Time Changed:', value);
+    setRecentTime(value);
+  };
+
+  const handleRemainTimeChange = (value: number) => {
+    console.log('✅ Remain Time Changed:', value);
+    setRemainTime(value);
+  };
+
+  const handleToggleIncludePast = () => {
+    setIncludePastRemainTime(prev => {
+      const newValue = !prev;
+      console.log('✅ Include Past Remain Time:', newValue);
+      return newValue;
+    });
   };
 
   /** ✅ 검색 버튼 → MapScreen params 전달 + 뒤로가기 */
@@ -72,6 +94,8 @@ const MapSearchScreen = () => {
         is_include_past_remain_date_time: includePastRemainTime,
       },
     };
+
+    console.log('🔍 Search Params:', searchParams);
 
     // ✅ 올바른 방식 (React Navigation v6)
     navigation.navigate({
@@ -158,7 +182,7 @@ const MapSearchScreen = () => {
             <TouchableOpacity
               key={opt.value}
               style={[styles.filterButton, isActive && styles.activeButton]}
-              onPress={() => setRecentTime(opt.value)}
+              onPress={() => handleRecentTimeChange(opt.value)}
             >
               <AppText
                 i18nKey={opt.i18nKey}
@@ -184,7 +208,7 @@ const MapSearchScreen = () => {
             <TouchableOpacity
               key={opt.value}
               style={[styles.filterButton, isActive && styles.activeButton]}
-              onPress={() => setRemainTime(opt.value)}
+              onPress={() => handleRemainTimeChange(opt.value)}
             >
               <AppText
                 i18nKey={opt.i18nKey}
@@ -201,7 +225,7 @@ const MapSearchScreen = () => {
             styles.filterButton,
             includePastRemainTime && styles.activeButton,
           ]}
-          onPress={() => setIncludePastRemainTime(prev => !prev)}
+          onPress={handleToggleIncludePast}
         >
           <AppText
             i18nKey="STR_INCLUDE_EXPIRED"

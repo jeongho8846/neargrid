@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import AppText from '@/common/components/AppText';
@@ -25,13 +25,14 @@ import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { usePermission } from '@/common/hooks/usePermission';
 import PermissionDialog from '@/common/components/PermissionDialog';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
-import { useLocationStore } from '@/features/location/state/locationStore'; // ✅ 추가
+import { useLocationStore } from '@/features/location/state/locationStore';
 import { getCurrentLocation, startWatchingLocation } from '@/services/device';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
   const { threads, setThreads, clearThreads } = useMapThreadStore();
   const { fetchThreads, loading } = useFetchMapThreads();
+  const route = useRoute();
 
   // ✅ 위치 정보 가져오기
   const { latitude, longitude } = useLocationStore();
@@ -60,6 +61,44 @@ const MapScreen = () => {
     includePastRemainTime: false,
   });
 
+  // ✅ 검색 화면에서 받은 파라미터 처리
+  useEffect(() => {
+    if (route.params) {
+      console.log(
+        '🔍 [MapScreen] 검색 화면에서 받은 전체 params:',
+        route.params,
+      );
+
+      const { inputSearchText, filterOptions } = route.params as any;
+
+      if (inputSearchText !== undefined || filterOptions) {
+        console.log('📝 [MapScreen] 검색어:', inputSearchText);
+        console.log('🎛️ [MapScreen] 필터 옵션:', filterOptions);
+
+        const newParams = {
+          keyword: inputSearchText || '',
+          threadTypes: filterOptions?.thread_types || searchParams.threadTypes,
+          recentTimeMinute:
+            filterOptions?.recent_time_minute ?? searchParams.recentTimeMinute,
+          remainTimeMinute:
+            filterOptions?.remain_time_minute ?? searchParams.remainTimeMinute,
+          includePastRemainTime:
+            filterOptions?.is_include_past_remain_date_time ??
+            searchParams.includePastRemainTime,
+        };
+
+        console.log('✅ [MapScreen] 업데이트된 searchParams:', newParams);
+
+        setSearchParams(newParams);
+
+        // 새로운 파라미터로 쓰레드 로드
+        if (latitude && longitude && member?.id) {
+          loadThreads(newParams, latitude, longitude);
+        }
+      }
+    }
+  }, [route.params]);
+
   // ✅ 최초 진입 시 위치 권한 요청
   useEffect(() => {
     const requestLocation = async () => {
@@ -85,7 +124,6 @@ const MapScreen = () => {
   }, []);
 
   // ✅ 위치 정보가 로드되면 쓰레드 불러오기
-  // ✅ 위치 정보가 로드되면 쓰레드 불러오기
   useEffect(() => {
     if (latitude && longitude && member?.id) {
       console.log('📍 [MapScreen] 현재 위치로 쓰레드 로드:', {
@@ -94,7 +132,7 @@ const MapScreen = () => {
       });
       loadThreads(searchParams, latitude, longitude);
     }
-  }, [latitude, longitude, member?.id]); // ✅ latitude, longitude 의존성 추가
+  }, [latitude, longitude, member?.id]);
 
   const { isOpen: sheetOpen, close, open } = useBottomSheetStore();
   const handleSheetChange = useCallback((index: number) => {
@@ -113,7 +151,11 @@ const MapScreen = () => {
       const targetLat = lat ?? latitude ?? 37.5665;
       const targetLon = lon ?? longitude ?? 126.978;
 
-      console.log('🔍 [MapScreen] loadThreads:', { targetLat, targetLon });
+      console.log('🔍 [MapScreen] loadThreads 호출:', {
+        targetLat,
+        targetLon,
+        params,
+      });
 
       try {
         const res = await fetchThreads({
@@ -127,12 +169,13 @@ const MapScreen = () => {
           remainTimeMinute: params.remainTimeMinute,
           includePastRemainTime: params.includePastRemainTime,
         });
+        console.log('✅ [MapScreen] 쓰레드 로드 성공:', res.length, '개');
         setThreads(res);
       } catch (err) {
         console.error('❌ fetchThreads 실패:', err);
       }
     },
-    [member?.id, fetchThreads, setThreads, searchParams, latitude, longitude], // ✅ 의존성 추가
+    [member?.id, fetchThreads, setThreads, searchParams, latitude, longitude],
   );
 
   const handleMarkerPress = (ids: string[]) => {
@@ -140,12 +183,16 @@ const MapScreen = () => {
   };
 
   const handleClearKeyword = () => {
+    console.log('🗑️ [MapScreen] 검색어 초기화');
     const reset = { ...searchParams, keyword: '' };
     setSearchParams(reset);
     loadThreads(reset);
   };
 
-  const clearFilter = () => setSelectedIds([]);
+  const clearFilter = () => {
+    console.log('🗑️ [MapScreen] 필터 초기화');
+    setSelectedIds([]);
+  };
 
   const filteredThreads =
     selectedIds.length > 0
@@ -281,8 +328,6 @@ const MapScreen = () => {
 };
 
 export default MapScreen;
-
-// styles는 동일
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
