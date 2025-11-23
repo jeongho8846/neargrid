@@ -1,12 +1,11 @@
-// 📄 src/common/components/BottomBlurGradient/BottomBlurGradient.tsx
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { View, StyleSheet, Platform } from 'react-native';
 import { BlurView } from '@react-native-community/blur';
 import LinearGradient from 'react-native-linear-gradient';
 
 interface BottomBlurGradientProps {
   height?: number;
-  children?: React.ReactNode;
+  children?: ReactElement | ReactElement[] | null; // ✅ 타입 제한
   colors?: string[];
   locations?: number[];
   blurAmount?: number;

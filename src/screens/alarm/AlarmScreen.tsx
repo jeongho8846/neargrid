@@ -17,6 +17,7 @@ import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
 import type { AlarmModel } from '@/features/alarm/model/AlarmModel';
+import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
@@ -139,6 +140,7 @@ export default function AlarmScreen() {
           scrollEventThrottle={16}
         />
       </View>
+      <BottomBlurGradient height={80} />
     </View>
   );
 }

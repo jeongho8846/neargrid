@@ -54,15 +54,7 @@ const FeedScreen = () => {
 
   return (
     <View style={{ flex: 1 }}>
-      <AppCollapsibleHeader
-        titleKey="STR_FEED"
-        animatedStyle={headerStyle}
-        right={
-          <TouchableOpacity onPress={() => console.log('검색')}>
-            <AppIcon type="ion" name="search" size={22} variant="primary" />
-          </TouchableOpacity>
-        }
-      />
+      <AppCollapsibleHeader titleKey="STR_FEED" animatedStyle={headerStyle} />
       <ThreadList
         data={threadIds}
         isLoading={isLoading}
@@ -73,7 +65,7 @@ const FeedScreen = () => {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
       />
-      <BottomBlurGradient height={80}> </BottomBlurGradient>
+      <BottomBlurGradient height={80} />
     </View>
   );
 };
