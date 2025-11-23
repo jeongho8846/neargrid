@@ -1,6 +1,7 @@
 // src/features/map/screens/MapScreen.tsx
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { View, StyleSheet } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { COLORS } from '@/common/styles/colors';
 import { calcMapSearchRadius } from '@/utils/mapUtils';
@@ -28,6 +29,7 @@ const MapScreen = () => {
   const mapRef = useRef<MapViewContainerRef>(null);
   const sheetRef = useRef<BottomSheet>(null);
   const searchSheetRef = useRef<MapSearchBottomSheetRef>(null);
+  const hasMovedToCurrentRef = useRef(false);
   const { isOpen } = useBottomSheetStore();
 
   const { region, handleRegionChange } = useMapRegion();
@@ -43,6 +45,22 @@ const MapScreen = () => {
   } = useMapThreads(searchParams);
   const { dialogVisible, handleConfirm, handleClose } =
     useMapLocationPermission();
+
+  // ✅ 화면에 포커스될 때 현재 위치로 이동 (한 번만)
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasMovedToCurrentRef.current) {
+        // InteractionManager 또는 setTimeout으로 렌더링 완료 후 실행
+        const timer = setTimeout(() => {
+          console.log('🗺️ [MapScreen] 현재 위치로 이동 시도');
+          mapRef.current?.moveToCurrent();
+          hasMovedToCurrentRef.current = true;
+        }, 1000);
+
+        return () => clearTimeout(timer);
+      }
+    }, []),
+  );
 
   const handleSearchPress = () => {
     searchSheetRef.current?.open();
@@ -129,7 +147,6 @@ const MapScreen = () => {
 
       <MapShowListButton onPress={() => sheetRef.current?.snapToIndex(1)} />
 
-      {/* ✅ 바텀시트가 열려있을 때만 현재 위치 버튼 표시 */}
       {!isOpen && (
         <View style={styles.currentLocationButtonContainer}>
           <AppMapCurrentLocationButton
@@ -190,7 +207,7 @@ const styles = StyleSheet.create({
   currentLocationButtonContainer: {
     position: 'absolute',
     right: -10,
-    bottom: 100, // ✅ 특정 위치에 고정
+    bottom: 100,
     zIndex: 0,
   },
 });
