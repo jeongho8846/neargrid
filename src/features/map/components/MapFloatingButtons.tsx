@@ -21,7 +21,7 @@ const MapFloatingButtons: React.FC<Props> = ({ sheetRef }) => {
         onPress={() => {}}
         activeOpacity={0.8}
       >
-        <AppIcon name="footsteps" type="ion" size={24} variant="primary" />
+        <AppIcon name="footsteps" type="ion" size={20} variant="primary" />
       </TouchableOpacity>
 
       {/* 리스트 보기 버튼 */}
@@ -40,12 +40,11 @@ export default MapFloatingButtons;
 
 const styles = StyleSheet.create({
   leftButton: {
-    position: 'absolute',
-    top: 10,
-    left: SPACING.xs,
     backgroundColor: COLORS.sheet_background,
     padding: 8,
     borderRadius: 10,
+    width: 35,
+    height: 35,
   },
   showListButton: {
     backgroundColor: COLORS.button_active,

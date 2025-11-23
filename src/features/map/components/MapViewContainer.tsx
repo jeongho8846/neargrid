@@ -1,3 +1,4 @@
+// src/features/map/components/MapViewContainer.tsx
 import React, {
   useRef,
   useState,
@@ -38,16 +39,14 @@ type Props = {
   threads: any[];
   isLoading: boolean;
   onMarkerPress?: (ids: string[]) => void;
-  onMoveToLocation?: (lat: number, lon: number) => void;
-  // ✅ 추가
+  currentRegion: Region | null;
+  onRegionChange: (region: Region) => void;
   searchParams?: {
     keyword: string;
-    threadTypes: string[];
-    recentTimeMinute: number;
-    remainTimeMinute: number;
-    includePastRemainTime: boolean;
+    preserveRegion?: Region | null;
   };
 };
+
 const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
   (
     {
@@ -55,7 +54,8 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
       threads,
       isLoading,
       onMarkerPress,
-      onMoveToLocation,
+      currentRegion,
+      onRegionChange,
       searchParams,
     },
     ref,
@@ -67,15 +67,19 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
     const { fetchThreads } = useFetchMapThreads();
     const [region, setRegion] = useState<Region | null>(null);
     const [clusters, setClusters] = useState<any[][]>([]);
+    const hasInitializedRef = useRef(false);
 
-    // ✅ [ADD] 최초 1회만 내 위치로 이동 + 콜백 알림
-    const hasNotifiedOnceRef = useRef(false);
-    React.useEffect(() => {
-      if (hasNotifiedOnceRef.current) return;
-      if (!latitude || !longitude) return;
-      if (!mapRef.current) return;
+    // ✅ 최초 1회만 내 위치로 이동 (initialRegion이 기본값일 때만)
+    useEffect(() => {
+      if (hasInitializedRef.current) return;
+      if (!latitude || !longitude || !mapRef.current) return;
 
-      // 지도 부드럽게 이동
+      // preserveRegion이나 currentRegion이 있으면 내 위치로 이동 안 함
+      if (searchParams?.preserveRegion || currentRegion) {
+        hasInitializedRef.current = true;
+        return;
+      }
+
       mapRef.current.animateToRegion(
         {
           latitude,
@@ -86,15 +90,32 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
         600,
       );
 
-      hasNotifiedOnceRef.current = true;
+      hasInitializedRef.current = true;
+    }, [latitude, longitude, currentRegion, searchParams?.preserveRegion]);
 
-      // 이동 후 부모(MapScreen)로 좌표 전달
-      // (바로 호출해도 되고, 약간의 지연을 두고 싶으면 setTimeout 사용)
-      onMoveToLocation?.(latitude, longitude);
-    }, [latitude, longitude, onMoveToLocation]);
+    // ✅ 검색 후 돌아왔을 때 preserveRegion으로 복원
+    useEffect(() => {
+      if (searchParams?.preserveRegion && mapRef.current) {
+        const { latitude, longitude, latitudeDelta, longitudeDelta } =
+          searchParams.preserveRegion;
+        console.log(
+          '🗺️ preserveRegion으로 지도 복원:',
+          searchParams.preserveRegion,
+        );
+        mapRef.current.animateToRegion(
+          {
+            latitude,
+            longitude,
+            latitudeDelta,
+            longitudeDelta,
+          },
+          600,
+        );
+      }
+    }, [searchParams?.preserveRegion]);
 
-    // ✅ threads가 바뀌면, 현재 region 기준으로 클러스터링 다시 실행
-    React.useEffect(() => {
+    // ✅ threads가 바뀌면 클러스터링 재실행
+    useEffect(() => {
       if (!mapRef.current || !region || threads.length === 0) return;
       console.log('🧩 검색 완료 후 클러스터링 재실행:', threads.length);
       InteractionManager.runAfterInteractions(async () => {
@@ -145,6 +166,8 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
 
     const handleRegionChangeComplete = (newRegion: Region) => {
       setRegion(newRegion);
+      onRegionChange(newRegion); // ✅ 부모(MapScreen)에게 지도 중심 좌표 업데이트
+
       InteractionManager.runAfterInteractions(async () => {
         if (mapRef.current && threads.length > 0) {
           const grouped = await clusterMarkersByScreen(mapRef, threads, 35);
@@ -163,23 +186,26 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
         longitude: centerLon,
         distance: radius,
         memberId: memberId ?? member?.id ?? '',
-        keyword: searchParams?.keyword || '',
-        threadTypes: searchParams?.threadTypes || [],
-        recentTimeMinute: searchParams?.recentTimeMinute || 0,
-        remainTimeMinute: searchParams?.remainTimeMinute || 0,
-        includePastRemainTime: searchParams?.includePastRemainTime || false,
       });
     };
+
+    // ✅ initialRegion 결정 우선순위:
+    // 1. preserveRegion (검색 후 복귀)
+    // 2. currentRegion (지도의 마지막 중심 위치)
+    // 3. 기본값 (서울)
+    const initialRegion = searchParams?.preserveRegion ||
+      currentRegion || {
+        latitude: 37.5665,
+        longitude: 126.978,
+        latitudeDelta: 0.05,
+        longitudeDelta: 0.05,
+      };
+
     return (
       <View style={styles.container}>
         <AppMapView
           ref={mapRef}
-          initialRegion={{
-            latitude: 37.5665,
-            longitude: 126.978,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
+          initialRegion={initialRegion}
           onRegionChangeComplete={handleRegionChangeComplete}
         >
           {latitude && longitude && (
@@ -222,7 +248,7 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
           })}
         </AppMapView>
 
-        {/* ✅ 기존 “이 위치에서 검색” 버튼 유지 */}
+        {/* ✅ 기존 "이 위치에서 검색" 버튼 유지 */}
         <AppMapSearchHereButton
           onPress={handleSearchHere}
           isLoading={isLoading}
