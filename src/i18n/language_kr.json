@@ -26,6 +26,7 @@
   "STR_COMMENT_COUNT": "댓글",
   "STR_EMPTY_COMMENT": "아직 댓글이 없습니다.",
   "STR_REPLY_COUNT": "대댓글",
+  "STR_CHILD_THREAD_COUNT": "루트 쓰레드",
   "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요.",
 
   "STR_MAP_SEARCH_HERE": "현 지도에서 검색",
