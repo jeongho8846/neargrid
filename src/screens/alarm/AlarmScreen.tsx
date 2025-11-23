@@ -44,7 +44,6 @@ export default function AlarmScreen() {
           break;
         case 'THREAD_REPLY':
         case 'COMMENT_THREAD':
-        case 'CHILD_COMMENT_THREAD':
         case 'THREAD_REACTION':
         case 'COMMENT_THREAD_REACTION': {
           const threadId =
@@ -57,8 +56,22 @@ export default function AlarmScreen() {
             break;
           }
 
-          // ✅ threadId만 전달하도록 변경
           navigation.navigate('DetailThread', { threadId });
+          break;
+        }
+        case 'CHILD_COMMENT_THREAD': {
+          // ✅ 대댓글인 경우 DetailThreadComment로 이동
+          const commentThreadId = alarm.parentTargetId;
+          const threadId = alarm.parentParentTargetId;
+
+          if (!commentThreadId || !threadId) {
+            break;
+          }
+
+          navigation.navigate('DetailThreadComment', {
+            commentThreadId,
+            threadId,
+          });
           break;
         }
         default:
