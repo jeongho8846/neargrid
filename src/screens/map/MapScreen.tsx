@@ -8,7 +8,8 @@ import MapViewContainer, {
 } from '@/features/map/components/MapViewContainer';
 import MapThreadList from '@/features/map/components/MapThreadList';
 import MapSearchBar from '@/features/map/components/MapSearchBar';
-import MapFloatingButtons from '@/features/map/components/MapFloatingButtons';
+import FootprintButton from '@/features/map/components/FootprintButton';
+import MapShowListButton from '@/features/map/components/MapShowListButton';
 import MapSearchBottomSheet, {
   MapSearchBottomSheetRef,
 } from '@/features/map/components/MapSearchBottomSheet';
@@ -27,13 +28,8 @@ const MapScreen = () => {
   const searchSheetRef = useRef<MapSearchBottomSheetRef>(null);
   const { isOpen } = useBottomSheetStore();
 
-  // ✅ 지도 region 관리
   const { region, handleRegionChange } = useMapRegion();
-
-  // ✅ 검색 관련
   const { searchParams, handleClearKeyword, setSearchParams } = useMapSearch();
-
-  // ✅ 데이터 관련
   const {
     threads,
     loading,
@@ -43,8 +39,6 @@ const MapScreen = () => {
     clearFilter,
     loadThreads,
   } = useMapThreads(searchParams);
-
-  // ✅ 위치 권한 관련
   const { dialogVisible, handleConfirm, handleClose } =
     useMapLocationPermission();
 
@@ -53,7 +47,6 @@ const MapScreen = () => {
     searchSheetRef.current?.open();
   };
 
-  // ✅ 검색 실행
   const handleSearch = (params: {
     keyword: string;
     threadTypes: string[];
@@ -69,7 +62,6 @@ const MapScreen = () => {
       includePastRemainTime: params.includePastRemainTime,
     });
 
-    // 현재 지도 중심에서 검색
     if (region) {
       loadThreads(
         {
@@ -91,32 +83,39 @@ const MapScreen = () => {
         ref={mapRef}
         threads={threads}
         isLoading={loading}
-        onMarkerPress={handleMarkerPress}
+        onMarkerPress={ids => handleMarkerPress(ids, sheetRef)}
         currentRegion={region}
         onRegionChange={handleRegionChange}
         searchParams={searchParams}
       />
-      <View style={styles.haeder}>
-        <View style={styles.haeder_left}>
-          <MapFloatingButtons sheetRef={sheetRef} />
+
+      <View style={styles.header}>
+        <View style={styles.header_left}>
+          <FootprintButton />
         </View>
-        <View style={styles.haeder_right}>
+        <View style={styles.header_right}>
           <MapSearchBar
             keyword={searchParams.keyword}
             onPress={handleSearchPress}
-            onClearKeyword={handleClearKeyword}
           />
         </View>
       </View>
+
+      <MapShowListButton onPress={() => sheetRef.current?.snapToIndex(1)} />
 
       <MapThreadList
         threads={filteredThreads}
         selectedCount={selectedIds.length}
         onClearFilter={clearFilter}
         onCurrentLocationPress={() => mapRef.current?.moveToCurrent()}
+        sheetRef={sheetRef}
       />
 
-      <MapSearchBottomSheet ref={searchSheetRef} onSearch={handleSearch} />
+      <MapSearchBottomSheet
+        ref={searchSheetRef}
+        onSearch={handleSearch}
+        onClearKeyword={handleClearKeyword}
+      />
 
       <PermissionDialog
         visible={dialogVisible}
@@ -137,20 +136,21 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
-  haeder: {
+  header: {
     width: '100%',
     height: 40,
-
     paddingHorizontal: SPACING.xs,
     marginTop: SPACING.md,
     position: 'absolute',
     top: 0,
-
     flexDirection: 'row',
   },
-  haeder_left: {
+  header_left: {
     flex: 1,
     justifyContent: 'flex-end',
   },
-  haeder_right: { flex: 8, justifyContent: 'flex-end' },
+  header_right: {
+    flex: 8,
+    justifyContent: 'flex-end',
+  },
 });

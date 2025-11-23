@@ -1,6 +1,12 @@
 // src/features/map/components/MapThreadList.tsx
 
-import React, { useRef, useMemo, useCallback } from 'react';
+import React, {
+  useRef,
+  useMemo,
+  useCallback,
+  useImperativeHandle,
+  forwardRef,
+} from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import BottomSheet, { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
@@ -16,6 +22,7 @@ type Props = {
   selectedCount: number;
   onClearFilter: () => void;
   onCurrentLocationPress: () => void;
+  sheetRef?: React.RefObject<BottomSheet>;
 };
 
 const MapThreadList: React.FC<Props> = ({
@@ -23,8 +30,10 @@ const MapThreadList: React.FC<Props> = ({
   selectedCount,
   onClearFilter,
   onCurrentLocationPress,
+  sheetRef: externalSheetRef,
 }) => {
-  const sheetRef = useRef<BottomSheet>(null);
+  const internalSheetRef = useRef<BottomSheet>(null);
+  const sheetRef = externalSheetRef || internalSheetRef;
   const navigation = useNavigation();
   const snapPoints = useMemo(() => [1, '50%', '90%'], []);
 
