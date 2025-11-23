@@ -13,11 +13,10 @@ import { COLORS } from '@/common/styles/colors';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { SPACING } from '@/common/styles';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
-import { useHeaderScroll } from '@/common/hooks/useHeaderScroll'; // ✅ 교체
+import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
 import AppText from '@/common/components/AppText';
 import { useViewAllAlarms } from '@/features/alarm/hooks/useViewAllAlarms';
 import type { AlarmModel } from '@/features/alarm/model/AlarmModel';
-import { createEmptyThread } from '@/features/thread/model/ThreadModel';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
@@ -58,19 +57,8 @@ export default function AlarmScreen() {
             break;
           }
 
-          const thread = {
-            ...createEmptyThread(threadId),
-            description:
-              alarm.targetDescription ?? alarm.parentTargetDescription ?? '',
-            contentImageUrls: alarm.targetImageUrl
-              ? [alarm.targetImageUrl]
-              : [],
-            memberId: alarm.sendMemberId ?? '',
-            memberNickName: alarm.sendMemberNickName ?? '',
-            memberProfileImageUrl: alarm.sendMemberProfileImageUrl ?? '',
-          };
-
-          navigation.navigate('DetailThread', { thread });
+          // ✅ threadId만 전달하도록 변경
+          navigation.navigate('DetailThread', { threadId });
           break;
         }
         default:
@@ -122,7 +110,7 @@ export default function AlarmScreen() {
       {/* ✅ Toss-style 헤더 (Reanimated 연결) */}
       <AppCollapsibleHeader
         titleKey="STR_ALARM"
-        animatedStyle={headerStyle} // ✅ 변경
+        animatedStyle={headerStyle}
         right={
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={handleAllRead}>
@@ -137,8 +125,8 @@ export default function AlarmScreen() {
         <AlarmList
           data={data ?? []}
           onItemPress={handleAlarmPress}
-          onScroll={scrollHandler} // ✅ 연결
-          scrollEventThrottle={16} // ✅ 추가
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
         />
       </View>
     </View>

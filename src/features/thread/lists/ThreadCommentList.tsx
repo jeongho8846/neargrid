@@ -6,7 +6,7 @@ import ThreadItemDetail from '../components/thread_item_detail';
 import { Thread } from '../model/ThreadModel';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
-import { useThreadQuery } from '../hooks/useThreadQuery';
+// ❌ import { useThreadQuery } from '../hooks/useThreadQuery'; // 제거
 import { useFetchThreadComments } from '../hooks/useFetchThreadComments';
 import AppText from '@/common/components/AppText';
 import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
@@ -28,7 +28,8 @@ type Props = {
 const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
   ({ threadId, headerThread, style }, ref) => {
     const { member } = useCurrentMember();
-    const { data: thread } = useThreadQuery(threadId);
+
+    // ❌ const { data: thread } = useThreadQuery(threadId); // 제거
 
     /** ✅ React Query 기반 댓글 캐시 */
     const {
@@ -62,7 +63,10 @@ const ThreadCommentList = forwardRef<ThreadCommentListRef, Props>(
 
     const mergedComments = [...optimisticComments, ...comments];
     const isEmpty = !isLoading && mergedComments.length === 0;
-    const displayCount = thread?.commentThreadCount ?? mergedComments.length;
+
+    // ✅ headerThread에서 commentThreadCount 가져오기
+    const displayCount =
+      headerThread?.commentThreadCount ?? mergedComments.length;
 
     return (
       <View style={styles.container}>
