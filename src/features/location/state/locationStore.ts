@@ -11,6 +11,12 @@ export const useLocationStore = create<LocationState>(set => ({
   latitude: null,
   longitude: null,
   altitude: null,
-  setLocation: (latitude, longitude, altitude) =>
-    set({ latitude, longitude, altitude }),
+  setLocation: (latitude, longitude, altitude) => {
+    // console.log('📍 [useLocationStore] setLocation 호출:', {
+    //   latitude,
+    //   longitude,
+    //   altitude,
+    // });
+    set({ latitude, longitude, altitude });
+  },
 }));

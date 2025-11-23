@@ -18,6 +18,7 @@ import { AppToastContainer } from '@/common/components/AppToast/AppToastManager'
 import RootNavigator from '@/navigators/RootNavigator';
 import messaging from '@react-native-firebase/messaging';
 import { initFCM } from '@/services/notification/fcmService';
+import { startWatchingLocation, stopWatchingLocation } from '@/services/device';
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
   ...DefaultTheme,
@@ -41,6 +42,35 @@ const App = () => {
       StatusBar.setBackgroundColor('transparent');
       StatusBar.setBarStyle('light-content');
     }
+  }, []);
+
+  /* 🌍 전역 위치 감시 시작 */
+  useEffect(() => {
+    const initLocation = async () => {
+      console.log('🌍 [App] 위치 권한 확인');
+
+      // ✅ 권한 체크만 (요청 안 함)
+      const { checkPermission } = await import(
+        '@/services/device/permissionService'
+      );
+      const status = await checkPermission('location');
+
+      if (status === 'granted') {
+        console.log('✅ [App] 위치 권한 이미 승인됨 - 감시 시작');
+        startWatchingLocation();
+      } else {
+        console.log(
+          '⏸️ [App] 위치 권한 없음 - 감시 시작 안 함 (MapScreen에서 요청)',
+        );
+      }
+    };
+
+    initLocation();
+
+    return () => {
+      console.log('🛑 [App] 위치 감시 중단');
+      stopWatchingLocation();
+    };
   }, []);
 
   useEffect(() => {

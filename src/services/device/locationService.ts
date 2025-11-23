@@ -14,18 +14,18 @@ export const startWatchingLocation = () => {
     position => {
       const { latitude, longitude, altitude } = position.coords;
       setLocation(latitude, longitude, altitude ?? null);
-      console.log(
-        `[GPS] 위치 갱신 → lat: ${latitude}, lon: ${longitude}, alt: ${altitude}`,
-      );
+      // console.log(
+      //   `[GPS] 위치 갱신 → lat: ${latitude}, lon: ${longitude}, alt: ${altitude}`,
+      // );
     },
     error => {
       console.warn('[GPS] 감시 에러:', error);
     },
     {
       enableHighAccuracy: true,
-      distanceFilter: 0,
-      interval: 3000,
-      fastestInterval: 2000,
+      distanceFilter: 3, // 3미터 이동할 때마다 업데이트
+      interval: 1000,
+      fastestInterval: 1000,
     },
   );
 };
@@ -50,9 +50,9 @@ export const getCurrentLocation = (): Promise<{
     Geolocation.getCurrentPosition(
       pos => {
         const { latitude, longitude, altitude } = pos.coords;
-        console.log(
-          `[GPS] 현재 위치: lat=${latitude}, lon=${longitude}, alt=${altitude}`,
-        );
+        // console.log(
+        //   `[GPS] 현재 위치: lat=${latitude}, lon=${longitude}, alt=${altitude}`,
+        // );
         resolve({
           latitude,
           longitude,

@@ -22,15 +22,20 @@ import AppMapZoomControls from '@/common/components/AppMapView/controls/AppMapZo
 import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import AppIcon from '@/common/components/AppIcon';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-
 import { usePermission } from '@/common/hooks/usePermission';
 import PermissionDialog from '@/common/components/PermissionDialog';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
+import { useLocationStore } from '@/features/location/state/locationStore'; // ✅ 추가
+import { getCurrentLocation, startWatchingLocation } from '@/services/device';
 
 const MapScreen = () => {
   const { member } = useCurrentMember();
   const { threads, setThreads, clearThreads } = useMapThreadStore();
   const { fetchThreads, loading } = useFetchMapThreads();
+
+  // ✅ 위치 정보 가져오기
+  const { latitude, longitude } = useLocationStore();
+
   const sheetRef = useRef<BottomSheet>(null);
   const mapRef = useRef<MapViewContainerRef>(null);
   const navigation = useNavigation();
@@ -62,16 +67,34 @@ const MapScreen = () => {
 
       if (status === 'granted') {
         setLocationGranted(true);
+        startWatchingLocation();
         return;
       }
 
       // 권한 다이얼로그 표시
       const result = await locationPermission.request();
       setLocationGranted(result.granted);
+
+      if (result.granted) {
+        setLocationGranted(true);
+        startWatchingLocation();
+      }
     };
 
     requestLocation();
   }, []);
+
+  // ✅ 위치 정보가 로드되면 쓰레드 불러오기
+  // ✅ 위치 정보가 로드되면 쓰레드 불러오기
+  useEffect(() => {
+    if (latitude && longitude && member?.id) {
+      console.log('📍 [MapScreen] 현재 위치로 쓰레드 로드:', {
+        latitude,
+        longitude,
+      });
+      loadThreads(searchParams, latitude, longitude);
+    }
+  }, [latitude, longitude, member?.id]); // ✅ latitude, longitude 의존성 추가
 
   const { isOpen: sheetOpen, close, open } = useBottomSheetStore();
   const handleSheetChange = useCallback((index: number) => {
@@ -85,10 +108,17 @@ const MapScreen = () => {
   const loadThreads = useCallback(
     async (params = searchParams, lat?: number, lon?: number) => {
       if (!member?.id) return;
+
+      // ✅ 위치가 없으면 기본값 대신 현재 위치 사용
+      const targetLat = lat ?? latitude ?? 37.5665;
+      const targetLon = lon ?? longitude ?? 126.978;
+
+      console.log('🔍 [MapScreen] loadThreads:', { targetLat, targetLon });
+
       try {
         const res = await fetchThreads({
-          latitude: lat ?? 37.5665,
-          longitude: lon ?? 126.978,
+          latitude: targetLat,
+          longitude: targetLon,
           distance: 3000,
           memberId: member.id,
           keyword: params.keyword,
@@ -102,12 +132,11 @@ const MapScreen = () => {
         console.error('❌ fetchThreads 실패:', err);
       }
     },
-    [member?.id, fetchThreads, setThreads, searchParams],
+    [member?.id, fetchThreads, setThreads, searchParams, latitude, longitude], // ✅ 의존성 추가
   );
 
   const handleMarkerPress = (ids: string[]) => {
     setSelectedIds(ids);
-    sheetRef.current?.snapToIndex(1);
   };
 
   const handleClearKeyword = () => {
@@ -155,6 +184,7 @@ const MapScreen = () => {
         isLoading={loading}
         onMarkerPress={handleMarkerPress}
         onMoveToLocation={(lat, lon) => {
+          console.log('🗺️ [MapScreen] onMoveToLocation:', { lat, lon });
           loadThreads(searchParams, lat, lon);
         }}
       />
@@ -205,7 +235,7 @@ const MapScreen = () => {
 
       <BottomSheet
         ref={sheetRef}
-        index={1}
+        index={0}
         snapPoints={snapPoints}
         backgroundStyle={styles.sheetBackground}
         onChange={handleSheetChange}
@@ -213,12 +243,11 @@ const MapScreen = () => {
           <View style={styles.handleContainer}>
             <View style={styles.handleIndicator} />
             <View style={styles.controlsRow}>
-              {/* <AppMapZoomControls
-                onZoomIn={() => mapRef.current?.zoomIn()}
-                onZoomOut={() => mapRef.current?.zoomOut()}
-              /> */}
               <AppMapCurrentLocationButton
-                onPress={() => mapRef.current?.moveToCurrent()}
+                onPress={() => {
+                  console.log('📍 [MapScreen] 내 위치 버튼 클릭');
+                  mapRef.current?.moveToCurrent();
+                }}
               />
             </View>
           </View>
@@ -252,6 +281,8 @@ const MapScreen = () => {
 };
 
 export default MapScreen;
+
+// styles는 동일
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
