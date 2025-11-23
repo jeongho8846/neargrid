@@ -28,18 +28,20 @@ export function useThreadLike({
   const [likeCount, setLikeCount] = useState(initialCount ?? 0);
 
   /**
-   * ✅ ① 캐시 변경 자동 감시
-   * - React Query 캐시(detail)가 갱신되면, 내부 상태를 동기화함
+   * ✅ ① prop이 변경되면 로컬 상태 동기화
+   * - RouteThread_ChildThreadList에서 새 thread 데이터가 들어오면 반영
    */
   useEffect(() => {
-    const cached = queryClient.getQueryData<Thread>(
-      THREAD_KEYS.detail(threadId),
-    );
-    if (cached) {
-      setLiked(cached.reactedByCurrentMember ?? false);
-      setLikeCount(cached.reactionCount ?? 0);
-    }
+    setLiked(initialLiked ?? false);
+    setLikeCount(initialCount ?? 0);
+  }, [initialLiked, initialCount]);
 
+  /**
+   * ✅ ② 캐시 변경 자동 감시
+   * - React Query 캐시(detail)가 갱신되면, 내부 상태를 동기화함
+   * - 초기 캐시 조회는 하지 않음 (prop 우선)
+   */
+  useEffect(() => {
     // ✅ 캐시 업데이트 시 자동 반영
     const unsubscribe = queryClient.getQueryCache().subscribe(event => {
       if (
@@ -59,7 +61,7 @@ export function useThreadLike({
   }, [queryClient, threadId]);
 
   /**
-   * ✅ ② 좋아요 토글 mutation
+   * ✅ ③ 좋아요 토글 mutation
    */
   const { mutate: toggleLike, isPending: inflight } = useMutation({
     mutationFn: async (nextLiked: boolean) =>

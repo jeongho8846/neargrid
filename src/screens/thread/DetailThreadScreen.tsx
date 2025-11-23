@@ -14,6 +14,7 @@ import { useReadThread } from '@/features/thread/hooks/useReadThread';
 import ThreadCommentList, {
   ThreadCommentListRef,
 } from '@/features/thread/lists/ThreadCommentList';
+import RouteThread_ChildThreadList from '@/features/thread/lists/RouteThread_ChildThreadList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import { COLORS } from '@/common/styles/colors';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
@@ -29,9 +30,12 @@ type RouteParams = {
  * ✅ DetailThreadScreen
  * - 스크린은 feature 조합 및 데이터 흐름만 담당
  * - UI 및 비즈니스 로직은 feature 내부에서 처리
- * - thread 객체 또는 threadId로 진입 가능
+ * - thread 객체 또는 threadId로 진입 가능 (타입 상관없이 동일하게 처리)
  *   1. thread 객체가 있는 경우: 바로 사용 (기존 방식)
  *   2. threadId만 있는 경우: API 호출하여 thread 정보 가져옴
+ * - threadType에 따라 다른 컴포넌트 렌더링
+ *   1. ROUTE_THREAD: RouteThread_ChildThreadList (자식 스레드 리스트)
+ *   2. 일반 Thread: ThreadCommentList (댓글 리스트)
  */
 const DetailThreadScreen = () => {
   const { params } = useRoute<RouteProp<RouteParams, 'DetailThread'>>();
@@ -41,33 +45,34 @@ const DetailThreadScreen = () => {
   const threadFromParams = params?.thread;
   const threadIdFromParams = params?.threadId;
 
-  // ✅ threadId만 있는 경우 API 호출
-  const { data: fetchedThread, isLoading } = useReadThread(
-    threadIdFromParams && !threadFromParams ? threadIdFromParams : undefined,
-  );
+  // ✅ 최종 threadId 결정 (thread 객체에서 추출하거나 직접 사용)
+  const threadId = threadFromParams?.threadId ?? threadIdFromParams;
+
+  // ✅ threadId가 있으면 항상 API 호출 (타입 상관없이)
+  // thread 객체가 있어도 최신 데이터를 가져올 수 있음
+  const { data: fetchedThread, isLoading } = useReadThread(threadId);
 
   const openInputBar = useGlobalInputBarStore(s => s.open);
   const closeInputBar = useGlobalInputBarStore(s => s.close);
   const commentListRef = useRef<ThreadCommentListRef>(null);
 
   // ✅ 최종 사용할 thread 결정
-  // threadFromParams가 있으면 우선 사용, 없으면 fetchedThread 사용
-  const thread = threadFromParams ?? fetchedThread;
+  // fetchedThread(최신 데이터) 우선, 없으면 threadFromParams 사용
+  const thread = fetchedThread ?? threadFromParams;
 
-  // ✅ threadId만으로 진입한 경우, 데이터가 로드될 때까지 대기
-  const shouldWaitForFetch = !threadFromParams && threadIdFromParams;
-  const isWaitingForData = shouldWaitForFetch && (isLoading || !fetchedThread);
+  // ✅ threadType 분기
+  const isRouteThread = thread?.threadType === 'ROUTE_THREAD';
 
-  // ✅ 댓글 작성 훅 (Optimistic 반영)
+  // ✅ 댓글 작성 훅 (Optimistic 반영) - 일반 스레드만
   const { handleSubmit } = useCreateThreadCommentWithOptimistic(
     thread?.threadId ?? '',
     commentListRef,
   );
 
-  // ✅ 포커스될 때 입력창 활성화
+  // ✅ 포커스될 때 입력창 활성화 - 일반 스레드만
   useFocusEffect(
     useCallback(() => {
-      if (!thread) return;
+      if (!thread || isRouteThread) return;
 
       openInputBar({
         placeholder: '댓글을 입력하세요…',
@@ -75,11 +80,11 @@ const DetailThreadScreen = () => {
         onSubmit: text => handleSubmit(text),
       });
       return () => closeInputBar();
-    }, [openInputBar, closeInputBar, handleSubmit, thread]),
+    }, [openInputBar, closeInputBar, handleSubmit, thread, isRouteThread]),
   );
 
   // ✅ 로딩 중이거나 thread가 없는 경우
-  if (isWaitingForData || !thread) {
+  if (isLoading || !thread) {
     return (
       <View style={styles.container}>
         <AppCollapsibleHeader
@@ -101,12 +106,21 @@ const DetailThreadScreen = () => {
         isAtTop={false}
         onBackPress={() => navigation.goBack()}
       />
-      <ThreadCommentList
-        ref={commentListRef}
-        threadId={thread.threadId}
-        headerThread={thread}
-      />
-      <BottomBlurGradient height={120}></BottomBlurGradient>
+
+      {isRouteThread ? (
+        <RouteThread_ChildThreadList
+          threadId={thread.threadId}
+          headerThread={thread}
+        />
+      ) : (
+        <ThreadCommentList
+          ref={commentListRef}
+          threadId={thread.threadId}
+          headerThread={thread}
+        />
+      )}
+
+      <BottomBlurGradient height={120} />
     </View>
   );
 };

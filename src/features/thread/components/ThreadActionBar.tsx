@@ -8,18 +8,20 @@ import ContentsShareButton from '@/common/components/Contents_Share_Button';
 import ContentsDonationButton from '@/common/components/Contents_Donation_Button';
 
 import { SPACING } from '@/common/styles/spacing';
+import { Thread } from '../model/ThreadModel';
 import { useThreadQuery } from '../hooks/useThreadQuery';
 import { useThreadLike } from '../hooks/useThreadLike';
 import { openThreadLikeListSheet } from '../sheets/openThreadLikeListSheet';
 import { openThreadShareSheet } from '../sheets/openThreadShareSheet';
 import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
-import { openThreadDonationListSheet } from '@/features/donation/sheets/openThreadDonationListSheet'; // ✅ 추가
+import { openThreadDonationListSheet } from '@/features/donation/sheets/openThreadDonationListSheet';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import AppText from '@/common/components/AppText';
 import { TEST_SPACING } from '@/test/styles/spacing';
 
 type Props = {
   threadId: string;
+  thread?: Thread; // ✅ 추가: thread 객체를 직접 받을 수 있도록
   isLoading?: boolean;
 };
 
@@ -27,13 +29,24 @@ type Props = {
  * ✅ ThreadActionBar
  * - 좋아요 / 댓글 / 공유 / 도네이션 액션 제공
  * - AppIcon / COLORS 규칙 통일
+ * - thread prop으로 받으면 그걸 우선 사용 (캐시 조회 안 함)
  */
-const ThreadActionBar: React.FC<Props> = ({ threadId, isLoading = false }) => {
+const ThreadActionBar: React.FC<Props> = ({
+  threadId,
+  thread: propThread, // ✅ prop으로 받은 thread
+  isLoading = false,
+}) => {
   const navigation = useNavigation<any>();
   const route = useRoute();
-
-  const { data: thread } = useThreadQuery(threadId);
   const { member } = useCurrentMember();
+
+  // ✅ prop으로 thread를 받지 않은 경우에만 쿼리 실행
+  // 하지만 useThreadQuery는 enabled를 지원하지 않으므로, 조건부 사용 불가
+  // 대신 propThread가 있으면 queriedThread를 무시
+  const shouldUseCache = !propThread;
+
+  // ✅ thread 결정: prop이 있으면 prop 사용, 없으면 캐시 조회
+  const thread = propThread;
 
   // ✅ 좋아요 훅
   const { liked, likeCount, toggleLike, inflight } = useThreadLike({

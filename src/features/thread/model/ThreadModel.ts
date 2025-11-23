@@ -46,6 +46,9 @@ export type ServerThreadDto = {
 
   /** ✅ 받은 후원 포인트 총합 */
   donationPointReceivedCount: number | null;
+
+  /** ✅ 스레드 깊이 (ROUTE_THREAD의 자식일 경우 사용) */
+  depth?: number | null;
 };
 
 /**
@@ -93,6 +96,9 @@ export type Thread = {
 
   /** ✅ 받은 후원 포인트 총합 */
   donationPointReceivedCount: number;
+
+  /** ✅ 스레드 깊이 (ROUTE_THREAD의 자식일 경우 사용) */
+  depth: number;
 };
 
 /**
@@ -145,7 +151,8 @@ export const createEmptyThread = (id: string): Thread => ({
   childThreadDirectCount: 0,
   childThreadWritableByOthers: false,
 
-  donationPointReceivedCount: 0, // ✅ 추가
+  donationPointReceivedCount: 0,
+  depth: 0, // ✅ 추가
 });
 
 /**
@@ -191,5 +198,6 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
   childThreadDirectCount: dto.childThreadDirectCount ?? 0,
   childThreadWritableByOthers: dto.childThreadWritableByOthers ?? false,
 
-  donationPointReceivedCount: dto.donationPointReceivedCount ?? 0, // ✅ 추가
+  donationPointReceivedCount: dto.donationPointReceivedCount ?? 0,
+  depth: dto.depth ?? 0, // ✅ 추가
 });

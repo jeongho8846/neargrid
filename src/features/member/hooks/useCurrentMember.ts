@@ -1,20 +1,42 @@
 // src/features/member/hooks/useCurrentMember.ts
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { memberStorage } from '../utils/memberStorage';
 import { Member } from '../types';
 
+export const MEMBER_KEYS = {
+  current: ['member', 'current'] as const,
+};
+
 export const useCurrentMember = () => {
-  const [member, setMember] = useState<Member | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: member, isLoading: loading } = useQuery<Member | null>({
+    queryKey: MEMBER_KEYS.current,
+    queryFn: () => memberStorage.getMember(),
+    staleTime: Infinity, // 캐시 무한 유지
+  });
 
-  useEffect(() => {
-    const load = async () => {
-      const stored = await memberStorage.getMember();
-      setMember(stored);
-      setLoading(false);
-    };
-    load();
-  }, []);
+  return {
+    member: member ?? null,
+    loading,
+    isLoggedIn: !!member,
+  };
+};
 
-  return { member, loading, isLoggedIn: !!member };
+// 로그인 시 사용
+export const useSetMember = () => {
+  const queryClient = useQueryClient();
+
+  return async (member: Member) => {
+    await memberStorage.saveMember(member);
+    queryClient.setQueryData(MEMBER_KEYS.current, member);
+  };
+};
+
+// 로그아웃 시 사용
+export const useClearMember = () => {
+  const queryClient = useQueryClient();
+
+  return async () => {
+    await memberStorage.clearMember();
+    queryClient.setQueryData(MEMBER_KEYS.current, null);
+  };
 };

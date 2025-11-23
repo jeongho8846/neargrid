@@ -88,7 +88,11 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
 
           {/* ⚙️ ACTION BAR */}
           <View style={styles.footer}>
-            <ThreadActionBar threadId={item.threadId} isLoading={isLoading} />
+            <ThreadActionBar
+              threadId={item.threadId}
+              thread={item} // ✅ thread 객체 전달
+              isLoading={isLoading}
+            />
           </View>
         </>
       )}
