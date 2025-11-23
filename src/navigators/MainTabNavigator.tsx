@@ -11,13 +11,13 @@ import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher
 import CreateStack from './stackNavigator/main/CreateStack';
 import ChatStack from './stackNavigator/main/ChatStack';
 import AlarmStack from './stackNavigator/main/AlarmStack';
+import { useTranslation } from 'react-i18next';
 
 const Tab = createBottomTabNavigator();
 
 const MainTabNavigator = () => {
-  const { member } = useCurrentMember(); // ✅ 현재 로그인된 사용자 정보
-  // const granted = true; // (예시) 위치 권한 생략
-  // useLocationWatcher(granted);
+  const { member } = useCurrentMember();
+  const { t } = useTranslation(); // ✅ 번역 훅
 
   React.useEffect(() => {
     console.log('🧭 [MainTabNavigator] member 변경됨:', member);
@@ -37,7 +37,7 @@ const MainTabNavigator = () => {
               iconName = 'map-outline';
               break;
             case 'FeedStack':
-              iconName = 'trophy-outline';
+              iconName = 'browsers-outline';
               break;
             case 'Add':
               iconName = 'add-circle';
@@ -59,36 +59,35 @@ const MainTabNavigator = () => {
       <Tab.Screen
         name="Map"
         component={MapStack}
-        options={{ tabBarLabel: '지도' }}
+        options={{ tabBarLabel: t('STR_MAP') }} // ✅ 번역
       />
       <Tab.Screen
         name="FeedStack"
         component={FeedStack}
-        options={{ tabBarLabel: '피드' }}
+        options={{ tabBarLabel: t('STR_FEED') }} // ✅ 번역
       />
       <Tab.Screen
         name="Add"
         component={CreateStack}
-        options={{ tabBarLabel: '추가' }}
+        options={{ tabBarLabel: t('STR_CONTENTS_CREATE_TITLE') }} // ✅ 번역
       />
       <Tab.Screen
         name="Chat"
         component={ChatStack}
-        options={{ tabBarLabel: '채팅' }}
+        options={{ tabBarLabel: t('STR_CHAT') }} // ✅ 번역
       />
 
       <Tab.Screen
         name="Alarm"
         component={AlarmStack}
-        options={{ tabBarLabel: '알람' }}
+        options={{ tabBarLabel: t('STR_ALARM') }} // ✅ 번역
       />
 
-      {/* ✅ member.id만 전달 (MemberProfileScreen에서 memberId로 받음) */}
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
-        initialParams={{ memberId: member?.id }} // 👈 수정 완료!
-        options={{ tabBarLabel: '프로필' }}
+        initialParams={{ memberId: member?.id }}
+        options={{ tabBarLabel: t('STR_PROFILE') }} // ✅ 번역
       />
     </Tab.Navigator>
   );
