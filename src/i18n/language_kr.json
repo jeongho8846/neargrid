@@ -224,5 +224,7 @@
   "STR_PERMISSION_NOTIFICATION_TITLE": "알림 권한 필요",
   "STR_PERMISSION_NOTIFICATION_RATIONALE": "새로운 댓글, 좋아요, 팔로우 알림 등 중요한 활동을 알려드리기 위해 알림 권한이 필요합니다.",
 
-  "STR_PERMISSION_ALLOW": "확인"
+  "STR_PERMISSION_ALLOW": "확인",
+  "STR_CANT_CHARGE_DONATION_IN_APP_1": "앱 내에서는 후원 충전이 불가능합니다. ",
+  "STR_CANT_CHARGE_DONATION_IN_APP_2": "웹사이트를 방문해주세요. "
 }

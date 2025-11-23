@@ -14,7 +14,7 @@ import {
   type BankCode,
   findBank,
 } from '@/features/donation/api/bankTypes';
-import { useKeyboardStore } from '@/common/state/keyboardStore'; // ✅ 추가
+import { useKeyboardStore } from '@/common/state/keyboardStore';
 
 type Props = {
   loading: boolean;
@@ -65,8 +65,23 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
   const sel = products.find(p => p.key === product)!;
   const total = sel.price * quantity;
   const [open, setOpen] = useState(false);
+  const [noShow, setNoShow] = useState(true); // ✅ 추가
   const selectedBank = findBank(bankCode);
-  const { isVisible, height } = useKeyboardStore(); // ✅ 전역 키보드 상태 사용
+  const { isVisible, height } = useKeyboardStore();
+
+  // ✅ noShow가 true면 간단한 메시지만 표시
+  if (noShow) {
+    return (
+      <BottomSheetScrollView
+        style={styles.container}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.noShowContainer}
+      >
+        <AppText variant="body" i18nKey="STR_CANT_CHARGE_DONATION_IN_APP_1" />
+        <AppText variant="body" i18nKey="STR_CANT_CHARGE_DONATION_IN_APP_2" />
+      </BottomSheetScrollView>
+    );
+  }
 
   return (
     <BottomSheetScrollView
@@ -75,7 +90,7 @@ const Contents_Charge_Viewer: React.FC<Props> = ({
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={[
         styles.scrollContainer,
-        isVisible && { paddingBottom: height + 100 }, // ✅ 키보드 여백 보정
+        isVisible && { paddingBottom: height + 100 },
       ]}
     >
       <View style={styles.header}>
@@ -213,6 +228,16 @@ const styles = StyleSheet.create({
   scrollContainer: {
     paddingHorizontal: SPACING.lg,
     paddingBottom: 200,
+  },
+  // ✅ noShow 전용 스타일
+  noShowContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  noShowText: {
+    textAlign: 'center',
   },
   header: {
     marginBottom: SPACING.xl,
