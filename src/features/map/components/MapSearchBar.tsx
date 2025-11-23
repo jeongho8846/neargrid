@@ -74,6 +74,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   clearButton: {
-    padding: SPACING.xs,
+    alignContent: 'center',
+    justifyContent: 'center',
   },
 });

@@ -3,7 +3,7 @@ import React, { useRef } from 'react';
 import { View, StyleSheet } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import { COLORS } from '@/common/styles/colors';
-import { calcMapSearchRadius } from '@/utils/mapUtils'; // ✅ 추가
+import { calcMapSearchRadius } from '@/utils/mapUtils';
 import MapViewContainer, {
   MapViewContainerRef,
 } from '@/features/map/components/MapViewContainer';
@@ -48,6 +48,29 @@ const MapScreen = () => {
     searchSheetRef.current?.open();
   };
 
+  // ✅ X 버튼 클릭 시 keyword만 초기화하고 다시 검색
+  const handleClearKeywordAndSearch = () => {
+    const defaultParams = {
+      keyword: '',
+      threadTypes: [
+        'GENERAL_THREAD',
+        'MOMENT_THREAD',
+        'PLAN_TO_VISIT_THREAD',
+        'ROUTE_THREAD',
+      ],
+      recentTimeMinute: 60 * 24 * 365 * 999,
+      remainTimeMinute: 60 * 24 * 365,
+      includePastRemainTime: false,
+    };
+
+    setSearchParams(defaultParams);
+
+    if (region) {
+      const radius = calcMapSearchRadius(region);
+      loadThreads(defaultParams, region.latitude, region.longitude, radius);
+    }
+  };
+
   const handleSearch = (params: {
     keyword: string;
     threadTypes: string[];
@@ -64,7 +87,6 @@ const MapScreen = () => {
     });
 
     if (region) {
-      // ✅ region 기반으로 radius 동적 계산
       const radius = calcMapSearchRadius(region);
       console.log('🔍 [MapScreen] 검색 radius:', radius);
 
@@ -78,7 +100,7 @@ const MapScreen = () => {
         },
         region.latitude,
         region.longitude,
-        radius, // ✅ 동적으로 계산된 거리 전달
+        radius,
       );
     }
   };
@@ -103,6 +125,7 @@ const MapScreen = () => {
           <MapSearchBar
             keyword={searchParams.keyword}
             onPress={handleSearchPress}
+            onClearKeyword={handleClearKeywordAndSearch}
           />
         </View>
       </View>
