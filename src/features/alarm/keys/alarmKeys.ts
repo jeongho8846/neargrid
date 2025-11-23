@@ -1,6 +1,7 @@
-export const alarmKeys = {
-  all: ['alarm'] as const,
-  lists: () => [...alarmKeys.all, 'list'] as const,
-  list: (memberId?: string) => [...alarmKeys.lists(), memberId] as const,
-  pin: (pinId?: string) => [...alarmKeys.all, 'pin', pinId] as const,
+/**
+ * 🗝️ Alarm 관련 React Query 키 정의
+ */
+export const ALARM_KEYS = {
+  all: ['alarms'] as const,
+  list: (memberId: string) => [...ALARM_KEYS.all, 'list', memberId] as const,
 };

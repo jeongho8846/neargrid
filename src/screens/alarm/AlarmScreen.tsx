@@ -20,16 +20,16 @@ import type { AlarmModel } from '@/features/alarm/model/AlarmModel';
 
 export default function AlarmScreen() {
   const { member } = useCurrentMember();
-  const { data } = useFetchMemberAlarms(member?.id);
+  const { data, isLoading } = useFetchMemberAlarms(member?.id); // ✅ React Query 사용
   const { markAllAsRead, loading } = useViewAllAlarms();
   const navigation = useNavigation<any>();
 
   // ✅ Reanimated 기반 헤더 제어
   const { headerStyle, scrollHandler } = useHeaderScroll(56);
 
-  const handleAllRead = async () => {
+  const handleAllRead = () => {
     if (!member?.id || loading) return;
-    await markAllAsRead(member.id);
+    markAllAsRead(member.id); // ✅ 캐시 자동 업데이트
   };
 
   const handleAlarmPress = useCallback(
@@ -60,7 +60,6 @@ export default function AlarmScreen() {
           break;
         }
         case 'CHILD_COMMENT_THREAD': {
-          // ✅ 대댓글인 경우 DetailThreadComment로 이동
           const commentThreadId = alarm.parentTargetId;
           const threadId = alarm.parentParentTargetId;
 
@@ -120,7 +119,6 @@ export default function AlarmScreen() {
 
   return (
     <View style={styles.root}>
-      {/* ✅ Toss-style 헤더 (Reanimated 연결) */}
       <AppCollapsibleHeader
         titleKey="STR_ALARM"
         animatedStyle={headerStyle}
@@ -133,7 +131,6 @@ export default function AlarmScreen() {
         }
       />
 
-      {/* ✅ 알람 리스트 */}
       <View style={styles.listContainer}>
         <AlarmList
           data={data ?? []}
@@ -146,7 +143,6 @@ export default function AlarmScreen() {
   );
 }
 
-/* ──────────────── 스타일 ──────────────── */
 const styles = StyleSheet.create({
   root: {
     flex: 1,
