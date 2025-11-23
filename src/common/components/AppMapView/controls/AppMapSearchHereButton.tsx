@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: SPACING.xl * 2,
     alignSelf: 'center',
-    backgroundColor: COLORS.sheet_backdrop,
+    backgroundColor: COLORS.sheet_background,
     borderRadius: 24,
     paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,

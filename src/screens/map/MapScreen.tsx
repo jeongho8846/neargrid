@@ -22,9 +22,7 @@ import AppMapZoomControls from '@/common/components/AppMapView/controls/AppMapZo
 import AppMapCurrentLocationButton from '@/common/components/AppMapView/controls/AppMapCurrentLocationButton';
 import AppIcon from '@/common/components/AppIcon';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
-import { TEST_COLORS } from '@/test/styles/colors';
-import { TEST_PRESETS } from '@/test/styles/presets';
-import { TEST_SPACING } from '@/test/styles/spacing';
+
 import { usePermission } from '@/common/hooks/usePermission';
 import PermissionDialog from '@/common/components/PermissionDialog';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
@@ -215,10 +213,10 @@ const MapScreen = () => {
           <View style={styles.handleContainer}>
             <View style={styles.handleIndicator} />
             <View style={styles.controlsRow}>
-              <AppMapZoomControls
+              {/* <AppMapZoomControls
                 onZoomIn={() => mapRef.current?.zoomIn()}
                 onZoomOut={() => mapRef.current?.zoomOut()}
-              />
+              /> */}
               <AppMapCurrentLocationButton
                 onPress={() => mapRef.current?.moveToCurrent()}
               />
@@ -248,7 +246,7 @@ const MapScreen = () => {
         onConfirm={locationPermission.handleConfirm}
         onClose={locationPermission.handleClose}
       />
-      <BottomBlurGradient height={120}></BottomBlurGradient>
+      {isOpen && <BottomBlurGradient height={120}></BottomBlurGradient>}
     </View>
   );
 };
@@ -261,8 +259,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 10,
     left: SPACING.xs,
-    zIndex: 20,
-    backgroundColor: COLORS.sheet_backdrop,
+
+    backgroundColor: COLORS.sheet_background,
     padding: 8,
     borderRadius: 10,
   },
@@ -272,7 +270,7 @@ const styles = StyleSheet.create({
     left: 50,
     right: SPACING.sm,
     height: 42,
-    backgroundColor: COLORS.sheet_backdrop,
+    backgroundColor: COLORS.sheet_background,
     borderRadius: 12,
     flexDirection: 'row',
     alignItems: 'center',
@@ -292,15 +290,20 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   showListButton: {
-    ...TEST_PRESETS.buttonBase,
-    backgroundColor: TEST_COLORS.primary,
+    backgroundColor: COLORS.button_active,
+
     position: 'absolute',
-    bottom: 140,
+    bottom: 120,
     alignSelf: 'center',
     borderRadius: 24,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   sheetBackground: {
-    backgroundColor: COLORS.background,
+    backgroundColor: COLORS.sheet_background,
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
   },

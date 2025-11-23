@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: SPACING.md,
     bottom: SPACING.xl,
-    backgroundColor: COLORS.button_surface,
+    backgroundColor: COLORS.sheet_background,
     borderRadius: 24,
     width: 48,
     height: 48,
