@@ -35,10 +35,10 @@ const MemberProfileHeader: React.FC<Props> = ({
   const profileImage = profile?.profileImageUrl;
   const { openPrivateChat } = useOpenPrivateChatRoom();
 
-  console.log(
-    '프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필',
-    profile,
-  );
+  // console.log(
+  //   '프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필',
+  //   profile,
+  // );
   return (
     <View style={styles.container}>
       {/* 🔹 Top - Cover */}

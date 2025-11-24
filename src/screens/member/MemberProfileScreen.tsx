@@ -72,7 +72,16 @@ export default function MemberProfileScreen({ route }) {
         console.log('📦 [ProfileScreen] FootPrint Response:', res);
 
         const filtered = res.filter((t: any) => t.depth === 0);
-        setThreads(filtered);
+
+        // ✅ 최신순 정렬
+        const sorted = filtered.sort((a: any, b: any) => {
+          return (
+            new Date(b.createDatetime).getTime() -
+            new Date(a.createDatetime).getTime()
+          );
+        });
+
+        setThreads(sorted);
       } catch (err: any) {
         console.error('❌ FootPrint 로드 실패:', err.message);
         console.error(
