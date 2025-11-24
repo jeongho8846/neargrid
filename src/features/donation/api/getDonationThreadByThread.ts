@@ -53,7 +53,7 @@ export const getDonationThreadByThread = async ({
         donorNickname: dto.donorMemberResponseSimpleDto?.nickName ?? '',
         donorProfileImageUrl:
           dto.donorMemberResponseSimpleDto?.profileImageUrl ?? '',
-        amount: dto.netPoint ?? 0,
+        amount: dto.totalPoint ?? 0,
         message: dto.message ?? '', // ✅ 메시지 추가
         createdAt: dto.createDateTime,
       })) ?? [];
