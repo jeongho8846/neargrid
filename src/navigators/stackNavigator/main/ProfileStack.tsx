@@ -8,6 +8,7 @@ import PaymentHistoryScreen from '@/screens/payment/PaymentHistoryScreen';
 import ChatListScreen from '@/screens/chat/ChatListScreen';
 import ChatRoomScreen from '@/screens/chat/ChatRoomScreen';
 import ChatRoomMenuScreen from '@/screens/chat/ChatRoomMenuScreen';
+import LanguageSettingScreen from '@/screens/profile/LanguageSettingScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -24,6 +25,7 @@ const ProfileStack = ({ route }) => {
         component={MemberProfileScreen}
         initialParams={{ memberId }}
       />
+      <Stack.Screen name="LanguageSetting" component={LanguageSettingScreen} />
       <Stack.Screen name="ProfileEdit" component={ProfileEditScreen} />
       <Stack.Screen name="DetailThread" component={DetailThreadScreen} />
       <Stack.Screen

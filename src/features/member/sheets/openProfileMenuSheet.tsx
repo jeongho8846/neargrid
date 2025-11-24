@@ -90,7 +90,10 @@ const ProfileMenuContent: React.FC<Props> = ({
         {
           icon: 'language-outline',
           labelKey: 'STR_LANGUAGE_SETTING',
-          onPress: () => {},
+          onPress: () => {
+            close(); // ✅ 바텀시트 닫기
+            navigation.navigate('LanguageSetting' as never); // ✅ 언어 설정 화면으로 이동
+          },
         },
         {
           icon: 'lock-closed-outline',

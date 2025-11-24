@@ -19,6 +19,9 @@ import RootNavigator from '@/navigators/RootNavigator';
 import messaging from '@react-native-firebase/messaging';
 import { initFCM } from '@/services/notification/fcmService';
 import { startWatchingLocation, stopWatchingLocation } from '@/services/device';
+
+import * as RNLocalize from 'react-native-localize';
+import i18n from '@/i18n';
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
   ...DefaultTheme,
@@ -42,6 +45,21 @@ const App = () => {
       StatusBar.setBackgroundColor('transparent');
       StatusBar.setBarStyle('light-content');
     }
+  }, []);
+  /* 🌍 기기 언어 설정 확인 로그 */
+  useEffect(() => {
+    const locales = RNLocalize.getLocales();
+    const deviceLanguage = locales[0];
+
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('🌍 [언어 정보] 기기 언어 설정');
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+    console.log('📱 기기 언어 코드:', deviceLanguage.languageCode);
+    console.log('🌏 국가 코드:', deviceLanguage.countryCode);
+    console.log('🔤 전체 로케일:', deviceLanguage.languageTag);
+    console.log('📋 모든 언어 설정:', JSON.stringify(locales, null, 2));
+    console.log('🎯 현재 앱 언어:', i18n.language);
+    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
   }, []);
 
   /* 🌍 전역 위치 감시 시작 */
