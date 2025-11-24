@@ -152,10 +152,7 @@ export default function ContentsCreateScreen() {
       >
         {/* 🧩 프로필 영역 */}
         <View style={styles.profileRow}>
-          <AppProfileImage
-            size={40}
-            source={{ uri: member?.profileImageUrl }}
-          />
+          <AppProfileImage size={40} imageUrl={member?.profileImageUrl} />
           <AppText variant="username" style={styles.nickname}>
             {member?.nickname ?? 'Guest'}
           </AppText>
