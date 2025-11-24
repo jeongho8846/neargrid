@@ -43,27 +43,47 @@ export default function ContentsCreateScreen() {
   const handleSubmit = async () => {
     console.log('📤 게시 버튼 클릭');
 
+    // ✅ 유효성 검사
     if (!caption.trim() && media.length === 0) {
       console.log('⚠️ 내용과 사진이 모두 비어있습니다.');
+      // TODO: 토스트 메시지 표시
       return;
     }
-    if (!latitude || !longitude)
-      return console.warn('🚫 위치 정보가 없습니다.');
 
-    handleThreadSubmit({
-      currentMember: member,
-      description: caption,
-      threadType: 'GENERAL_THREAD',
-      bounty_point: '0',
-      remain_in_minute: '0',
-      region: null,
-      images: media,
-      navigation,
-      latitude,
-      longitude,
-      altitude,
-    });
+    if (!latitude || !longitude) {
+      console.warn('🚫 위치 정보가 없습니다.');
+      // TODO: 위치 권한 요청 또는 토스트 메시지
+      return;
+    }
+
+    try {
+      console.log('🔄 게시 중...');
+
+      await handleThreadSubmit({
+        currentMember: member,
+        description: caption,
+        threadType: 'GENERAL_THREAD',
+        bounty_point: '0',
+        remain_in_minute: '0',
+        region: null,
+        images: media,
+        navigation,
+        latitude,
+        longitude,
+        altitude,
+      });
+
+      console.log('✅ 게시 성공 - 이전 화면으로 이동');
+
+      // ✅ 성공 시 이전 화면으로 돌아가기
+      navigation.goBack();
+    } catch (error) {
+      console.error('❌ 게시 실패:', error);
+      // TODO: 에러 토스트 메시지 표시
+      // showToast({ message: '게시에 실패했습니다.', type: 'error' });
+    }
   };
+  const inputRef = useRef<TextInput>(null);
   useFocusEffect(
     useCallback(() => {
       // ✅ 화면 진입할 때 초기화
@@ -90,6 +110,17 @@ export default function ContentsCreateScreen() {
     if (!uri) return;
     setMedia(prev => prev.filter(m => m.uri !== uri));
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      // ... 초기화 코드 ...
+
+      // ✅ 화면이 열리면 자동으로 TextInput 포커스 (키보드 올라옴)
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 300);
+    }, []),
+  );
 
   return (
     <View style={styles.root}>
@@ -165,6 +196,7 @@ export default function ContentsCreateScreen() {
 
         {/* 🧩 텍스트 입력 */}
         <AppInput
+          ref={inputRef}
           placeholderKey="STR_CONTENTS_CREATE_CAPTION_PLACEHOLDER"
           multiline
           value={caption}
@@ -212,7 +244,7 @@ const styles = StyleSheet.create({
   nickname: { marginLeft: SPACING.sm },
   mediaRow: {
     flexDirection: 'row',
-    gap: SPACING.lg,
+    gap: SPACING.md,
     marginBottom: SPACING.md,
     paddingHorizontal: SPACING.md,
   },

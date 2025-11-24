@@ -20,7 +20,7 @@ export function useThreadQuery(threadId: string) {
       );
 
       if (cached) {
-        console.log('📦 [CacheRead] 캐시에서 읽은 Thread:', threadId, cached);
+        // console.log('📦 [CacheRead] 캐시에서 읽은 Thread:', threadId, cached);
         return cached;
       }
 

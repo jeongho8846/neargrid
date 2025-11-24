@@ -7,14 +7,17 @@ import Animated, {
 } from 'react-native-reanimated';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
+import {
+  getFocusedRouteNameFromRoute,
+  useNavigation,
+} from '@react-navigation/native'; // ✅ useNavigation 추가
 
 import { FONT } from '@/common/styles/typography';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_SPACING } from '@/test/styles/spacing';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { useTouchStore } from '@/common/state/touchStore';
-import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가 (FeedScreen 등에서 제어)
+import { useTabBarStore } from '@/common/state/tabBarStore';
 import { COLORS } from '@/common/styles';
 
 const TABBAR_HEIGHT = 80;
@@ -27,7 +30,8 @@ const CustomTabBar = ({
   const insets = useSafeAreaInsets();
   const { isOpen } = useBottomSheetStore();
   const { isTouching } = useTouchStore();
-  const { visible } = useTabBarStore(); // ✅ Zustand 상태 구독
+  const { visible } = useTabBarStore();
+  const rootNavigation = useNavigation(); // ✅ Root Navigator 접근
 
   const hiddenRoutes = [
     'DetailThread',
@@ -41,18 +45,15 @@ const CustomTabBar = ({
     'DemoSearch',
   ];
 
-  /** ✅ 현재 활성화된 화면 */
   const activeRoute = state.routes[state.index];
   const nestedRouteName =
     getFocusedRouteNameFromRoute(activeRoute) ||
     activeRoute?.state?.routes?.[activeRoute?.state?.index || 0]?.name ||
     activeRoute.name;
 
-  /** ✅ 완전히 숨겨야 하는 상황 (예: Detail 화면, BottomSheet 열림 등) */
   const shouldHideCompletely =
     hiddenRoutes.includes(nestedRouteName) || isOpen || isTouching;
 
-  // ✅ 스르륵 애니메이션 스타일 (visible이 false면 아래로 이동)
   const animatedStyle = useAnimatedStyle(() => {
     const translateY = withSpring(visible ? 0 : TABBAR_HEIGHT + insets.bottom, {
       damping: 150,
@@ -91,6 +92,14 @@ const CustomTabBar = ({
             });
 
           const onPress = () => {
+            // ✅ Add 탭이면 Modal 열기
+            if (route.name === 'Add') {
+              console.log('➕ [CustomTabBar] Add 버튼 클릭 - Modal 열기');
+              rootNavigation.navigate('ContentsCreate' as never);
+              return;
+            }
+
+            // ✅ 일반 탭 이동
             const event = navigation.emit({
               type: 'tabPress',
               target: route.key,
@@ -140,7 +149,6 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: COLORS.input_background,
-    // backgroundColor: 'rgba(24, 24, 24, 0.93)',
     borderRadius: 42,
     paddingHorizontal: 28,
     paddingVertical: 5,

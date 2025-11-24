@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack'; // ✅ 추가
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MapStack from './stackNavigator/main/MapStack';
 import FeedStack from './stackNavigator/main/FeedStack';
@@ -11,17 +12,16 @@ import { useLocationWatcher } from '@/features/location/hooks/useLocationWatcher
 import CreateStack from './stackNavigator/main/CreateStack';
 import ChatStack from './stackNavigator/main/ChatStack';
 import AlarmStack from './stackNavigator/main/AlarmStack';
+import ContentsCreateScreen from '@/screens/contents/ContentsCreateScreen'; // ✅ 추가
 import { useTranslation } from 'react-i18next';
 
 const Tab = createBottomTabNavigator();
+const RootStack = createNativeStackNavigator(); // ✅ Main용 Stack Navigator
 
-const MainTabNavigator = () => {
+// ✅ Tab Navigator 분리
+const TabNavigator = () => {
   const { member } = useCurrentMember();
-  const { t } = useTranslation(); // ✅ 번역 훅
-
-  React.useEffect(() => {
-    console.log('🧭 [MainTabNavigator] member 변경됨:', member);
-  }, [member]);
+  const { t } = useTranslation();
 
   return (
     <Tab.Navigator
@@ -59,37 +59,61 @@ const MainTabNavigator = () => {
       <Tab.Screen
         name="Map"
         component={MapStack}
-        options={{ tabBarLabel: t('STR_MAP') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_MAP') }}
       />
       <Tab.Screen
         name="FeedStack"
         component={FeedStack}
-        options={{ tabBarLabel: t('STR_FEED') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_FEED') }}
       />
       <Tab.Screen
         name="Add"
         component={CreateStack}
-        options={{ tabBarLabel: t('STR_CONTENTS_CREATE_TITLE') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_CONTENTS_CREATE_TITLE') }}
       />
       <Tab.Screen
         name="Chat"
         component={ChatStack}
-        options={{ tabBarLabel: t('STR_CHAT') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_CHAT') }}
       />
-
       <Tab.Screen
         name="Alarm"
         component={AlarmStack}
-        options={{ tabBarLabel: t('STR_ALARM') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_ALARM') }}
       />
-
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
         initialParams={{ memberId: member?.id }}
-        options={{ tabBarLabel: t('STR_PROFILE') }} // ✅ 번역
+        options={{ tabBarLabel: t('STR_PROFILE') }}
       />
     </Tab.Navigator>
+  );
+};
+
+// ✅ Main Navigator (Tabs + Modal)
+const MainTabNavigator = () => {
+  const { member } = useCurrentMember();
+
+  React.useEffect(() => {
+    console.log('🧭 [MainTabNavigator] member 변경됨:', member);
+  }, [member]);
+
+  return (
+    <RootStack.Navigator screenOptions={{ headerShown: false }}>
+      {/* ✅ 기본 Tabs */}
+      <RootStack.Screen name="Tabs" component={TabNavigator} />
+
+      {/* ✅ Modal Screen */}
+      <RootStack.Screen
+        name="ContentsCreate"
+        component={ContentsCreateScreen}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
+      />
+    </RootStack.Navigator>
   );
 };
 

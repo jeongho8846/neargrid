@@ -1,6 +1,13 @@
-import { useMutation } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { apiContents } from '@/services/apiService';
 import type { Asset } from 'react-native-image-picker';
+import { THREAD_KEYS } from '../keys/threadKeys';
+import type { Thread } from '../model/ThreadModel';
+import type { FetchFeedThreadsResult } from './useFetchFeedThreads';
 
 type CreateThreadParams = {
   currentMember: any;
@@ -16,7 +23,63 @@ type CreateThreadParams = {
   navigation: any;
 };
 
+/**
+ * 🎭 임시 Thread 객체 생성
+ * Optimistic Update를 위해 서버 응답 전에 사용
+ */
+function createOptimisticThread(
+  params: CreateThreadParams,
+  tempId: string,
+): Thread {
+  const now = new Date().toISOString();
+
+  return {
+    threadId: tempId,
+    threadType: params.threadType,
+    description: params.description,
+    contentImageUrls: params.images.map(img => img.uri || ''),
+    videoUrls: [],
+
+    memberId: params.currentMember.id,
+    memberNickName: params.currentMember.nickName || '',
+    memberProfileImageUrl: params.currentMember.profileImageUrl || '',
+
+    createDatetime: now,
+    updateDatetime: now,
+    distanceFromCurrentMember: 0,
+
+    popularityScore: 0,
+    popularityScoreRecent: 0,
+
+    latitude: params.latitude,
+    longitude: params.longitude,
+
+    reactedByCurrentMember: false,
+    reactionCount: 0,
+    commentThreadCount: 0,
+
+    available: true,
+    private: false,
+    hiddenDueToReport: false,
+
+    markerImageUrl: '',
+
+    bountyPoint: params.bounty_point ? Number(params.bounty_point) : null,
+    expireDateTime: null,
+    remainDateTime: null,
+
+    childThreadCount: 0,
+    childThreadDirectCount: 0,
+    childThreadWritableByOthers: false,
+
+    donationPointReceivedCount: 0,
+    depth: 0,
+  };
+}
+
 export function useCreateThread() {
+  const queryClient = useQueryClient();
+
   const mutation = useMutation({
     mutationFn: async (params: CreateThreadParams) => {
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -127,14 +190,164 @@ export function useCreateThread() {
         throw error;
       }
     },
-    onSuccess: data => {
-      console.log('✅ [useMutation] onSuccess 호출됨');
-      console.log('✅ Success Data:', data);
+
+    // 🚀 Optimistic Update: 즉시 캐시에 추가
+    onMutate: async params => {
+      console.log('🎭 [onMutate] Optimistic Update 시작');
+
+      // 임시 ID 생성
+      const tempId = `temp_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      console.log('🆔 [onMutate] 임시 ID 생성:', tempId);
+
+      // 임시 Thread 객체 생성
+      const optimisticThread = createOptimisticThread(params, tempId);
+
+      // 진행 중인 쿼리 취소
+      await queryClient.cancelQueries({ queryKey: THREAD_KEYS.list() });
+
+      // 이전 데이터 스냅샷 (롤백용)
+      const previousData = queryClient.getQueryData<
+        InfiniteData<FetchFeedThreadsResult>
+      >(THREAD_KEYS.list());
+
+      console.log('💾 [onMutate] 이전 데이터 스냅샷 저장 완료');
+
+      // 피드 리스트 캐시에 임시 Thread 추가 (맨 앞에)
+      queryClient.setQueryData<InfiniteData<FetchFeedThreadsResult>>(
+        THREAD_KEYS.list(),
+        old => {
+          if (!old) {
+            console.log('📝 [onMutate] 캐시 없음 - 새로 생성');
+            return {
+              pages: [
+                {
+                  threads: [optimisticThread],
+                  threadIds: [tempId],
+                  nextCursorMark: null,
+                },
+              ],
+              pageParams: [''],
+            };
+          }
+
+          const newPages = [...old.pages];
+          if (newPages.length > 0) {
+            newPages[0] = {
+              ...newPages[0],
+              threads: [optimisticThread, ...newPages[0].threads],
+              threadIds: [tempId, ...newPages[0].threadIds],
+            };
+          }
+
+          console.log('✅ [onMutate] 첫 페이지 맨 앞에 임시 Thread 추가');
+
+          return {
+            ...old,
+            pages: newPages,
+          };
+        },
+      );
+
+      // 개별 Thread 캐시에도 추가
+      queryClient.setQueryData(THREAD_KEYS.detail(tempId), optimisticThread);
+
+      console.log(
+        '✅ [onMutate] Optimistic Update 완료 - 피드에 즉시 표시됨!\n',
+      );
+
+      // 롤백용 데이터와 tempId 반환
+      return { previousData, tempId };
     },
-    onError: (error: any) => {
-      console.log('❌ [useMutation] onError 호출됨');
-      console.log('❌ Error:', error);
+
+    // ✅ 성공: 임시 ID → 실제 ID 교체
+    onSuccess: (data, params, context) => {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🎉 [onSuccess] 서버 응답 성공 - ID 교체 시작');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      if (!context?.tempId) {
+        console.warn('⚠️ [onSuccess] tempId 없음 - 교체 스킵');
+        return;
+      }
+
+      const tempId = context.tempId;
+      const realThreadId = data.threadId;
+
+      console.log('🔄 [onSuccess] ID 교체:', {
+        임시ID: tempId,
+        실제ID: realThreadId,
+      });
+
+      // 1. 피드 리스트에서 임시ID → 실제ID 교체
+      queryClient.setQueryData<InfiniteData<FetchFeedThreadsResult>>(
+        THREAD_KEYS.list(),
+        old => {
+          if (!old) return old;
+
+          const newPages = old.pages.map(page => ({
+            ...page,
+            threadIds: page.threadIds.map(id =>
+              id === tempId ? realThreadId : id,
+            ),
+            threads: page.threads.map(thread =>
+              thread.threadId === tempId
+                ? { ...thread, threadId: realThreadId }
+                : thread,
+            ),
+          }));
+
+          return {
+            ...old,
+            pages: newPages,
+          };
+        },
+      );
+
+      console.log('✅ [onSuccess] 피드 리스트 ID 교체 완료');
+
+      // 2. 임시 Thread 캐시 삭제
+      queryClient.removeQueries({ queryKey: THREAD_KEYS.detail(tempId) });
+      console.log('🗑️ [onSuccess] 임시 Thread 캐시 삭제');
+
+      // 3. 실제 Thread 캐시 추가 (서버 전체 데이터)
+      queryClient.setQueryData(THREAD_KEYS.detail(realThreadId), data);
+      console.log('💾 [onSuccess] 실제 Thread 캐시 저장');
+
+      console.log('✅ [onSuccess] ID 교체 완료!');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
     },
+
+    // ❌ 실패: 롤백
+    onError: (error: any, params, context) => {
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('❌ [onError] 실패 - 롤백 시작');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🔴 Error:', error);
+
+      if (context?.previousData) {
+        queryClient.setQueryData(THREAD_KEYS.list(), context.previousData);
+        console.log('↩️ [onError] 이전 상태로 롤백 완료');
+      }
+
+      if (context?.tempId) {
+        queryClient.removeQueries({
+          queryKey: THREAD_KEYS.detail(context.tempId),
+        });
+        console.log('🗑️ [onError] 임시 Thread 캐시 삭제');
+      }
+
+      console.log('✅ [onError] 롤백 완료');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    },
+
+    // 🔄 완료: 쿼리 무효화 (선택사항)
+    // onSettled: () => {
+    //   console.log('🔄 [onSettled] 쿼리 무효화 시작');
+    //   queryClient.invalidateQueries({ queryKey: THREAD_KEYS.list() });
+    //   console.log('✅ [onSettled] 쿼리 무효화 완료\n');
+    // },
   });
 
   const handleThreadSubmit = async (params: CreateThreadParams) => {
