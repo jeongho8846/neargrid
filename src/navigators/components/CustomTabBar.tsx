@@ -43,6 +43,8 @@ const CustomTabBar = ({
     'DemoAlarm',
     'DemoProfile',
     'DemoSearch',
+    'ChatRoomScreen',
+    'ChatRoomMenuScreen',
   ];
 
   const activeRoute = state.routes[state.index];

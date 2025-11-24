@@ -36,7 +36,10 @@ const AppCollapsibleHeader: React.FC<Props> = ({
 
   // ✅ 루트 스크린에서는 화살표 숨김
   const hideBackButton =
-    route.name === 'Feed' || route.name === 'Map' || route.name === 'Profile';
+    route.name === 'Feed' ||
+    route.name === 'Alarm' ||
+    route.name === 'Map' ||
+    route.name === 'Profile';
   const showBackButton = !hideBackButton && canGoBack;
 
   return (
