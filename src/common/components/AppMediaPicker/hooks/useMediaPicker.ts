@@ -20,7 +20,7 @@ export function useMediaPicker() {
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 0.9,
-      selectionLimit: 0, // ✅ 여러 장 선택 가능
+      selectionLimit: 6, // ✅ 여러 장 선택 가능
     });
     if (result.assets) setMedia(prev => [...prev, ...result.assets]);
   };
