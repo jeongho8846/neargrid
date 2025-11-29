@@ -1,20 +1,32 @@
 // src/services/notification/fcmService.ts
-import messaging from '@react-native-firebase/messaging';
+import messaging, {
+  FirebaseMessagingTypes,
+} from '@react-native-firebase/messaging';
 import { registerFcmToken } from './fcmTokenApi';
 import { AppState } from 'react-native';
 
 let cachedToken: string | null = null;
 
+/**
+ * cachedToken 초기화
+ */
 export function resetCachedFcmToken() {
   cachedToken = null;
   console.log('🗑️ [FCM] cachedToken 초기화 완료');
 }
 
-export async function initFCM(currentMemberId?: string) {
+/**
+ * FCM 초기화
+ * @param currentMemberId 로그인된 회원 ID (optional)
+ * @returns 포그라운드 메시지 구독 해제 함수
+ */
+export async function initFCM(
+  currentMemberId?: string
+): Promise<(() => void) | undefined> {
   console.log('🔥 initFCM 실행');
 
   try {
-    // 권한 요청
+    // 1️⃣ 권한 요청
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -25,55 +37,71 @@ export async function initFCM(currentMemberId?: string) {
       return;
     }
 
-    // 토큰 발급
+    // 2️⃣ 토큰 발급
     const token = await messaging().getToken();
     cachedToken = token;
     console.log('📡 [FCM] Token:', token);
 
-    // 로그인 된 상태면 서버로 전송
     if (token && currentMemberId) {
-      await registerFcmToken(currentMemberId, token);
+      await registerFcmToken(currentMemberId, token).catch(console.error);
     }
 
-    // 토큰 갱신
-    messaging().onTokenRefresh(async newToken => {
+    // 3️⃣ 토큰 갱신 처리
+    messaging().onTokenRefresh(newToken => {
       cachedToken = newToken;
       console.log('🔄 [FCM] Token 갱신:', newToken);
+
       if (currentMemberId) {
-        await registerFcmToken(currentMemberId, newToken);
+        registerFcmToken(currentMemberId, newToken).catch(console.error);
       }
     });
 
-    // 백그라운드 메시지
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('📩 [백그라운드 메시지]:', remoteMessage);
-    });
+    // 4️⃣ 백그라운드 메시지 처리 (iOS/Android 공통)
+    messaging().setBackgroundMessageHandler(
+      async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+        console.log('📩 [백그라운드 메시지]:', remoteMessage);
+      }
+    );
 
-    // 포그라운드 메시지
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('💬 [포그라운드 메시지]:', remoteMessage);
-    });
+    // 5️⃣ 포그라운드 메시지 처리
+    const unsubscribeOnMessage = messaging().onMessage(
+      async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+        console.log('💬 [포그라운드 메시지]:', remoteMessage);
+      }
+    );
 
-    // 포그라운드 복귀 시 토큰 체크
-    AppState.addEventListener('change', async state => {
+    // 6️⃣ 앱 활성화 시 토큰 갱신 체크
+    AppState.addEventListener('change', state => {
       if (state === 'active') {
-        const refreshed = await messaging().getToken();
-        if (refreshed && refreshed !== cachedToken) {
-          cachedToken = refreshed;
-          console.log('🔁 [FCM] 토큰 갱신 감지:', refreshed);
-          if (currentMemberId) {
-            await registerFcmToken(currentMemberId, refreshed);
+        (async () => {
+          try {
+            const refreshed = await messaging().getToken();
+            if (refreshed && refreshed !== cachedToken) {
+              cachedToken = refreshed;
+              console.log('🔁 [FCM] 토큰 갱신 감지:', refreshed);
+
+              if (currentMemberId) {
+                await registerFcmToken(currentMemberId, refreshed).catch(
+                  console.error
+                );
+              }
+            }
+          } catch (err) {
+            console.error('❌ [FCM] AppState 토큰 갱신 실패:', err);
           }
-        }
+        })();
       }
     });
 
-    return unsubscribe;
+    return unsubscribeOnMessage;
   } catch (err) {
     console.error('❌ [FCM] 초기화 실패:', err);
   }
 }
 
-export function getCachedFcmToken() {
+/**
+ * 현재 캐시된 FCM 토큰 반환
+ */
+export function getCachedFcmToken(): string | null {
   return cachedToken;
 }

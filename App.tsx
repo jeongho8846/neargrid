@@ -1,6 +1,6 @@
 // 📄 App.tsx
 import React, { useEffect } from 'react';
-import { StyleSheet, StatusBar, Platform, Keyboard } from 'react-native';
+import { StyleSheet, StatusBar, Platform, Keyboard, AppState } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
@@ -9,19 +9,20 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import changeNavigationBarColor from 'react-native-navigation-bar-color';
 
 import GlobalBottomSheet from '@/common/components/GlobalBottomSheet';
-import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
 import { COLORS } from '@/common/styles/colors';
 import { useKeyboardStore } from '@/common/state/keyboardStore';
 import { queryClient } from '@/services/reactQuery/reactQueryClient';
 import '@/i18n';
 import { AppToastContainer } from '@/common/components/AppToast/AppToastManager';
 import RootNavigator from '@/navigators/RootNavigator';
-import messaging from '@react-native-firebase/messaging';
 import { initFCM } from '@/services/notification/fcmService';
 import { startWatchingLocation, stopWatchingLocation } from '@/services/device';
-
 import * as RNLocalize from 'react-native-localize';
 import i18n from '@/i18n';
+
+// 📌 개발용 로그
+const DEV_LOG = (...args: any[]) => __DEV__ && console.log(...args);
+
 /* 🎨 네비게이션 테마 */
 const MyTheme = {
   ...DefaultTheme,
@@ -37,7 +38,7 @@ const MyTheme = {
 };
 
 const App = () => {
-  /* 🧩 시스템바 및 FCM 초기화 */
+  // 🧩 시스템바 설정 (Android)
   useEffect(() => {
     if (Platform.OS === 'android') {
       changeNavigationBarColor('transparent', false);
@@ -46,93 +47,69 @@ const App = () => {
       StatusBar.setBarStyle('light-content');
     }
   }, []);
-  /* 🌍 기기 언어 설정 확인 로그 */
+
+  // 🌍 기기 언어 확인 로그
   useEffect(() => {
     const locales = RNLocalize.getLocales();
     const deviceLanguage = locales[0];
-
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('🌍 [언어 정보] 기기 언어 설정');
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('📱 기기 언어 코드:', deviceLanguage.languageCode);
-    console.log('🌏 국가 코드:', deviceLanguage.countryCode);
-    console.log('🔤 전체 로케일:', deviceLanguage.languageTag);
-    console.log('📋 모든 언어 설정:', JSON.stringify(locales, null, 2));
-    console.log('🎯 현재 앱 언어:', i18n.language);
-    console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+    DEV_LOG('🌍 [언어 정보]', {
+      languageCode: deviceLanguage.languageCode,
+      countryCode: deviceLanguage.countryCode,
+      languageTag: deviceLanguage.languageTag,
+      allLocales: locales,
+      currentAppLang: i18n.language,
+    });
   }, []);
 
-  /* 🌍 전역 위치 감시 시작 */
+  // 🌍 위치 감시
   useEffect(() => {
+    let watching = false;
     const initLocation = async () => {
-      console.log('🌍 [App] 위치 권한 확인');
-
-      // ✅ 권한 체크만 (요청 안 함)
-      const { checkPermission } = await import(
-        '@/services/device/permissionService'
-      );
+      const { checkPermission } = await import('@/services/device/permissionService');
       const status = await checkPermission('location');
-
       if (status === 'granted') {
-        console.log('✅ [App] 위치 권한 이미 승인됨 - 감시 시작');
+        watching = true;
         startWatchingLocation();
-      } else {
-        console.log(
-          '⏸️ [App] 위치 권한 없음 - 감시 시작 안 함 (MapScreen에서 요청)',
-        );
+        DEV_LOG('✅ [App] 위치 감시 시작');
       }
     };
-
     initLocation();
 
     return () => {
-      console.log('🛑 [App] 위치 감시 중단');
-      stopWatchingLocation();
+      if (watching) {
+        stopWatchingLocation();
+        DEV_LOG('🛑 [App] 위치 감시 중단');
+      }
     };
   }, []);
 
+  // 🔔 FCM 초기화 (로그인 전 토큰만)
   useEffect(() => {
-    initFCM(); // 로그인 전 → 토큰만 생성해서 cachedToken 저장
+    initFCM();
   }, []);
 
-  /* ⌨️ 전역 키보드 상태 감지 */
+  // ⌨️ 전역 키보드 이벤트
   useEffect(() => {
     const { setKeyboard } = useKeyboardStore.getState();
-
-    const showSub = Keyboard.addListener('keyboardDidShow', e => {
-      setKeyboard(true, e.endCoordinates.height);
-    });
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboard(false, 0);
-    });
-
+    const showSub = Keyboard.addListener('keyboardDidShow', e => setKeyboard(true, e.endCoordinates.height));
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setKeyboard(false, 0));
     return () => {
       showSub.remove();
       hideSub.remove();
     };
   }, []);
 
-  /* ✅ 구조 설명:
-     GestureHandlerRootView —> SafeAreaProvider —> QueryClientProvider
-       —> BottomSheetModalProvider —> SafeAreaView —> NavigationContainer
-         ├─ RootNavigator
-         ├─ GlobalBottomSheet (navigation context 공유)
-         └─ GlobalInputBar
-  */
-  console.log('🧭 RN Dev Mode:', __DEV__);
+  DEV_LOG('🧭 RN Dev Mode:', __DEV__);
+
   return (
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          {/* ✅ NavigationContext보다 위에 있던 Provider를 아래로 이동 */}
           <SafeAreaView style={styles.safeArea} edges={['top']}>
             <NavigationContainer theme={MyTheme}>
-              {/* ✅ 이제 NavigationContext 내부에서 동작함 */}
               <BottomSheetModalProvider>
-                {/* <GlobalInputBar /> */}
                 <GlobalBottomSheet />
                 <RootNavigator />
-
                 <AppToastContainer />
               </BottomSheetModalProvider>
             </NavigationContainer>
@@ -144,15 +121,8 @@ const App = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    backgroundColor: COLORS.background,
-  },
-  safeArea: {
-    flex: 1,
-    backgroundColor: COLORS.background,
-  },
+  container: { flex: 1, width: '100%', backgroundColor: COLORS.background },
+  safeArea: { flex: 1, backgroundColor: COLORS.background },
 });
 
 export default App;
