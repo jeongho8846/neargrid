@@ -132,7 +132,7 @@ const MapScreen = () => {
         searchParams={searchParams}
       />
 
-      <View style={styles.header}>
+      <View style={styles.header} pointerEvents="box-none">
         <View style={styles.header_left}>
           <FootprintButton />
         </View>
@@ -195,6 +195,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 0,
     flexDirection: 'row',
+
   },
   header_left: {
     flex: 1,
@@ -208,6 +209,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -10,
     bottom: 100,
-    zIndex: 0,
+
   },
 });

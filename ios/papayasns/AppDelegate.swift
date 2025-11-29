@@ -5,6 +5,8 @@ import ReactAppDependencyProvider
 import Firebase
 import UserNotifications
 
+import GoogleMaps
+
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
   var window: UIWindow?
@@ -16,6 +18,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
+
+    // 🗺️ Google Maps 초기화
+    GMSServices.provideAPIKey("AIzaSyCpZzBNQmFj2xki3Dz-gjylVQqKhE5Tmg4")
 
     // 🔥 Firebase 초기화
     FirebaseApp.configure()

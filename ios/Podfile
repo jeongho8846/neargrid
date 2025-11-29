@@ -38,6 +38,9 @@ target 'papayasns' do
   # ✅ Firebase Messaging (FCM) 네이티브 Pod
   pod 'Firebase/Messaging', :modular_headers => true
 
+  # 🗺️ Google Maps
+  pod 'react-native-maps', :path => '../node_modules/react-native-maps', :subspecs => ['Google', 'Maps']
+
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => true,

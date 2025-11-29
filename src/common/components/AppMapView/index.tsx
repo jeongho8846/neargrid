@@ -20,36 +20,30 @@ const AppMapView = forwardRef<MapView, Props>(({ children, ...props }, ref) => {
   const mapStyle = useMemo(() => MAP_STYLE_DARK, []);
 
   return (
-    <View style={styles.container}>
-      <MapView
-        ref={ref}
-        provider={PROVIDER_GOOGLE}
-        style={styles.map}
-        showsMyLocationButton={false}
-        customMapStyle={mapStyle} // ✅ 고정된 참조 사용
-        rotateEnabled={false}
-        pitchEnabled={false}
-        loadingEnabled={false} // ✅ 로딩시 흰색 플래시 방지
-        mapType="standard"
-        liteMode={false} // ✅ 안드로이드 타일 버그 방지
-        {...props}
-      >
-        {children}
-      </MapView>
-    </View>
+    <MapView
+      ref={ref}
+      provider={PROVIDER_GOOGLE}
+      style={styles.map}
+      showsMyLocationButton={false}
+      customMapStyle={mapStyle} // ✅ 고정된 참조 사용
+      rotateEnabled={false}
+      pitchEnabled={false}
+      loadingEnabled={false} // ✅ 로딩시 흰색 플래시 방지
+      mapType="standard"
+      liteMode={false} // ✅ 안드로이드 타일 버그 방지
+      {...props}
+    >
+      {children}
+    </MapView>
   );
 });
 
 export default AppMapView;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    // ✅ 배경을 투명하게 만들어 타일 로딩시 하얀색 방지
-    backgroundColor: 'transparent',
-  },
   map: {
     flex: 1,
-    backgroundColor: 'transparent', // ✅ 내부 MapView도 투명
+
+    // backgroundColor: 'transparent', // ✅ 내부 MapView도 투명
   },
 });

@@ -32,7 +32,7 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>사용자의 현재 위치를 지도에 표시하기 위해 위치 권한이 필요합니다.</string>
 	<key>NSUserNotificationUsageDescription</key>
 	<string>앱에서 푸시 알림을 받기 위해 권한을 요청합니다.</string>
 	<key>RCTNewArchEnabled</key>
