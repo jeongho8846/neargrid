@@ -5,6 +5,7 @@ import React, {
   useImperativeHandle,
   useState,
   useEffect,
+  useCallback,
 } from 'react';
 import {
   View,
@@ -69,6 +70,7 @@ type Props = {
     remainTimeMinute: number;
     includePastRemainTime: boolean;
   }) => void;
+  onClose?: () => void;
   currentSearchParams: {
     keyword: string;
     threadTypes: string[];
@@ -79,7 +81,7 @@ type Props = {
 };
 
 const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
-  ({ onSearch, currentSearchParams }, ref) => {
+  ({ onSearch, onClose, currentSearchParams }, ref) => {
     const sheetRef = useRef<BottomSheet>(null);
     const [searchText, setSearchText] = useState('');
     const [selectedThreadTypes, setSelectedThreadTypes] =
@@ -98,9 +100,18 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
     }, [currentSearchParams]);
 
     useImperativeHandle(ref, () => ({
-      open: () => sheetRef.current?.snapToIndex(1),
+      open: () => sheetRef.current?.snapToIndex(0),
       close: () => sheetRef.current?.close(),
     }));
+
+    const handleSheetChanges = useCallback(
+      (index: number) => {
+        if (index === -1) {
+          onClose?.();
+        }
+      },
+      [onClose],
+    );
 
     const toggleThreadType = (type: string) => {
       setSelectedThreadTypes(prev =>
@@ -126,9 +137,10 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
     return (
       <BottomSheet
         ref={sheetRef}
-        index={-1}
-        snapPoints={['100%', '100%']}
+        index={0}
+        snapPoints={['100%']}
         enablePanDownToClose
+        onChange={handleSheetChanges}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
       >

@@ -46,6 +46,8 @@ const MapScreen = () => {
   const { dialogVisible, handleConfirm, handleClose } =
     useMapLocationPermission();
 
+  const [isSearchVisible, setIsSearchVisible] = React.useState(false);
+
   // ✅ 화면에 포커스될 때 현재 위치로 이동 (한 번만)
   useFocusEffect(
     useCallback(() => {
@@ -63,7 +65,15 @@ const MapScreen = () => {
   );
 
   const handleSearchPress = () => {
-    searchSheetRef.current?.open();
+    setIsSearchVisible(true);
+    // 렌더링 후 open 호출을 위해 setTimeout 사용
+    setTimeout(() => {
+      searchSheetRef.current?.open();
+    }, 0);
+  };
+
+  const handleSearchClose = () => {
+    setIsSearchVisible(false);
   };
 
   const handleClearKeywordAndSearch = () => {
@@ -162,11 +172,14 @@ const MapScreen = () => {
         sheetRef={sheetRef}
       />
 
-      <MapSearchBottomSheet
-        ref={searchSheetRef}
-        onSearch={handleSearch}
-        currentSearchParams={searchParams}
-      />
+      {isSearchVisible && (
+        <MapSearchBottomSheet
+          ref={searchSheetRef}
+          onSearch={handleSearch}
+          onClose={handleSearchClose}
+          currentSearchParams={searchParams}
+        />
+      )}
 
       <PermissionDialog
         visible={dialogVisible}
