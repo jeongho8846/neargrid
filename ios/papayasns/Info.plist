@@ -32,9 +32,13 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>사용자의 현재 위치를 지도에 표시하기 위해 위치 권한이 필요합니다.</string>
+	<string>Location permission is needed to display your current location on the map.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Camera access is needed to take profile photos.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Photo library access is needed to select profile photos.</string>
 	<key>NSUserNotificationUsageDescription</key>
-	<string>앱에서 푸시 알림을 받기 위해 권한을 요청합니다.</string>
+	<string>Notification permission is needed to receive push notifications.</string>
 	<key>RCTNewArchEnabled</key>
 	<true/>
 	<key>UIBackgroundModes</key>

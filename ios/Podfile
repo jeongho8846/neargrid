@@ -16,8 +16,9 @@ platform :ios, min_ios_version_supported
 prepare_react_native_project!
 
 # ⚠️ 아래에서 사용하고 싶은 권한만 선택해서 넣어라
-# Notifications 권한(푸시)만 필요하므로 'Notifications' 넣음
 setup_permissions([
+  'Camera',
+  'PhotoLibrary',
   'Notifications',
   'LocationWhenInUse',
 ])
