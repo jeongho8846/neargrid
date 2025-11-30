@@ -67,3 +67,5 @@ export const getCurrentLocation = (): Promise<{
     );
   });
 };
+
+/** 위치 권한 요청 (iOS 설정에 앱이 뜨게 하기 위함) */

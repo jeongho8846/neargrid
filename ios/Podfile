@@ -19,6 +19,7 @@ prepare_react_native_project!
 # Notifications 권한(푸시)만 필요하므로 'Notifications' 넣음
 setup_permissions([
   'Notifications',
+  'LocationWhenInUse',
 ])
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -53,5 +54,14 @@ target 'papayasns' do
       config[:reactNativePath],
       :mac_catalyst_enabled => false,
     )
+
+    # 🛠️ Fix RCT-Folly build error by forcing C++17 for it
+    installer.pods_project.targets.each do |target|
+      if target.name == 'RCT-Folly'
+        target.build_configurations.each do |config|
+          config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++17'
+        end
+      end
+    end
   end
 end
