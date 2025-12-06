@@ -1,7 +1,7 @@
 // 📄 src/common/components/AppDateRangePicker/index.tsx
 import React, { useState } from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
-import DatePicker from 'react-native-date-picker';
+// import DatePicker from 'react-native-date-picker';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
@@ -79,7 +79,7 @@ const AppDateRangePicker: React.FC<Props> = ({
       )}
 
       {/* ✅ 시작일 선택 모달 */}
-      <DatePicker
+      {/* <DatePicker
         modal
         open={showStartPicker}
         date={startDate}
@@ -106,7 +106,7 @@ const AppDateRangePicker: React.FC<Props> = ({
           onChange({ startDate, endDate: date });
         }}
         onCancel={() => setShowEndPicker(false)}
-      />
+      /> */}
     </View>
   );
 };
