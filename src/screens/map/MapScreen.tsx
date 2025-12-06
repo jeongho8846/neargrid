@@ -143,9 +143,9 @@ const MapScreen = () => {
       />
 
       <View style={styles.header} pointerEvents="box-none">
-        <View style={styles.header_left}>
+        {/* <View style={styles.header_left}>
           <FootprintButton />
-        </View>
+        </View> */}
         <View style={styles.header_right}>
           <MapSearchBar
             keyword={searchParams.keyword}

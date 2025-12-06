@@ -71,11 +71,11 @@ const TabNavigator = () => {
         component={CreateStack}
         options={{ tabBarLabel: t('STR_CONTENTS_CREATE_TITLE') }}
       />
-      <Tab.Screen
+      {/* <Tab.Screen
         name="Chat"
         component={ChatStack}
         options={{ tabBarLabel: t('STR_CHAT') }}
-      />
+      /> */}
       <Tab.Screen
         name="Alarm"
         component={AlarmStack}
