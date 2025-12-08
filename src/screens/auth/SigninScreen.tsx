@@ -73,6 +73,7 @@ const SigninScreen: React.FC<Props> = ({ setIsAuth }) => {
             placeholderKey="STR_EMAIL"
             onChangeText={setEmail}
             nextInputRef={passwordRef}
+            autoCapitalize="none"
           />
           <AppInput
             ref={passwordRef}
@@ -80,6 +81,8 @@ const SigninScreen: React.FC<Props> = ({ setIsAuth }) => {
             secureTextEntry
             onChangeText={setPassword}
             returnKeyType="done"
+            blurOnSubmit={true}  // 👈 리턴키 누르면 키보드 닫히고 onSubmitEditing 실행됨
+            onSubmitEditing={handleSubmit} // 👈 바로 로그인 시도
           />
           <AppButton
             labelKey="STR_LOGIN"

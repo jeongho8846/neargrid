@@ -48,8 +48,8 @@ android {
         applicationId "com.papayasns"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1251110005
-        versionName "1.02.251110005"
+        versionCode 1251206002
+        versionName "1.02.251206002"
     }
 
     /**
