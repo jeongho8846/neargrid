@@ -4,6 +4,7 @@ import { View, StyleSheet, Image } from 'react-native';
 import { Marker } from 'react-native-maps';
 import { COLORS } from '@/common/styles/colors';
 import AppText from '@/common/components/AppText';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 type Props = {
   latitude: number;
@@ -47,13 +48,25 @@ const MapThreadMarker = ({
           {postImageUrl ? (
             <Image source={{ uri: postImageUrl }} style={styles.image} />
           ) : profileImage ? (
-            <Image
-              source={{ uri: profileImage }}
-              style={[styles.image, styles.profileImage]}
-            />
+            <View style={styles.profileWithBubble}>
+              <Image
+                source={{ uri: profileImage }}
+                style={[styles.image, styles.profileImage]}
+              />
+              <Ionicons
+                name="chatbubble"
+                size={20}
+                color="white"
+                style={[
+                  styles.bubbleIcon,
+                  { transform: [{ scaleX: -1 }] }, // ← 좌우 반전
+                ]}
+              />
+            </View>
           ) : (
             <View style={styles.placeholder} />
           )}
+
         </View>
 
         {isCluster && (
@@ -114,4 +127,18 @@ const styles = StyleSheet.create({
     borderColor: COLORS.button_surface,
   },
   badgeText: { textAlign: 'center', justifyContent: 'center' },
+
+  profileWithBubble: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  bubbleIcon: {
+    position: 'absolute',
+    left: -8,
+    top: -2,
+  }
+
 });
