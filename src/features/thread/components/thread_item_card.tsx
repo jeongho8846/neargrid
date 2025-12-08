@@ -25,68 +25,78 @@ type Props = {
 const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
   const background =
     thread.contentImageUrls?.[0] ||
-    thread.markerImageUrl ||
-    thread.memberProfileImageUrl;
+    thread.markerImageUrl
 
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={onPress}>
       <View style={styles.contentsBox}>
-        <ImageBackground
-          source={{ uri: background }}
-          resizeMode="cover"
-          style={styles.backgroundImage}
-          imageStyle={styles.imageRadius}
-        >
-          {/* ❤️ 좋아요/댓글 + threadType 묶음 — 카드 우측 상단 */}
-          <View style={styles.topRightContainer}>
-            {/* 상단: 좋아요 / 댓글 */}
-            <View style={styles.topRightBox}>
-              <View style={styles.statGroup}>
-                <AppIcon name="heart" type="ion" size={11} variant="onDark" />
-                <AppText variant="body" style={styles.statText}>
-                  {thread.reactionCount ?? 0}
-                </AppText>
-              </View>
-
-              <View style={styles.statGroup}>
-                <AppIcon
-                  name="chatbubble"
-                  type="ion"
-                  size={10}
-                  variant="onDark"
-                />
-                <AppText variant="body" style={styles.statText}>
-                  {thread.commentCount ?? 0}
-                </AppText>
-              </View>
+        {/* ❤️ 좋아요/댓글 + threadType */}
+        <View style={styles.topRightContainer}>
+          <View style={styles.topRightBox}>
+            <View style={styles.statGroup}>
+              <AppIcon name="heart" type="ion" size={11} variant="onDark" />
+              <AppText variant="body" style={styles.statText}>
+                {thread.reactionCount ?? 0}
+              </AppText>
             </View>
 
-            {/* 하단: 쓰레드 타입 */}
-            <View style={styles.threadTypeBox}>
-              <AppText
-                variant="caption_bold"
-                threadType={thread.threadType as keyof typeof COLORS}
-                style={styles.statText}
-              />
-            </View>
-          </View>
-
-          {/* 👤 하단 오버레이 - 프로필 */}
-          <View style={styles.overlay}>
-            <View style={styles.profileRow}>
-              <AppProfileImage
-                imageUrl={thread.memberProfileImageUrl}
-                size={28}
-              />
-              <AppText variant="username" style={styles.username}>
-                {thread.memberNickName ?? 'Unknown'}
+            <View style={styles.statGroup}>
+              <AppIcon name="chatbubble" type="ion" size={10} variant="onDark" />
+              <AppText variant="body" style={styles.statText}>
+                {thread.commentCount ?? 0}
               </AppText>
             </View>
           </View>
-        </ImageBackground>
+
+          <View style={styles.threadTypeBox}>
+            <AppText
+              variant="caption_bold"
+              threadType={thread.threadType as any}
+              style={styles.statText}
+            />
+          </View>
+        </View>
+
+        {/* 이미지가 있으면 배경, 없으면 description */}
+        {background ? (
+          <ImageBackground
+            source={{ uri: background }}
+            resizeMode="cover"
+            style={styles.backgroundImage}
+            imageStyle={styles.imageRadius}
+          >
+            <View style={styles.overlay}>
+              <View style={styles.profileRow}>
+                <AppProfileImage imageUrl={thread.memberProfileImageUrl} size={28} />
+                <AppText variant="username" style={styles.username}>
+                  {thread.memberNickName ?? 'Unknown'}
+                </AppText>
+              </View>
+            </View>
+          </ImageBackground>
+        ) : (
+          <View style={styles.noImageBox}>
+            <AppText variant="body" numberOfLines={4}>
+              {thread.description ?? ''}
+            </AppText>
+
+            {/* 하단 프로필은 항상 보여주고 싶으면 여기 추가 */}
+            <View style={styles.overlay}>
+              <View style={styles.profileRow}>
+                <AppProfileImage imageUrl={thread.memberProfileImageUrl} size={28} />
+                <AppText variant="username" style={styles.username}>
+                  {thread.memberNickName ?? 'Unknown'}
+                </AppText>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     </TouchableOpacity>
+
   );
+
+
 };
 
 export default ThreadItemCard;
@@ -160,5 +170,13 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 2,
     paddingHorizontal: 6,
+  },
+
+  noImageBox: {
+    flex: 1,
+
+    borderRadius: 16,
+    padding: SPACING.sm,
+    justifyContent: 'space-between',
   },
 });

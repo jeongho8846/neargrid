@@ -32,7 +32,7 @@ export const openMapThreadListSheet = () => {
             <ThreadItemCard
               thread={item}
               onPress={() => {
-                console.log('🧭 thread clicked:', item.threadId);
+                console.log('🧭 thread clicked:', item);
               }}
             />
           )}

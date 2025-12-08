@@ -13,6 +13,7 @@ export type MapThreadMarkerData = {
   memberNickName?: string;
   memberProfileImageUrl?: string;
   threadType?: string;
+  description?: string; // ⭐ 추가
 };
 
 export const useFetchMapThreads = () => {
@@ -45,27 +46,19 @@ export const useFetchMapThreads = () => {
     includePastRemainTime?: boolean | string;
   }) => {
     console.log('🔍 [useFetchMapThreads] fetchThreads 호출됨');
-    console.log('📍 [useFetchMapThreads] 위치 정보:', {
-      latitude,
-      longitude,
-      distance,
-    });
-    console.log('👤 [useFetchMapThreads] memberId:', memberId);
-    console.log('🔎 [useFetchMapThreads] 검색어:', keyword);
-    console.log('🏷️ [useFetchMapThreads] threadTypes:', threadTypes);
-    console.log('⏰ [useFetchMapThreads] recentTimeMinute:', recentTimeMinute);
-    console.log('⏳ [useFetchMapThreads] remainTimeMinute:', remainTimeMinute);
-    console.log(
-      '📅 [useFetchMapThreads] includePastRemainTime:',
-      includePastRemainTime,
-    );
+    console.log('📍 위치 정보:', { latitude, longitude, distance });
+    console.log('👤 memberId:', memberId);
+    console.log('🔎 검색어:', keyword);
+    console.log('🏷️ threadTypes:', threadTypes);
+    console.log('⏰ recentTimeMinute:', recentTimeMinute);
+    console.log('⏳ remainTimeMinute:', remainTimeMinute);
+    console.log('📅 includePastRemainTime:', includePastRemainTime);
 
     try {
       setLoading(true);
       setError(null);
 
-      console.log('🌐 [useFetchMapThreads] API 호출 시작...');
-
+      console.log('🌐 API 호출 시작...');
       const res = await fetchMapThreads({
         latitude,
         longitude,
@@ -78,11 +71,8 @@ export const useFetchMapThreads = () => {
         isIncludePastRemainDateTime: includePastRemainTime,
       });
 
-      console.log('✅ [useFetchMapThreads] API 응답 받음:', res);
-      console.log(
-        '📊 [useFetchMapThreads] 응답 데이터 개수:',
-        res.threadResponseSingleDtos?.length ?? 0,
-      );
+      console.log('✅ API 응답 받음:', res);
+      console.log('📊 응답 데이터 개수:', res.threadResponseSingleDtos?.length ?? 0);
 
       const mapped = (res.threadResponseSingleDtos ?? [])
         .map((t: any) => {
@@ -101,12 +91,13 @@ export const useFetchMapThreads = () => {
             memberNickName: t.memberNickName,
             memberProfileImageUrl: t.memberProfileImageUrl ?? '',
             threadType: t.threadType ?? '',
+            description: t.description ?? '', // ⭐ description 매핑
           } as MapThreadMarkerData;
         })
         .filter(Boolean) as MapThreadMarkerData[];
 
-      console.log('🎯 [useFetchMapThreads] 매핑 완료:', mapped.length, '개');
-      console.log('📍 [useFetchMapThreads] 매핑된 threads:', mapped);
+      console.log('🎯 매핑 완료:', mapped.length, '개');
+      console.log('📍 매핑된 threads:', mapped);
 
       setThreads(mapped);
       setStoreThreads(mapped);
@@ -114,14 +105,14 @@ export const useFetchMapThreads = () => {
 
       return mapped;
     } catch (err: any) {
-      console.error('❌ [useFetchMapThreads] error:', err);
-      console.error('❌ [useFetchMapThreads] error message:', err.message);
-      console.error('❌ [useFetchMapThreads] error stack:', err.stack);
+      console.error('❌ error:', err);
+      console.error('❌ error message:', err.message);
+      console.error('❌ error stack:', err.stack);
       setError(err);
       return [];
     } finally {
       setLoading(false);
-      console.log('🏁 [useFetchMapThreads] 로딩 완료');
+      console.log('🏁 로딩 완료');
     }
   };
 
