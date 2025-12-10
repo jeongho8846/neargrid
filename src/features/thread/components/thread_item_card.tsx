@@ -23,13 +23,26 @@ type Props = {
  * - 좋아요/댓글 + threadType을 우측 상단에 표시
  */
 const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
-  const background =
-    thread.contentImageUrls?.[0] ||
-    thread.markerImageUrl
+  const background = thread.contentImageUrls?.[0] || thread.markerImageUrl;
 
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.9} onPress={onPress}>
       <View style={styles.contentsBox}>
+        {background ? (
+          <ImageBackground
+            source={{ uri: background }}
+            resizeMode="cover"
+            style={styles.backgroundImage}
+            imageStyle={styles.imageRadius}
+          />
+        ) : (
+          <View style={[styles.backgroundImage, styles.noImageBox]}>
+            <AppText variant="body" numberOfLines={4} style={styles.noImageText}>
+              {thread.description ?? ''}
+            </AppText>
+          </View>
+        )}
+
         {/* ❤️ 좋아요/댓글 + threadType */}
         <View style={styles.topRightContainer}>
           <View style={styles.topRightBox}>
@@ -41,7 +54,12 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
             </View>
 
             <View style={styles.statGroup}>
-              <AppIcon name="chatbubble" type="ion" size={10} variant="onDark" />
+              <AppIcon
+                name="chatbubble"
+                type="ion"
+                size={10}
+                variant="onDark"
+              />
               <AppText variant="body" style={styles.statText}>
                 {thread.commentCount ?? 0}
               </AppText>
@@ -57,46 +75,21 @@ const ThreadItemCard: React.FC<Props> = ({ thread, onPress }) => {
           </View>
         </View>
 
-        {/* 이미지가 있으면 배경, 없으면 description */}
-        {background ? (
-          <ImageBackground
-            source={{ uri: background }}
-            resizeMode="cover"
-            style={styles.backgroundImage}
-            imageStyle={styles.imageRadius}
-          >
-            <View style={styles.overlay}>
-              <View style={styles.profileRow}>
-                <AppProfileImage imageUrl={thread.memberProfileImageUrl} size={28} />
-                <AppText variant="username" style={styles.username}>
-                  {thread.memberNickName ?? 'Unknown'}
-                </AppText>
-              </View>
-            </View>
-          </ImageBackground>
-        ) : (
-          <View style={styles.noImageBox}>
-            <AppText variant="body" numberOfLines={4}>
-              {thread.description ?? ''}
+        {/* 프로필/닉네임은 항상 최상단 레이어 */}
+        <View style={styles.overlay}>
+          <View style={styles.profileRow}>
+            <AppProfileImage
+              imageUrl={thread.memberProfileImageUrl}
+              size={28}
+            />
+            <AppText variant="username" style={styles.username}>
+              {thread.memberNickName ?? 'Unknown'}
             </AppText>
-
-            {/* 하단 프로필은 항상 보여주고 싶으면 여기 추가 */}
-            <View style={styles.overlay}>
-              <View style={styles.profileRow}>
-                <AppProfileImage imageUrl={thread.memberProfileImageUrl} size={28} />
-                <AppText variant="username" style={styles.username}>
-                  {thread.memberNickName ?? 'Unknown'}
-                </AppText>
-              </View>
-            </View>
           </View>
-        )}
+        </View>
       </View>
     </TouchableOpacity>
-
   );
-
-
 };
 
 export default ThreadItemCard;
@@ -113,10 +106,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.border,
     borderRadius: 16,
+    overflow: 'hidden',
+    position: 'relative',
   },
   backgroundImage: {
     flex: 1,
-    justifyContent: 'flex-end',
   },
   imageRadius: {
     borderRadius: 16,
@@ -124,6 +118,10 @@ const styles = StyleSheet.create({
 
   /** 👇 하단 프로필 오버레이 */
   overlay: {
+    position: 'absolute',
+    left: SPACING.xs,
+    right: SPACING.xs,
+    bottom: SPACING.xs,
     backgroundColor: COLORS.overlay_dark,
     padding: SPACING.xs,
     borderRadius: 16,
@@ -177,6 +175,11 @@ const styles = StyleSheet.create({
 
     borderRadius: 16,
     padding: SPACING.sm,
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: (SPACING.lg as number) || SPACING.sm * 2,
+  },
+  noImageText: {
+    textAlign: 'center',
   },
 });
