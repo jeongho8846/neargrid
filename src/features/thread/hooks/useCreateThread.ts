@@ -110,6 +110,7 @@ export function useCreateThread() {
       formData.append('remain_in_minute', params.remain_in_minute);
       formData.append('latitude', String(params.latitude));
       formData.append('longitude', String(params.longitude));
+      formData.append('Nullable_is_custom_location', false);
       if (params.altitude) {
         formData.append('altitude', String(params.altitude));
       }
