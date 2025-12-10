@@ -9,6 +9,7 @@ import { SPACING } from '@/common/styles/spacing';
 import { AppSkeletonPreset } from '@/common/components/Skeletons';
 import ThreadReplyItem from './ThreadComment_Reply_Item_card';
 import { ThreadComment } from '../model/ThreadCommentModel';
+import { useCommentThreadLike } from '../hooks/useCommentThreadLike';
 
 type Props = {
   comment: ThreadComment;
@@ -24,6 +25,14 @@ const ThreadCommentItem: React.FC<Props> = ({
   const navigation = useNavigation<any>();
   const isSkeleton = comment.isSkeleton === true;
   const replies = comment.initialChildCommentThreadResponseDtos ?? [];
+  const threadId = comment.threadId ?? '';
+
+  const { liked, likeCount, toggleLike, inflight } = useCommentThreadLike({
+    threadId,
+    commentThreadId: comment.commentThreadId,
+    initialLiked: comment.reactedByCurrentMember,
+    initialCount: comment.reactionCount,
+  });
 
   if (isSkeleton) {
     return (
@@ -86,13 +95,15 @@ const ThreadCommentItem: React.FC<Props> = ({
         {/* 좋아요 */}
         <View style={styles.right}>
           <ContentsHeartButton
-            liked={!!comment.reactedByCurrentMember}
-            onToggle={() => {}}
+            liked={liked}
+            onToggle={toggleLike}
             size={18}
+            isLoading={inflight}
+            disabled={inflight || !threadId || !comment.commentThreadId}
           />
-          {!!comment.reactionCount && (
-            <AppText variant="caption">{comment.reactionCount}</AppText>
-          )}
+          <View style={styles.right_text}>
+            {!!likeCount && <AppText variant="caption">{likeCount}</AppText>}
+          </View>
         </View>
       </TouchableOpacity>
 
@@ -162,7 +173,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: SPACING.sm,
     paddingTop: 2,
-    alignSelf: 'stretch',
+    alignSelf: 'center',
+    alignContent: 'center',
+  },
+  right_text: {
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
   childContainer: {
     marginTop: SPACING.xs,

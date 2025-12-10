@@ -7,6 +7,7 @@ import ContentsHeartButton from '@/common/components/Contents_Heart_Button';
 import { ThreadComment } from '../model/ThreadCommentModel';
 import { SPACING } from '@/common/styles/spacing';
 import { COLORS } from '@/common/styles/colors';
+import { useCommentThreadLike } from '../hooks/useCommentThreadLike';
 
 type Props = {
   comment: ThreadComment;
@@ -22,6 +23,14 @@ const ThreadReplyItem: React.FC<Props> = ({
 }) => {
   const profileSize = listType === 'replyList' ? 32 : 36;
   const showReplyButton = listType === 'commentList';
+  const threadId = comment.threadId ?? '';
+
+  const { liked, likeCount, toggleLike, inflight } = useCommentThreadLike({
+    threadId,
+    commentThreadId: comment.commentThreadId,
+    initialLiked: comment.reactedByCurrentMember,
+    initialCount: comment.reactionCount,
+  });
 
   const containerStyle =
     listType === 'replyList'
@@ -71,13 +80,15 @@ const ThreadReplyItem: React.FC<Props> = ({
       {/* ❤️ 좋아요 버튼 */}
       <View style={styles.right}>
         <ContentsHeartButton
-          liked={!!comment.reactedByCurrentMember}
-          onToggle={() => {}}
+          liked={liked}
+          onToggle={toggleLike}
           size={18}
+          isLoading={inflight}
+          disabled={inflight || !threadId || !comment.commentThreadId}
         />
-        {!!comment.reactionCount && (
-          <AppText variant="caption">{comment.reactionCount}</AppText>
-        )}
+        <View style={styles.right_text}>
+          {!!likeCount && <AppText variant="caption">{likeCount}</AppText>}
+        </View>
       </View>
     </View>
   );
@@ -109,6 +120,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginLeft: SPACING.sm,
     paddingTop: 2,
-    alignSelf: 'stretch',
+    alignSelf: 'center',
+    alignContent: 'center',
+  },
+  right_text: {
+    alignContent: 'center',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
   },
 });
