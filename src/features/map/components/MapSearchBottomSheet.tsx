@@ -6,6 +6,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useMemo,
 } from 'react';
 import {
   View,
@@ -15,6 +16,7 @@ import {
   Keyboard,
 } from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
@@ -84,12 +86,14 @@ type Props = {
 const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
   ({ onSearch, onClose, currentSearchParams }, ref) => {
     const sheetRef = useRef<BottomSheet>(null);
+    const { bottom: bottomInset } = useSafeAreaInsets();
     const [searchText, setSearchText] = useState('');
     const [selectedThreadTypes, setSelectedThreadTypes] =
       useState<string[]>(THREAD_TYPES);
     const [recentTime, setRecentTime] = useState<number>(60 * 24 * 365 * 999);
     const [remainTime, setRemainTime] = useState<number>(60 * 24 * 365);
     const [includePastRemainTime, setIncludePastRemainTime] = useState(false);
+    const [contentHeight, setContentHeight] = useState(0);
 
     // ✅ currentSearchParams가 변경되면 상태 동기화
     useEffect(() => {
@@ -108,6 +112,11 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
       setSheetOpen(true); // 렌더 시점엔 이미 열려 있으므로 탭바 숨김
       return () => setSheetOpen(false);
     }, [setSheetOpen]);
+
+    const snapPoints = useMemo(
+      () => (contentHeight > 0 ? [contentHeight + bottomInset] : ['80%']),
+      [contentHeight, bottomInset],
+    );
 
     useImperativeHandle(ref, () => ({
       open: () => {
@@ -159,13 +168,24 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
       <BottomSheet
         ref={sheetRef}
         index={0}
-        snapPoints={['100%']}
+        snapPoints={snapPoints}
         enablePanDownToClose
         onChange={handleSheetChanges}
         backgroundStyle={styles.sheetBackground}
         handleIndicatorStyle={styles.handleIndicator}
       >
-        <BottomSheetView style={styles.container}>
+        <BottomSheetView
+          style={[
+            styles.container,
+            { paddingBottom: SPACING.lg + bottomInset },
+          ]}
+          onLayout={({ nativeEvent }) => {
+            const height = nativeEvent.layout.height;
+            if (Math.abs(height - contentHeight) > 1) {
+              setContentHeight(height);
+            }
+          }}
+        >
           {/* 검색창 */}
           <View style={styles.searchRow}>
             <View style={styles.searchBox}>
