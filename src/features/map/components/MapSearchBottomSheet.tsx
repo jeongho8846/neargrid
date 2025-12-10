@@ -19,6 +19,7 @@ import AppText from '@/common/components/AppText';
 import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
+import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 
 const THREAD_TYPES = [
   'GENERAL_THREAD',
@@ -99,18 +100,37 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
       setIncludePastRemainTime(currentSearchParams.includePastRemainTime);
     }, [currentSearchParams]);
 
+    const setSheetOpen = useCallback((open: boolean) => {
+      useBottomSheetStore.setState({ isOpen: open });
+    }, []);
+
+    useEffect(() => {
+      setSheetOpen(true); // 렌더 시점엔 이미 열려 있으므로 탭바 숨김
+      return () => setSheetOpen(false);
+    }, [setSheetOpen]);
+
     useImperativeHandle(ref, () => ({
-      open: () => sheetRef.current?.snapToIndex(0),
-      close: () => sheetRef.current?.close(),
+      open: () => {
+        setSheetOpen(true);
+        sheetRef.current?.snapToIndex(0);
+      },
+      close: () => {
+        setSheetOpen(false);
+        sheetRef.current?.close();
+      },
     }));
 
     const handleSheetChanges = useCallback(
       (index: number) => {
+        if (index >= 0) {
+          setSheetOpen(true);
+        }
         if (index === -1) {
+          setSheetOpen(false);
           onClose?.();
         }
       },
-      [onClose],
+      [onClose, setSheetOpen],
     );
 
     const toggleThreadType = (type: string) => {
@@ -132,6 +152,7 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
       });
 
       sheetRef.current?.close();
+      setSheetOpen(false);
     };
 
     return (
