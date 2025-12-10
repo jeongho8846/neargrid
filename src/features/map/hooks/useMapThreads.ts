@@ -21,12 +21,20 @@ export const useMapThreads = (searchParams: SearchParams) => {
   const { fetchThreads, loading } = useFetchMapThreads();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const sheetRef = useRef<BottomSheet | null>(null);
+  const hasFetchedOnceRef = useRef(false);
+  const lastMemberIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    if (latitude && longitude && member?.id) {
-      loadThreads(searchParams, latitude, longitude);
+    // GPS 좌표가 자주 변해도 최초 1회만 자동 로드 (회원 변경 시에만 초기화)
+    if (!latitude || !longitude || !member?.id) return;
+    if (hasFetchedOnceRef.current && lastMemberIdRef.current === member.id) {
+      return;
     }
-  }, [latitude, longitude, member?.id]);
+
+    hasFetchedOnceRef.current = true;
+    lastMemberIdRef.current = member.id;
+    loadThreads(searchParams, latitude, longitude);
+  }, [latitude, longitude, member?.id, loadThreads, searchParams]);
 
   const loadThreads = useCallback(
     async (
