@@ -31,10 +31,10 @@ const THREAD_TYPES = [
 ];
 
 const typeLabelMap: Record<string, { label: string; color: string }> = {
-  GENERAL_THREAD: { label: 'GENERAL', color: COLORS.caption },
-  MOMENT_THREAD: { label: 'MOMENT', color: '#31FFF5' },
-  PLAN_TO_VISIT_THREAD: { label: 'PLAN', color: '#8995FF' },
-  ROUTE_THREAD: { label: 'ROUTE', color: '#ED7F07' },
+  GENERAL_THREAD: { label: 'GENERAL', color: '#bebebec2' },
+  MOMENT_THREAD: { label: 'MOMENT', color: '#31fff5af' },
+  PLAN_TO_VISIT_THREAD: { label: 'PLAN', color: '#8995ffc5' },
+  ROUTE_THREAD: { label: 'ROUTE', color: '#ed7e07b6' },
 };
 
 const RECENT_TIMES = [
@@ -231,12 +231,13 @@ const MapSearchBottomSheet = forwardRef<MapSearchBottomSheetRef, Props>(
                   onPress={() => toggleThreadType(type)}
                   style={[
                     styles.filterButton,
-                    isActive && { borderColor: color },
+                    isActive && {
+                      backgroundColor: color,
+                      borderColor: color,
+                    },
                   ]}
                 >
-                  <AppText variant="body" style={{ color }}>
-                    {label}
-                  </AppText>
+                  <AppText variant="body">{label}</AppText>
                 </TouchableOpacity>
               );
             })}
