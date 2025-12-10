@@ -1,6 +1,6 @@
 // 📄 src/common/components/Contents_IconCount_Button.tsx
 import React, { memo } from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, View } from 'react-native';
 import AppIcon from '@/common/components/AppIcon';
 import AppText from '@/common/components/AppText';
 import { SPACING } from '@/common/styles/spacing';
@@ -52,10 +52,11 @@ const ContentsIconCountButton: React.FC<Props> = ({
           variant={icon.variant ?? 'secondary'}
         />
       )}
-
-      <AppText variant="caption" isLoading={isLoading}>
-        {count}
-      </AppText>
+      <View style={styles.textBox}>
+        <AppText variant="caption" isLoading={isLoading}>
+          {count}
+        </AppText>
+      </View>
     </TouchableOpacity>
   );
 };
@@ -70,5 +71,9 @@ const styles = StyleSheet.create({
   },
   wrapNoIcon: {
     gap: 0,
+  },
+  textBox: {
+    minWidth: SPACING.xs,
+    paddingHorizontal: SPACING.xs,
   },
 });
