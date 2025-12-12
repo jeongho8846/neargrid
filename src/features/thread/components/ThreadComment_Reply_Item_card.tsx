@@ -52,6 +52,7 @@ const ThreadReplyItem: React.FC<Props> = ({
         imageUrl={comment.memberProfileImageUrl}
         memberId={comment.memberId}
         size={profileSize}
+        canGoToProfileScreen={true}
       />
 
       {/* 🗨️ 본문 */}

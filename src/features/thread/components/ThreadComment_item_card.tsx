@@ -71,6 +71,7 @@ const ThreadCommentItem: React.FC<Props> = ({
             imageUrl={comment.memberProfileImageUrl}
             memberId={comment.memberId}
             size={profileSize}
+            canGoToProfileScreen={true}
           />
         </View>
 
