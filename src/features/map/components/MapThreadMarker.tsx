@@ -24,12 +24,29 @@ const MapThreadMarker = ({
   onPress,
 }: Props) => {
   const [tracks, setTracks] = React.useState(true);
+  const timeoutRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopTracking = React.useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    setTracks(false);
+  }, []);
 
   React.useEffect(() => {
     setTracks(true);
-    const timer = setTimeout(() => setTracks(false), 500);
-    return () => clearTimeout(timer);
-  }, [reactionCount]);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    timeoutRef.current = setTimeout(() => stopTracking(), 1000); // fallback to stop tracking
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
+  }, [reactionCount, imageUrl, profileImageUrl, stopTracking]);
 
   const postImageUrl = imageUrl || undefined;
   const profileImage = profileImageUrl || undefined;
@@ -46,12 +63,17 @@ const MapThreadMarker = ({
       <View style={styles.container}>
         <View style={styles.imageWrapper}>
           {postImageUrl ? (
-            <Image source={{ uri: postImageUrl }} style={styles.image} />
+            <Image
+              source={{ uri: postImageUrl }}
+              style={styles.image}
+              onLoadEnd={stopTracking}
+            />
           ) : profileImage ? (
             <View style={styles.profileWithBubble}>
               <Image
                 source={{ uri: profileImage }}
                 style={[styles.image, styles.profileImage]}
+                onLoadEnd={stopTracking}
               />
               <Ionicons
                 name="chatbubble"

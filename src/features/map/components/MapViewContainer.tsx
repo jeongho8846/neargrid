@@ -242,7 +242,9 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
               group.reduce((sum, g) => sum + g.latitude, 0) / group.length;
             const avgLon =
               group.reduce((sum, g) => sum + g.longitude, 0) / group.length;
-            const representative = group[0];
+            const representative =
+              group.find(g => g.markerImageUrl || g.memberProfileImageUrl) ||
+              group[0];
             const reactionCount = group.length > 1 ? group.length : undefined;
             const key =
               group.length > 1 ? `cluster-${i}` : representative.threadId;
