@@ -34,6 +34,12 @@ const MemberProfileHeader: React.FC<Props> = ({
   const coverImage = profile?.backgroundUrl;
   const profileImage = profile?.profileImageUrl;
   const { openPrivateChat } = useOpenPrivateChatRoom();
+  const isMyProfile = profile?.id && profile.id === currentMemberId;
+  const isFollowed = !!profile?.followedByCurrentMember;
+
+  const handlePressFollow = () => {
+    // TODO: follow/unfollow API 연결 예정
+  };
 
   // console.log(
   //   '프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필프로필',
@@ -89,14 +95,16 @@ const MemberProfileHeader: React.FC<Props> = ({
         </View>
       </View>
       <View style={styles.middleSection_foot}>
-        <AppButton
-          labelKey="STR_FOLLOWINGS"
-          onPress={() => {
-            if (profile?.id) {
-              openPrivateChat(profile.id);
-            }
-          }}
-        />
+        {!isMyProfile && (
+          <AppButton
+            labelKey={isFollowed ? 'STR_UNFOLLOW' : 'STR_FOLLOW'}
+            variant={isFollowed ? 'outline' : 'filled'}
+            onPress={handlePressFollow}
+            loading={isLoading}
+            disabled={!profile?.id}
+            style={{ flex: 1 }}
+          />
+        )}
         <AppButton
           labelKey="STR_CHAT_SEND_MESSAGE"
           onPress={() => {
@@ -104,6 +112,7 @@ const MemberProfileHeader: React.FC<Props> = ({
               openPrivateChat(profile.id);
             }
           }}
+          style={{ flex: 1 }}
         />
       </View>
 

@@ -14,6 +14,8 @@
   "STR_SIGNUP": "회원가입",
   "STR_EMAIL": "이메일",
   "STR_PASSWORD": "비밀번호",
+  "STR_UNFOLLOW": "언팔로우",
+  "STR_FOLLOW": "팔로우",
 
   "STR_MAP": "지도",
   "STR_FEED": "피드",
