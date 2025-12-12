@@ -18,6 +18,8 @@ type Props = {
   currentMemberId?: string;
   profile?: MemberProfile;
   isLoading?: boolean;
+  followLoading?: boolean;
+  onToggleFollow?: () => void;
 };
 
 /**
@@ -30,6 +32,8 @@ const MemberProfileHeader: React.FC<Props> = ({
   currentMemberId,
   profile,
   isLoading,
+  followLoading,
+  onToggleFollow,
 }) => {
   const coverImage = profile?.backgroundUrl;
   const profileImage = profile?.profileImageUrl;
@@ -38,7 +42,8 @@ const MemberProfileHeader: React.FC<Props> = ({
   const isFollowed = !!profile?.followedByCurrentMember;
 
   const handlePressFollow = () => {
-    // TODO: follow/unfollow API 연결 예정
+    if (!profile?.id) return;
+    onToggleFollow?.();
   };
 
   // console.log(
@@ -100,8 +105,8 @@ const MemberProfileHeader: React.FC<Props> = ({
             labelKey={isFollowed ? 'STR_UNFOLLOW' : 'STR_FOLLOW'}
             variant={isFollowed ? 'outline' : 'filled'}
             onPress={handlePressFollow}
-            loading={isLoading}
-            disabled={!profile?.id}
+            loading={isLoading || followLoading}
+            disabled={!profile?.id || followLoading}
             style={{ flex: 1 }}
           />
         )}

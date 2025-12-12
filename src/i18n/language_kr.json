@@ -14,8 +14,6 @@
   "STR_SIGNUP": "회원가입",
   "STR_EMAIL": "이메일",
   "STR_PASSWORD": "비밀번호",
-  "STR_UNFOLLOW": "언팔로우",
-  "STR_FOLLOW": "팔로우",
 
   "STR_MAP": "지도",
   "STR_FEED": "피드",
@@ -210,6 +208,8 @@
   "STR_UNBLOCK_FAILED": "차단 해제에 실패했습니다.",
 
   "STR_CHAT_SEND_MESSAGE": "메시지 보내기",
+  "STR_FOLLOW": "팔로우",
+  "STR_UNFOLLOW": "언팔로우",
   "STR_CHAT_INVITE_MEMBER": "초대하기",
   "STR_CHAT_LEAVE_CHATROOM": "채팅방 떠나기",
   "STR_CHAT_CREATE_DATE_TIME": "생성일",

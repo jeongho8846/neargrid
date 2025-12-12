@@ -11,12 +11,14 @@ import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFo
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
 import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useFollowMember } from '@/features/member/hooks/useFollowMember';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
 import { useNavigation } from '@react-navigation/native';
 import { openProfileMenuSheet } from '@/features/member/sheets/openProfileMenuSheet';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
+import { MemberProfile } from '@/features/member/model/MemberProfileModel';
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
@@ -37,11 +39,40 @@ export default function MemberProfileScreen({ route }) {
   );
 
   /** 👤 프로필 정보 */
-  const { data: profile, isLoading: isProfileLoading } = useFetchMemberProfile(
-    currentMember?.id ?? '',
-    targetUserId ?? '',
-    { enabled: !!targetUserId },
-  );
+  const { data: profileData, isLoading: isProfileLoading } =
+    useFetchMemberProfile(
+      currentMember?.id ?? '',
+      targetUserId ?? '',
+      { enabled: !!targetUserId },
+    );
+  const [profile, setProfile] = useState<MemberProfile | null>(null);
+
+  useEffect(() => {
+    setProfile(profileData);
+  }, [profileData]);
+
+  const { toggleFollow, loading: isFollowUpdating } = useFollowMember({
+    currentMemberId: currentMember?.id,
+    targetMemberId: targetUserId,
+    onChange: isFollowed => {
+      setProfile(prev => {
+        if (!prev) return prev;
+        const nextFollowerCount =
+          typeof prev.followerCount === 'number'
+            ? Math.max(
+                0,
+                prev.followerCount + (isFollowed ? 1 : -1),
+              )
+            : prev.followerCount;
+
+        return {
+          ...prev,
+          followedByCurrentMember: isFollowed,
+          followerCount: nextFollowerCount,
+        };
+      });
+    },
+  });
 
   useEffect(() => {
     if (profile) {
@@ -149,6 +180,10 @@ export default function MemberProfileScreen({ route }) {
             currentMemberId={currentMember?.id}
             profile={profile}
             isLoading={isProfileLoading}
+            followLoading={isFollowUpdating}
+            onToggleFollow={() =>
+              toggleFollow(!!profile?.followedByCurrentMember)
+            }
           />
         }
         onScroll={scrollHandler}

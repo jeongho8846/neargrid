@@ -208,6 +208,8 @@
   "STR_UNBLOCK_FAILED": "Failed to unblock user.",
 
   "STR_CHAT_SEND_MESSAGE": "Send Message",
+  "STR_FOLLOW": "Follow",
+  "STR_UNFOLLOW": "Unfollow",
   "STR_CHAT_INVITE_MEMBER": "Invite",
   "STR_CHAT_LEAVE_CHATROOM": "Leave Chat Room",
   "STR_CHAT_CREATE_DATE_TIME": "Created",
