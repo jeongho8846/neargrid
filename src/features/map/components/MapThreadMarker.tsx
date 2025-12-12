@@ -15,7 +15,7 @@ type Props = {
   onPress?: () => void;
 };
 
-const MapThreadMarker = ({
+const MapThreadMarkerBase = ({
   latitude,
   longitude,
   imageUrl,
@@ -101,6 +101,16 @@ const MapThreadMarker = ({
     </Marker>
   );
 };
+
+const arePropsEqual = (prev: Props, next: Props) =>
+  prev.latitude === next.latitude &&
+  prev.longitude === next.longitude &&
+  prev.imageUrl === next.imageUrl &&
+  prev.profileImageUrl === next.profileImageUrl &&
+  prev.reactionCount === next.reactionCount &&
+  prev.onPress === next.onPress;
+
+const MapThreadMarker = React.memo(MapThreadMarkerBase, arePropsEqual);
 
 export default MapThreadMarker;
 

@@ -246,8 +246,14 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
               group.find(g => g.markerImageUrl || g.memberProfileImageUrl) ||
               group[0];
             const reactionCount = group.length > 1 ? group.length : undefined;
+            const threadIdsKey = group
+              .map(t => t.threadId)
+              .sort()
+              .join('-');
             const key =
-              group.length > 1 ? `cluster-${i}` : representative.threadId;
+              group.length > 1
+                ? `cluster-${threadIdsKey}`
+                : representative.threadId;
 
             return (
               <MapThreadMarker
