@@ -238,34 +238,23 @@ const MapViewContainer = forwardRef<MapViewContainerRef, Props>(
 
           {/* ✅ 클러스터 마커 기존 로직 그대로 */}
           {clusters.map((group, i) => {
-            if (group.length === 1) {
-              const t = group[0];
-              return (
-                <MapThreadMarker
-                  key={t.threadId}
-                  latitude={t.latitude}
-                  longitude={t.longitude}
-                  imageUrl={t.markerImageUrl}
-                  profileImageUrl={t.memberProfileImageUrl}
-                  onPress={() => onMarkerPress?.([t.threadId])}
-                />
-              );
-            }
-
             const avgLat =
               group.reduce((sum, g) => sum + g.latitude, 0) / group.length;
             const avgLon =
               group.reduce((sum, g) => sum + g.longitude, 0) / group.length;
             const representative = group[0];
+            const reactionCount = group.length > 1 ? group.length : undefined;
+            const key =
+              group.length > 1 ? `cluster-${i}` : representative.threadId;
 
             return (
               <MapThreadMarker
-                key={`cluster-${i}`}
+                key={key}
                 latitude={avgLat}
                 longitude={avgLon}
                 imageUrl={representative.markerImageUrl}
                 profileImageUrl={representative.memberProfileImageUrl}
-                reactionCount={group.length}
+                reactionCount={reactionCount}
                 onPress={() => onMarkerPress?.(group.map(t => t.threadId))}
               />
             );

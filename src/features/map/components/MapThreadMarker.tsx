@@ -66,7 +66,6 @@ const MapThreadMarker = ({
           ) : (
             <View style={styles.placeholder} />
           )}
-
         </View>
 
         {isCluster && (
@@ -89,13 +88,16 @@ const styles = StyleSheet.create({
     height: 60,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#11111102',
+    overflow: 'visible',
   },
   imageWrapper: {
     width: 40,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'visible', // allow bubble to render outside
+    backgroundColor: '#11111102',
   },
   image: {
     width: 40,
@@ -129,16 +131,16 @@ const styles = StyleSheet.create({
   badgeText: { textAlign: 'center', justifyContent: 'center' },
 
   profileWithBubble: {
-    width: 40,
-    height: 40,
+    width: 60,
+    height: 60,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'visible',
   },
 
   bubbleIcon: {
     position: 'absolute',
-    left: -8,
-    top: -2,
-  }
-
+    left: 2,
+    top: 2,
+  },
 });
