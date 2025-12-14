@@ -27,6 +27,8 @@
   "STR_EMPTY_COMMENT": "No comments yet.",
   "STR_REPLY_COUNT": "Replies",
   "STR_CHILD_THREAD_COUNT": "Child Threads",
+  "STR_ATTACH_MY_THREAD": "Attach my thread ",
+  "STR_CREATE_CHILD_THREAD": "Create child thread ",
   "STR_PLACEHOLDER_REPLY": "Write a comment...",
 
   "STR_MAP_SEARCH_HERE": "Search Here",

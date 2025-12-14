@@ -17,6 +17,7 @@ import ThreadCommentList, {
 import RouteThread_ChildThreadList from '@/features/thread/lists/RouteThread_ChildThreadList';
 import HubThread_ChildThreadList from '@/features/thread/lists/HubThread_ChildThreadList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
+import HubThreadFloatingActions from '@/features/thread/components/HubThreadFloatingActions';
 import { COLORS } from '@/common/styles/colors';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
@@ -72,6 +73,14 @@ const DetailThreadScreen = () => {
     thread?.threadId ?? '',
     commentListRef,
   );
+
+  const handlePressPasteMyThread = useCallback(() => {
+    console.log('TODO: attach my thread into hub', thread?.threadId);
+  }, [thread?.threadId]);
+
+  const handlePressCreateChildThread = useCallback(() => {
+    console.log('TODO: create child thread under hub', thread?.threadId);
+  }, [thread?.threadId]);
 
   // ✅ 포커스될 때 입력창 활성화 - 일반 스레드만
   useFocusEffect(
@@ -133,6 +142,13 @@ const DetailThreadScreen = () => {
           ref={commentListRef}
           threadId={thread.threadId}
           headerThread={thread}
+        />
+      )}
+
+      {isHubThread && (
+        <HubThreadFloatingActions
+          onPressPasteMyThread={handlePressPasteMyThread}
+          onPressCreateChildThread={handlePressCreateChildThread}
         />
       )}
 

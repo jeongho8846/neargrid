@@ -27,6 +27,8 @@
   "STR_EMPTY_COMMENT": "아직 댓글이 없습니다.",
   "STR_REPLY_COUNT": "대댓글",
   "STR_CHILD_THREAD_COUNT": "하위 쓰레드",
+  "STR_ATTACH_MY_THREAD": "내 쓰레드 붙이기 ",
+  "STR_CREATE_CHILD_THREAD": "하위 쓰레드 생성 ",
   "STR_PLACEHOLDER_REPLY": "댓글을 입력하세요.",
 
   "STR_MAP_SEARCH_HERE": "현 지도에서 검색",
