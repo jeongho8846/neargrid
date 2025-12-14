@@ -168,4 +168,5 @@ export const apiWithToken: string[] = [
   '/search/getDonationRankRecipientByDonor',
   '/payment/getPaymentsByMember',
   '/point/getPoint',
+  '/thread/addThreadEditMembers',
 ];

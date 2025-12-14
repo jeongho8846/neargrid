@@ -9,6 +9,7 @@ export type MemberItem = {
   nickname: string;
   profileImageUrl?: string | null;
   onPress?: () => void;
+  rightElement?: React.ReactNode;
 };
 
 /**
@@ -31,6 +32,7 @@ const MemberItemLabel: React.FC<{ item: MemberItem }> = ({ item }) => {
       <View style={styles.textBox}>
         <AppText variant="username">{item.nickname}</AppText>
       </View>
+      {item.rightElement}
     </TouchableOpacity>
   );
 };

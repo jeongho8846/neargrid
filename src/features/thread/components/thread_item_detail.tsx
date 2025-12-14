@@ -11,6 +11,7 @@ import { Thread } from '../model/ThreadModel';
 import ThreadActionBar from './ThreadActionBar';
 import ContentsMenuButton from '@/common/components/Contents_Menu_Button';
 import { openThreadMenuSheet } from '../sheets/openThreadMenuSheet';
+import { openThreadEditorListSheet } from '../sheets/openThreadEditorListSheet';
 import { TEST_COLORS } from '@/test/styles/colors';
 import { TEST_RADIUS } from '@/test/styles/radius';
 import { TEST_SPACING } from '@/test/styles/spacing';
@@ -39,6 +40,12 @@ const ThreadItemDetail: React.FC<Props> = ({
   const createdMMDD = item.createDatetime
     ? item.createDatetime.slice(5, 10)
     : '';
+  const handleOpenEditMemberSheet = () =>
+    openThreadEditorListSheet({
+      members: editMembers,
+      threadOwnerId: item.memberId,
+      threadId: item.threadId,
+    });
 
   const handlePress = () => {
     if (route.name === 'DetailThread') return;
@@ -100,7 +107,11 @@ const ThreadItemDetail: React.FC<Props> = ({
               />
             </View>
             {editMembers.length > 0 && (
-              <View style={styles.editMemberList}>
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.editMemberList}
+                onPress={handleOpenEditMemberSheet}
+              >
                 <View style={styles.editorRow}>
                   {displayedEditMembers.map((member, index) => (
                     <View
@@ -130,7 +141,7 @@ const ThreadItemDetail: React.FC<Props> = ({
                     />
                   </>
                 </View>
-              </View>
+              </TouchableOpacity>
             )}
           </TouchableOpacity>
 
