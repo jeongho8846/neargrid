@@ -4,6 +4,7 @@ import FeedScreen from '@/screens/feed/FeedScreen';
 import DetailThreadScreen from '@/screens/thread/DetailThreadScreen';
 import DetailThreadCommentScreen from '@/screens/thread/DetailThreadCommentScreen';
 import MemberProfileScreen from '@/screens/member/MemberProfileScreen';
+import AttachMyThreadModal from '@/screens/thread/AttachMyThreadModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -16,6 +17,14 @@ const FeedStack = () => (
       component={DetailThreadCommentScreen}
     />
     <Stack.Screen name="Profile" component={MemberProfileScreen} />
+    <Stack.Screen
+      name="AttachMyThreadModal"
+      component={AttachMyThreadModal}
+      options={{
+        presentation: 'modal',
+        animation: 'slide_from_bottom',
+      }}
+    />
   </Stack.Navigator>
 );
 

@@ -9,6 +9,7 @@ import ChatListScreen from '@/screens/chat/ChatListScreen';
 import ChatRoomScreen from '@/screens/chat/ChatRoomScreen';
 import ChatRoomMenuScreen from '@/screens/chat/ChatRoomMenuScreen';
 import LanguageSettingScreen from '@/screens/profile/LanguageSettingScreen';
+import AttachMyThreadModal from '@/screens/thread/AttachMyThreadModal';
 
 const Stack = createNativeStackNavigator();
 
@@ -31,6 +32,14 @@ const ProfileStack = ({ route }) => {
       <Stack.Screen
         name="DetailThreadComment"
         component={DetailThreadCommentScreen}
+      />
+      <Stack.Screen
+        name="AttachMyThreadModal"
+        component={AttachMyThreadModal}
+        options={{
+          presentation: 'modal',
+          animation: 'slide_from_bottom',
+        }}
       />
       <Stack.Screen
         name="PaymentHistoryScreen"

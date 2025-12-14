@@ -21,6 +21,7 @@ import HubThreadFloatingActions from '@/features/thread/components/HubThreadFloa
 import { COLORS } from '@/common/styles/colors';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
+import { Thread } from '@/features/thread/model/ThreadModel';
 
 type RouteParams = {
   DetailThread: {
@@ -75,8 +76,19 @@ const DetailThreadScreen = () => {
   );
 
   const handlePressPasteMyThread = useCallback(() => {
-    console.log('TODO: attach my thread into hub', thread?.threadId);
-  }, [thread?.threadId]);
+    navigation.navigate(
+      'AttachMyThreadModal' as never,
+      {
+        onConfirm: (selectedThreads: Thread[]) => {
+          console.log(
+            'TODO: attach my thread into hub',
+            thread?.threadId,
+            selectedThreads?.map(t => t.threadId),
+          );
+        },
+      } as never,
+    );
+  }, [navigation, thread?.threadId]);
 
   const handlePressCreateChildThread = useCallback(() => {
     console.log('TODO: create child thread under hub', thread?.threadId);

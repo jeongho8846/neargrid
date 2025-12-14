@@ -45,6 +45,7 @@ const CustomTabBar = ({
     'DemoSearch',
     'ChatRoomScreen',
     'ChatRoomMenuScreen',
+    'AttachMyThreadModal',
   ];
 
   const activeRoute = state.routes[state.index];
