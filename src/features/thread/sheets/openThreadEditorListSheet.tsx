@@ -1,5 +1,5 @@
 // src/features/thread/sheets/openThreadEditorListSheet.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { BottomSheetFlatList } from '@gorhom/bottom-sheet';
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { EditMemberSimple } from '../model/ThreadModel';
 import { memberStorage } from '@/features/member/utils/memberStorage';
 import { useDeleteThreadEditMembers } from '../hooks/useDeleteThreadEditMembers';
 import { updateThreadCache } from '../utils/updateThreadCache';
+import { openInviteEditHubThreadListSheet } from './openInviteEditHubThreadListSheet';
 
 type Props = {
   members: EditMemberSimple[];
@@ -133,6 +134,47 @@ const ThreadEditorListContent: React.FC<Props> = ({
   }, [members, threadOwnerId]);
 
   const renderItem = ({ item }: { item?: EditMemberSimple | null }) => {
+    if ((item as any)?.kind === 'invite') {
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.inviteRow}
+          onPress={() => {
+            if (!currentMemberId) {
+              console.warn(
+                '[openThreadEditorListSheet] invite pressed but no currentMemberId',
+              );
+              return;
+            }
+            openInviteEditHubThreadListSheet({
+              targetId: currentMemberId,
+              currentMemberId,
+              excludeMemberIds: [threadOwnerId, ...list.map(m => m.id)],
+              threadId,
+              threadOwnerId,
+              onBack: () =>
+                openThreadEditorListSheet({
+                  members: list,
+                  threadOwnerId,
+                  threadId,
+                }),
+            });
+          }}
+        >
+          <View style={styles.plusAvatar}>
+            <AppText variant="caption" style={styles.plusText}>
+              +
+            </AppText>
+          </View>
+          <AppText
+            variant="username"
+            style={styles.inviteLabel}
+            i18nKey="STR_CHAT_INVITE_MEMBER"
+          />
+        </TouchableOpacity>
+      );
+    }
+
     if (!item) return null;
     const isSelected = selectedIds.includes(item.id);
     const isThreadOwner = item.id === threadOwnerId;
@@ -189,9 +231,13 @@ const ThreadEditorListContent: React.FC<Props> = ({
 
       <BottomSheetFlatList
         showsVerticalScrollIndicator={false}
-        data={list}
+        data={useMemo(() => [{ kind: 'invite' } as any, ...list], [list])}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item?.id ?? String(index)}
+        keyExtractor={(item, index) =>
+          (item as any)?.kind === 'invite'
+            ? 'invite'
+            : item?.id ?? String(index)
+        }
         contentContainerStyle={styles.listContainer}
         ListEmptyComponent={
           <AppText
@@ -261,6 +307,27 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: COLORS.primary,
+  },
+  inviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  plusAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: COLORS.border ?? '#D0D0D0',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  plusText: {
+    color: COLORS.body,
+    fontWeight: '700',
+  },
+  inviteLabel: {
+    color: COLORS.body,
   },
 });

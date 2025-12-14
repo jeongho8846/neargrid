@@ -233,5 +233,6 @@
 
   "STR_PERMISSION_ALLOW": "확인",
   "STR_CANT_CHARGE_DONATION_IN_APP_1": "앱 내에서는 후원 충전이 불가능합니다. ",
-  "STR_CANT_CHARGE_DONATION_IN_APP_2": "웹사이트를 방문해주세요. "
+  "STR_CANT_CHARGE_DONATION_IN_APP_2": "웹사이트를 방문해주세요. ",
+  "STR_INVITE_MEMBERS": "멤버 초대"
 }

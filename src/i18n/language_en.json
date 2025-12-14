@@ -234,5 +234,6 @@
   "STR_PERMISSION_ALLOW": "Allow",
   "STR_CANT_CHARGE_DONATION_IN_APP_1": "Point charging is not available in the app. ",
   "STR_CANT_CHARGE_DONATION_IN_APP_2": "Please visit our website. ",
-  "STR_MAP_LOADING": "Loading..."
+  "STR_MAP_LOADING": "Loading...",
+  "STR_INVITE_MEMBERS": "Invite Members"
 }

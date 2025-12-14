@@ -7,7 +7,12 @@ import { Thread } from '../model/ThreadModel';
 export function updateThreadCache(
   queryClient: QueryClient,
   threadId: string,
-  partial: Partial<Thread>,
+  partial:
+    | Partial<Thread>
+    | ((prev: Thread) => Thread)
+    | {
+        editMemberResponseSimpleDtos?: Thread['editMemberResponseSimpleDtos'] | ((prev: Thread['editMemberResponseSimpleDtos']) => Thread['editMemberResponseSimpleDtos']);
+      },
 ) {
   // ✅ 1. 'threads' prefix로 시작하는 모든 캐시 가져오기
   const queries = queryClient
@@ -20,23 +25,34 @@ export function updateThreadCache(
     if (!data) return;
 
     // ✅ 2. 구조별로 처리
+    const applyPartial = (thread: Thread) => {
+      if (typeof partial === 'function') {
+        return (partial as (prev: Thread) => Thread)(thread);
+      }
+      const next: any = { ...thread, ...partial };
+      if (partial && typeof partial === 'object' && 'editMemberResponseSimpleDtos' in partial) {
+        const v = (partial as any).editMemberResponseSimpleDtos;
+        next.editMemberResponseSimpleDtos =
+          typeof v === 'function' ? v(thread.editMemberResponseSimpleDtos) : v;
+      }
+      return next;
+    };
+
     if (data.pages) {
-      // infiniteQuery 구조
       const newData = {
         ...data,
         pages: data.pages.map((page: any) => ({
           ...page,
           threads: page.threads
             ? page.threads.map((t: Thread) =>
-                t.threadId === threadId ? { ...t, ...partial } : t,
+                t.threadId === threadId ? applyPartial(t) : t,
               )
             : page.threads,
         })),
       };
       queryClient.setQueryData(key, newData);
     } else if (data.threadId === threadId) {
-      // detail 구조
-      queryClient.setQueryData(key, { ...data, ...partial });
+      queryClient.setQueryData(key, applyPartial(data));
     }
   });
 }
