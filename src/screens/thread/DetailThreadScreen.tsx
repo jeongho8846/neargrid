@@ -15,6 +15,7 @@ import ThreadCommentList, {
   ThreadCommentListRef,
 } from '@/features/thread/lists/ThreadCommentList';
 import RouteThread_ChildThreadList from '@/features/thread/lists/RouteThread_ChildThreadList';
+import HubThread_ChildThreadList from '@/features/thread/lists/HubThread_ChildThreadList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import { COLORS } from '@/common/styles/colors';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
@@ -36,7 +37,8 @@ type RouteParams = {
  *   2. threadId만 있는 경우: API 호출하여 thread 정보 가져옴
  * - threadType에 따라 다른 컴포넌트 렌더링
  *   1. ROUTE_THREAD: RouteThread_ChildThreadList (자식 스레드 리스트)
- *   2. 일반 Thread: ThreadCommentList (댓글 리스트)
+ *   2. HUB_THREAD: HubThread_ChildThreadList (자식 스레드 리스트)
+ *   3. 일반 Thread: ThreadCommentList (댓글 리스트)
  */
 const DetailThreadScreen = () => {
   const { params } = useRoute<RouteProp<RouteParams, 'DetailThread'>>();
@@ -63,6 +65,7 @@ const DetailThreadScreen = () => {
 
   // ✅ threadType 분기
   const isRouteThread = thread?.threadType === 'ROUTE_THREAD';
+  const isHubThread = thread?.threadType === 'HUB_THREAD';
 
   // ✅ 댓글 작성 훅 (Optimistic 반영) - 일반 스레드만
   const { handleSubmit } = useCreateThreadCommentWithOptimistic(
@@ -73,7 +76,7 @@ const DetailThreadScreen = () => {
   // ✅ 포커스될 때 입력창 활성화 - 일반 스레드만
   useFocusEffect(
     useCallback(() => {
-      if (!thread || isRouteThread) return;
+      if (!thread || isRouteThread || isHubThread) return;
 
       openInputBar({
         placeholder: '댓글을 입력하세요…',
@@ -81,7 +84,14 @@ const DetailThreadScreen = () => {
         onSubmit: text => handleSubmit(text),
       });
       return () => closeInputBar();
-    }, [openInputBar, closeInputBar, handleSubmit, thread, isRouteThread]),
+    }, [
+      openInputBar,
+      closeInputBar,
+      handleSubmit,
+      thread,
+      isRouteThread,
+      isHubThread,
+    ]),
   );
 
   // ✅ 로딩 중이거나 thread가 없는 경우
@@ -110,6 +120,11 @@ const DetailThreadScreen = () => {
 
       {isRouteThread ? (
         <RouteThread_ChildThreadList
+          threadId={thread.threadId}
+          headerThread={thread}
+        />
+      ) : isHubThread ? (
+        <HubThread_ChildThreadList
           threadId={thread.threadId}
           headerThread={thread}
         />
