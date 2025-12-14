@@ -21,6 +21,8 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
 
   latitude: dto.gpsLocationResponseDto?.latitude ?? 0,
   longitude: dto.gpsLocationResponseDto?.longitude ?? 0,
+  altitude: dto.gpsLocationResponseDto?.altitude ?? null,
+  isCustomLocation: dto.isCustomLocation ?? false,
 
   reactedByCurrentMember: dto.reactedByCurrentMember ?? false,
   reactionCount: dto.reactionCount ?? 0,
@@ -31,6 +33,7 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
   hiddenDueToReport: dto.hiddenDueToReport ?? false,
 
   markerImageUrl: dto.markerImageUrl ?? '',
+  mapReplacesImage: dto.mapReplacesImage ?? false,
 
   bountyPoint: dto.bountyPoint ?? null,
   expireDateTime: dto.expireDateTime ?? null,
@@ -42,6 +45,19 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
 
   /** ✅ 받은 후원 포인트 총합 */
   donationPointReceivedCount: dto.donationPointReceivedCount ?? 0,
+
+  depth: dto.depth ?? 0,
+  editMemberResponseSimpleDtos: (dto.editMemberResponseSimpleDtos ?? []).map(
+    member => ({
+      id: member.id,
+      profileImageUrl: member.profileImageUrl ?? '',
+      nickName: member.nickName ?? '',
+      realName: member.realName ?? '',
+      profileText: member.profileText ?? '',
+      memberType: member.memberType ?? '',
+      count: member.count ?? null,
+    }),
+  ),
 });
 
 export const mapServerThreads = (dtos: ServerThreadDto[]): Thread[] =>

@@ -24,6 +24,7 @@ export type ServerThreadDto = {
     longitude: number;
     altitude?: number;
   } | null;
+  isCustomLocation?: boolean | null;
 
   reactedByCurrentMember: boolean | null;
   reactionCount: number | null;
@@ -39,6 +40,7 @@ export type ServerThreadDto = {
   hiddenDueToReport: boolean | null;
 
   markerImageUrl: string | null;
+  mapReplacesImage?: boolean | null;
 
   bountyPoint: number | null;
   expireDateTime: string | null;
@@ -49,6 +51,28 @@ export type ServerThreadDto = {
 
   /** ✅ 스레드 깊이 (ROUTE_THREAD의 자식일 경우 사용) */
   depth?: number | null;
+
+  editMemberResponseSimpleDtos?: EditMemberResponseSimpleDto[] | null;
+};
+
+export type EditMemberResponseSimpleDto = {
+  id: string;
+  profileImageUrl: string | null;
+  nickName: string | null;
+  realName: string | null;
+  profileText: string | null;
+  memberType: string | null;
+  count: number | null;
+};
+
+export type EditMemberSimple = {
+  id: string;
+  profileImageUrl: string;
+  nickName: string;
+  realName: string;
+  profileText: string;
+  memberType: string;
+  count: number | null;
 };
 
 /**
@@ -75,6 +99,8 @@ export type Thread = {
 
   latitude: number;
   longitude: number;
+  altitude: number | null;
+  isCustomLocation: boolean;
 
   reactedByCurrentMember: boolean;
   reactionCount: number;
@@ -85,6 +111,7 @@ export type Thread = {
   hiddenDueToReport: boolean;
 
   markerImageUrl: string;
+  mapReplacesImage: boolean;
 
   bountyPoint: number | null;
   expireDateTime: string | null;
@@ -99,6 +126,8 @@ export type Thread = {
 
   /** ✅ 스레드 깊이 (ROUTE_THREAD의 자식일 경우 사용) */
   depth: number;
+
+  editMemberResponseSimpleDtos: EditMemberSimple[];
 };
 
 /**
@@ -132,6 +161,8 @@ export const createEmptyThread = (id: string): Thread => ({
 
   latitude: 0,
   longitude: 0,
+  altitude: null,
+  isCustomLocation: false,
 
   reactedByCurrentMember: false,
   reactionCount: 0,
@@ -142,6 +173,7 @@ export const createEmptyThread = (id: string): Thread => ({
   hiddenDueToReport: false,
 
   markerImageUrl: '',
+  mapReplacesImage: false,
 
   bountyPoint: null,
   expireDateTime: null,
@@ -153,6 +185,7 @@ export const createEmptyThread = (id: string): Thread => ({
 
   donationPointReceivedCount: 0,
   depth: 0, // ✅ 추가
+  editMemberResponseSimpleDtos: [],
 });
 
 /**
@@ -179,6 +212,8 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
 
   latitude: dto.gpsLocationResponseDto?.latitude ?? 0,
   longitude: dto.gpsLocationResponseDto?.longitude ?? 0,
+  altitude: dto.gpsLocationResponseDto?.altitude ?? null,
+  isCustomLocation: dto.isCustomLocation ?? false,
 
   reactedByCurrentMember: dto.reactedByCurrentMember ?? false,
   reactionCount: dto.reactionCount ?? 0,
@@ -189,6 +224,7 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
   hiddenDueToReport: dto.hiddenDueToReport ?? false,
 
   markerImageUrl: dto.markerImageUrl ?? '',
+  mapReplacesImage: dto.mapReplacesImage ?? false,
 
   bountyPoint: dto.bountyPoint ?? null,
   expireDateTime: dto.expireDateTime ?? null,
@@ -200,4 +236,13 @@ export const mapServerThread = (dto: ServerThreadDto): Thread => ({
 
   donationPointReceivedCount: dto.donationPointReceivedCount ?? 0,
   depth: dto.depth ?? 0, // ✅ 추가
+  editMemberResponseSimpleDtos: (dto.editMemberResponseSimpleDtos ?? []).map((member) => ({
+    id: member.id,
+    profileImageUrl: member.profileImageUrl ?? '',
+    nickName: member.nickName ?? '',
+    realName: member.realName ?? '',
+    profileText: member.profileText ?? '',
+    memberType: member.memberType ?? '',
+    count: member.count ?? null,
+  })),
 });

@@ -31,6 +31,10 @@ const ThreadItemDetail: React.FC<Props> = ({
 
   if (isLoading) return <AppSkeletonPreset type="detail" />;
 
+  const editMembers = item.editMemberResponseSimpleDtos ?? [];
+  const displayedEditMembers = editMembers.slice(0, 3);
+  const showEditingCount = editMembers.length > 3;
+
   const hasImages = (item.contentImageUrls?.length ?? 0) > 0;
   const createdMMDD = item.createDatetime
     ? item.createDatetime.slice(5, 10)
@@ -41,6 +45,7 @@ const ThreadItemDetail: React.FC<Props> = ({
     navigation.navigate('DetailThread', { thread: item });
   };
 
+  console.log('쓰레드아이템디테일오는값', item);
   return (
     <View style={styles.card}>
       {/* 🧩 HEADER */}
@@ -94,6 +99,39 @@ const ThreadItemDetail: React.FC<Props> = ({
                 numberOfLines={hasImages ? 3 : 6}
               />
             </View>
+            {editMembers.length > 0 && (
+              <View style={styles.editMemberList}>
+                <View style={styles.editorRow}>
+                  {displayedEditMembers.map((member, index) => (
+                    <View
+                      key={member.id ?? index}
+                      style={[
+                        styles.editorAvatar,
+                        index > 0 && styles.editorAvatarOverlap,
+                      ]}
+                    >
+                      <AppProfileImage
+                        size={30}
+                        imageUrl={member.profileImageUrl}
+                        memberId={member.id}
+                        canGoToProfileScreen={true}
+                      />
+                    </View>
+                  ))}
+
+                  <>
+                    <AppText variant="caption" style={styles.editorCount}>
+                      {editMembers.length}
+                    </AppText>
+                    <AppText
+                      variant="caption"
+                      i18nKey="STR_THREAD_EDITING_LABEL"
+                      style={styles.editorLabel}
+                    />
+                  </>
+                </View>
+              </View>
+            )}
           </TouchableOpacity>
 
           {/* ⚙️ ACTION BAR */}
@@ -131,6 +169,30 @@ const styles = StyleSheet.create({
 
   footer: {
     paddingHorizontal: TEST_SPACING.sm,
+  },
+  editorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: TEST_SPACING.xs,
+  },
+  editorAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: TEST_COLORS.surface,
+  },
+  editorAvatarOverlap: {
+    marginLeft: -5,
+  },
+  editorCount: {
+    marginLeft: TEST_SPACING.sm,
+    color: TEST_COLORS.text_secondary,
+  },
+  editorLabel: {
+    marginLeft: 2,
+    color: TEST_COLORS.text_secondary,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -175,6 +237,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: TEST_SPACING.md,
   },
   textBox: { paddingHorizontal: TEST_SPACING.sm },
+  editMemberList: {
+    paddingHorizontal: TEST_SPACING.sm,
+    marginTop: TEST_SPACING.sm,
+  },
   hiddenBox: {
     backgroundColor: TEST_COLORS.surface,
     borderRadius: 8,
