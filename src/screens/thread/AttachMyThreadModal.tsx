@@ -15,6 +15,7 @@ import AppIcon from '@/common/components/AppIcon';
 import { COLORS } from '@/common/styles/colors';
 import { SPACING } from '@/common/styles/spacing';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
+import { useAttachThreadToHubThread } from '@/features/thread/hooks/useAttachThreadToHubThread';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useMemberProfilePageThreads } from '@/features/member/hooks/useMemberProfilePageThreads';
 import { Thread, mapServerThread } from '@/features/thread/model/ThreadModel';
@@ -24,6 +25,7 @@ type AttachMyThreadRoute = RouteProp<
     AttachMyThreadModal: {
       onConfirm?: (threads: Thread[]) => void;
       initialSelectedIds?: string[];
+      hubThreadId?: string;
     };
   },
   'AttachMyThreadModal'
@@ -39,6 +41,7 @@ const AttachMyThreadModal: React.FC = () => {
   const route = useRoute<AttachMyThreadRoute>();
   const { member } = useCurrentMember();
   const initialIds = route.params?.initialSelectedIds ?? [];
+  const hubThreadIdFromParams = route.params?.hubThreadId;
 
   const {
     data: threadPages,
@@ -90,10 +93,33 @@ const AttachMyThreadModal: React.FC = () => {
     [threads, selectedIds],
   );
 
-  const handleConfirm = useCallback(() => {
+  const { attach, loading: isAttaching } = useAttachThreadToHubThread();
+
+  const handleConfirm = useCallback(async () => {
+    if (!selectedIds.length) return;
+
+    const hubThreadId = hubThreadIdFromParams;
+    if (hubThreadId && member?.id) {
+      const ok = await attach({
+        currentMemberId: member.id,
+        hubThreadId,
+        threadIds: selectedIds,
+        selectedThreads,
+      });
+      if (!ok) return;
+    }
+
     route.params?.onConfirm?.(selectedThreads);
     navigation.goBack();
-  }, [navigation, route.params, selectedThreads]);
+  }, [
+    attach,
+    hubThreadIdFromParams,
+    member?.id,
+    navigation,
+    route.params,
+    selectedIds,
+    selectedThreads,
+  ]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -111,7 +137,8 @@ const AttachMyThreadModal: React.FC = () => {
           <AppButton
             labelKey="STR_SAVE"
             onPress={handleConfirm}
-            disabled={selectedIds.length === 0}
+            disabled={selectedIds.length === 0 || isAttaching}
+            loading={isAttaching}
             style={styles.headerButton}
           />
         }

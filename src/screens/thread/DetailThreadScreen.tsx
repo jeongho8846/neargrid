@@ -79,9 +79,10 @@ const DetailThreadScreen = () => {
     navigation.navigate(
       'AttachMyThreadModal' as never,
       {
+        hubThreadId: thread?.threadId,
         onConfirm: (selectedThreads: Thread[]) => {
           console.log(
-            'TODO: attach my thread into hub',
+            '✅ attached threads to hub',
             thread?.threadId,
             selectedThreads?.map(t => t.threadId),
           );
