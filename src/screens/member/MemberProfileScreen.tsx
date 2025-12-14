@@ -1,5 +1,5 @@
 // 📄 src/screens/member/MemberProfileScreen.tsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { TouchableOpacity, View, StyleSheet } from 'react-native';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated'; // ✅ 추가
 import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
@@ -7,11 +7,11 @@ import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCo
 import AppIcon from '@/common/components/AppIcon';
 import MemberProfileHeader from '@/features/member/components/MemberProfileHeader';
 import { useFetchMemberProfile } from '@/features/member/hooks/useFetchMemberProfile';
-import { useFetchFootPrintContents } from '@/features/footprint/hooks/useFetchFootPrintContents';
 import { useHeaderScroll } from '@/common/hooks/useHeaderScroll';
 import { useTabBarStore } from '@/common/state/tabBarStore'; // ✅ 추가
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useFollowMember } from '@/features/member/hooks/useFollowMember';
+import { useMemberProfilePageThreads } from '@/features/member/hooks/useMemberProfilePageThreads';
 import AppText from '@/common/components/AppText';
 import { COLORS } from '@/common/styles/colors';
 import ThreadItemDetail from '@/features/thread/components/thread_item_detail';
@@ -80,50 +80,39 @@ export default function MemberProfileScreen({ route }) {
     }
   }, [profile]);
 
-  /** 🧭 FootPrint 데이터 */
-  const { fetchContents, loading: isThreadsLoading } =
-    useFetchFootPrintContents();
+  /** 🧭 프로필 스레드 데이터 (React Query) */
+  const {
+    data: threadPages,
+    isLoading: isThreadsLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+    isRefetching,
+  } = useMemberProfilePageThreads({
+    currentMemberId: currentMember?.id ?? '',
+    targetMemberId: targetUserId ?? '',
+    enabled: !!targetUserId && !!currentMember?.id,
+  });
 
-  const [threads, setThreads] = useState([]);
+  const threads = useMemo(
+    () =>
+      (threadPages?.pages.flatMap(
+        page => page?.threadResponseDtoList ?? [],
+      ) ?? [])
+        .filter((t: any) => t?.depth === 0)
+        .sort(
+          (a: any, b: any) =>
+            new Date(b?.createDatetime).getTime() -
+            new Date(a?.createDatetime).getTime(),
+        ),
+    [threadPages],
+  );
 
-  useEffect(() => {
-    if (!targetUserId) return;
-    const toIso = (d: Date) => d.toISOString().slice(0, 19);
-    const startDate = new Date('2025-01-01T00:00:00');
-    const endDate = new Date();
-
-    const load = async () => {
-      try {
-        const res = await fetchContents({
-          memberId: targetUserId,
-          startDateTime: toIso(startDate),
-          endDateTime: toIso(endDate),
-        });
-
-        console.log('📦 [ProfileScreen] FootPrint Response:', res);
-
-        const filtered = res.filter((t: any) => t.depth === 0);
-
-        // ✅ 최신순 정렬
-        const sorted = filtered.sort((a: any, b: any) => {
-          return (
-            new Date(b.createDatetime).getTime() -
-            new Date(a.createDatetime).getTime()
-          );
-        });
-
-        setThreads(sorted);
-      } catch (err: any) {
-        console.error('❌ FootPrint 로드 실패:', err.message);
-        console.error(
-          '📛 서버 응답:',
-          err.response?.data || '(서버 응답 없음)',
-        );
-      }
-    };
-
-    load();
-  }, [targetUserId, fetchContents]);
+  const handleLoadMore = () => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.background }}>
@@ -188,9 +177,11 @@ export default function MemberProfileScreen({ route }) {
         }
         onScroll={scrollHandler}
         scrollEventThrottle={16}
-        isLoading={isProfileLoading || isThreadsLoading}
+        isLoading={isProfileLoading || isThreadsLoading || isRefetching}
+        onEndReached={handleLoadMore}
+        onEndReachedThreshold={0.4}
         ListEmptyComponent={
-          !isThreadsLoading && (
+          !isThreadsLoading && !isRefetching && (
             <View style={styles.emptyContainer}>
               <AppText variant="body" i18nKey="STR_NO_DATA" />
             </View>
