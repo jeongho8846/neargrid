@@ -8,13 +8,18 @@ import { SPACING } from '@/common/styles/spacing';
 import { Thread } from '../model/ThreadModel';
 import { useThreadMenuActions } from '../hooks/useThreadMenuActions';
 
-const ThreadMenuContent: React.FC<{ thread: Thread }> = ({ thread }) => {
-  const actions = useThreadMenuActions(thread);
+const ThreadMenuContent: React.FC<{ thread: Thread; hubThreadId?: string }> = ({
+  thread,
+  hubThreadId,
+}) => {
+  console.log('쓰레드옵션넘언오는값', thread);
+  const actions = useThreadMenuActions(thread, { hubThreadId });
 
   // ✅ available 상태에 따라 숨기기/숨기기 취소 전환
   const hideLabelKey = thread.available
     ? 'STR_THREAD_MENU_HIDE'
     : 'STR_THREAD_MENU_UNHIDE';
+  const isChildThread = thread.depth > 0;
 
   return (
     <View style={styles.container}>
@@ -70,6 +75,25 @@ const ThreadMenuContent: React.FC<{ thread: Thread }> = ({ thread }) => {
           />
         </TouchableOpacity>
       </View>
+
+      {/* 2.5️⃣ 그룹 - 허브 연결 해제 (자식일 때만) */}
+      {isChildThread && (
+        <View style={styles.groupBox}>
+          <TouchableOpacity
+            style={styles.row}
+            activeOpacity={0.7}
+            onPress={actions.detachFromHubThread}
+          >
+            <View style={styles.left}>
+              <AppIcon type="ion" name="remove-circle-outline" size={20} />
+              <AppText
+                i18nKey="STR_THREAD_MENU_DETACH_FROM_HUB"
+                variant="body"
+              />
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* 3️⃣ 그룹 - 숨기기/숨기기 취소, 신고 */}
       <View style={styles.groupBox}>

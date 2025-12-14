@@ -8,15 +8,25 @@ import AppToast from '@/common/components/AppToast/AppToastManager';
 import { useBottomSheetStore } from '@/common/state/bottomSheetStore';
 import { openDonateSheet } from '@/features/donation/sheets/openDonateSheet';
 import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
+import { useDetachThreadFromHubThread } from './useDetachThreadFromHubThread';
 
 // ✅ 신고 시트 import
 import { openReportSheet } from '@/features/report/sheets/openReportSheet';
 
-export const useThreadMenuActions = (thread: Thread) => {
+type ThreadMenuActionOptions = {
+  hubThreadId?: string;
+};
+
+export const useThreadMenuActions = (
+  thread: Thread,
+  options: ThreadMenuActionOptions = {},
+) => {
   const navigation = useNavigation();
   const queryClient = useQueryClient();
   const { close } = useBottomSheetStore();
   const { member } = useCurrentMember();
+  const { detach } = useDetachThreadFromHubThread();
+  const { hubThreadId } = options;
 
   /**
    * ✅ 링크 복사
@@ -102,11 +112,37 @@ export const useThreadMenuActions = (thread: Thread) => {
     }
   };
 
+  /**
+   * ✅ 허브 스레드에서 분리 (자식일 때만)
+   */
+  const detachFromHubThread = async () => {
+    if (!member?.id || !hubThreadId) {
+      console.warn(
+        '[useThreadMenuActions] detachFromHubThread 누락된 값',
+        member?.id,
+        hubThreadId,
+      );
+      AppToast.show('필수 정보가 없습니다');
+      return;
+    }
+
+    const success = await detach({
+      currentMemberId: member.id,
+      hubThreadId,
+      threadId: thread.threadId,
+    });
+
+    if (success) {
+      close();
+    }
+  };
+
   return {
     copyLink,
     navigateProfile,
     openDonationSheet,
     toggleHideThread,
     report,
+    detachFromHubThread,
   };
 };

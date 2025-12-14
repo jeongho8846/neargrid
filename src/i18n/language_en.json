@@ -30,7 +30,7 @@
   "STR_ATTACH_MY_THREAD": "Attach my thread ",
   "STR_CREATE_CHILD_THREAD": "Create child thread ",
   "STR_PLACEHOLDER_REPLY": "Write a comment...",
-
+  "STR_THREAD_MENU_DETACH_FROM_HUB": "Detach from Hub",
   "STR_MAP_SEARCH_HERE": "Search Here",
   "STR_MAP_THREAD_LIST": "Thread List",
   "STR_CLEAR_FILTER": "Clear Filter",
