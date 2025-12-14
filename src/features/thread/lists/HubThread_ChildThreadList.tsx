@@ -44,6 +44,7 @@ const HubThread_ChildThreadList: React.FC<Props> = ({
   // ✅ headerThread에서 childThreadCount 가져오기
   const displayCount =
     headerThread?.childThreadDirectCount ?? childThreads.length;
+  const hubThreadId = headerThread?.threadId ?? threadId;
 
   const handleThreadPress = (thread: Thread) => {
     navigation.navigate('DetailThread', { thread });
@@ -60,7 +61,7 @@ const HubThread_ChildThreadList: React.FC<Props> = ({
             activeOpacity={0.8}
             onPress={() => handleThreadPress(item)}
           >
-            <ThreadItemDetail item={item} />
+            <ThreadItemDetail item={item} hubThreadId={hubThreadId} />
           </TouchableOpacity>
         )}
         isLoading={isLoading}
@@ -68,6 +69,7 @@ const HubThread_ChildThreadList: React.FC<Props> = ({
         onRefresh={refetch}
         renderSkeletonItem={({ index }) => (
           <ThreadItemDetail
+            hubThreadId={hubThreadId}
             item={{
               threadId: `skeleton-${index}`,
               threadType: 'GENERAL_THREAD',
@@ -105,7 +107,7 @@ const HubThread_ChildThreadList: React.FC<Props> = ({
         ListHeaderComponent={
           headerThread ? (
             <View>
-              <ThreadItemDetail item={headerThread} />
+              <ThreadItemDetail item={headerThread} hubThreadId={hubThreadId} />
               <View style={styles.headerDivider}>
                 {/* ✅ 자식 스레드 개수 표시 */}
                 <AppText i18nKey="STR_CHILD_THREAD_COUNT" variant="body" />

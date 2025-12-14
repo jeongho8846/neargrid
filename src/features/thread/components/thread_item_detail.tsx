@@ -18,9 +18,14 @@ import { TEST_SPACING } from '@/test/styles/spacing';
 type Props = {
   item: Thread;
   isLoading?: boolean;
+  hubThreadId?: string;
 };
 
-const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
+const ThreadItemDetail: React.FC<Props> = ({
+  item,
+  isLoading = false,
+  hubThreadId,
+}) => {
   const navigation = useNavigation();
   const route = useRoute();
 
@@ -53,7 +58,7 @@ const ThreadItemDetail: React.FC<Props> = ({ item, isLoading = false }) => {
           </View>
         </View>
         <ContentsMenuButton
-          onOpen={() => openThreadMenuSheet({ thread: item })}
+          onOpen={() => openThreadMenuSheet({ thread: item, hubThreadId })}
         />
       </View>
 

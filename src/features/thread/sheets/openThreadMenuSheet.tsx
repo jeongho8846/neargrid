@@ -10,12 +10,18 @@ import ThreadMenuContent from '../components/ThreadMenuContent';
  * - NavigationContext 공유 가능 (App 구조 변경 덕분)
  * - 그냥 open() 호출로 시트 열기
  */
-export const openThreadMenuSheet = ({ thread }: { thread: Thread }) => {
+export const openThreadMenuSheet = ({
+  thread,
+  hubThreadId,
+}: {
+  thread: Thread;
+  hubThreadId?: string;
+}) => {
   const { open } = useBottomSheetStore.getState();
 
   open(
     <BottomSheetView>
-      <ThreadMenuContent thread={thread} />
+      <ThreadMenuContent thread={thread} hubThreadId={hubThreadId} />
     </BottomSheetView>,
     {
       snapPoints: [400],
