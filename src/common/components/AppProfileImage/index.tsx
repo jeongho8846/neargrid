@@ -37,7 +37,7 @@ const AppProfileImage: React.FC<Props> = ({
 
   const handlePress = () => {
     if (!canGoToProfileScreen || !memberId || !navigation) return;
-    navigation.navigate('Profile', { memberId });
+    navigation.push('Profile', { memberId });
   };
 
   const hasImage = !!imageUrl;
