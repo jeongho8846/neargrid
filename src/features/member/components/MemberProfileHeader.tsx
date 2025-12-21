@@ -99,8 +99,8 @@ const MemberProfileHeader: React.FC<Props> = ({
           />
         </View>
       </View>
-      <View style={styles.middleSection_foot}>
-        {!isMyProfile && (
+      {!isMyProfile && (
+        <View style={styles.middleSection_foot}>
           <AppButton
             labelKey={isFollowed ? 'STR_UNFOLLOW' : 'STR_FOLLOW'}
             variant={isFollowed ? 'outline' : 'filled'}
@@ -109,17 +109,18 @@ const MemberProfileHeader: React.FC<Props> = ({
             disabled={!profile?.id || followLoading}
             style={{ flex: 1 }}
           />
-        )}
-        <AppButton
-          labelKey="STR_CHAT_SEND_MESSAGE"
-          onPress={() => {
-            if (profile?.id) {
-              openPrivateChat(profile.id);
-            }
-          }}
-          style={{ flex: 1 }}
-        />
-      </View>
+
+          <AppButton
+            labelKey="STR_CHAT_SEND_MESSAGE"
+            onPress={() => {
+              if (profile?.id) {
+                openPrivateChat(profile.id);
+              }
+            }}
+            style={{ flex: 1 }}
+          />
+        </View>
+      )}
 
       {/* 🔹 Bottom - 포인트 + 통계 */}
       <View style={styles.bottomSection}>
@@ -166,7 +167,7 @@ const styles = StyleSheet.create({
 
     backgroundColor: COLORS.sheet_background,
     borderRadius: SPACING.md,
-    bottom: 15,
+    marginBottom: SPACING.xs,
   },
   middleSection_foot: {
     width: '100%',
