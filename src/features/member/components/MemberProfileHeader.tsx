@@ -141,7 +141,6 @@ export default MemberProfileHeader;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: COLORS.background,
-    paddingBottom: SPACING.lg,
   },
 
   /** ──────── TOP ──────── **/

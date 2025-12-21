@@ -24,7 +24,7 @@ const MemberStatsRow: React.FC<Props> = ({
   givenPoint = 0,
 }) => {
   const { member } = useCurrentMember();
-
+  console.log('stats:', stats);
   /** ✅ 도네이션 랭킹 시트 열기 */
   const handleOpenRankSheet = (tab: 'recipient' | 'donor') => {
     if (!member?.id) return;
@@ -75,9 +75,9 @@ const MemberStatsRow: React.FC<Props> = ({
     ],
     // ③ 활동 관련
     [
-      { key: 'STR_THREADS', value: stats?.threads ?? 0 },
-      { key: 'STR_COMMENTS', value: stats?.comments ?? 0 },
-      { key: 'STR_MENTIONS', value: stats?.mentions ?? 0 },
+      { key: 'STR_TAB_THREAD', value: stats?.threads ?? 0 },
+      { key: 'STR_TAB_MENTIONED_THREAD', value: stats?.mentions ?? 0 },
+      { key: 'STR_TAB_EDITING_THREAD', value: stats?.editingThreads ?? 0 },
     ],
   ];
 

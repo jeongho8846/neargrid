@@ -24,6 +24,14 @@ export type MemberProfile = {
   followingCount?: number;
   originThreadCount?: number;
   commentThreadCount?: number;
+  childThreadCount?: number;
+  mentionedThreadCount?: number;
+  editingThreadCount?: number;
+  pinCount?: number;
+  commentPinCount?: number;
+  postCount?: number | null;
+  commentPostCount?: number;
+  chatBotCount?: number;
   createDateTime?: string;
   lastLoginDateTime?: string;
 

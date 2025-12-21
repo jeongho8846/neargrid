@@ -5,6 +5,9 @@
   "STR_COMMENT": "Comment",
   "STR_COMMENTS": "Comments",
   "STR_MENTIONS": "Mentions",
+  "STR_TAB_THREAD": "Threads",
+  "STR_TAB_MENTIONED_THREAD": "Mentioned",
+  "STR_TAB_EDITING_THREAD": "Editing",
 
   "STR_FOLLOWERS": "Followers",
   "STR_FOLLOWINGS": "Following",

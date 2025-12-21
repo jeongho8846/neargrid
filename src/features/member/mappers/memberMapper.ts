@@ -16,6 +16,14 @@ export type MemberProfileResponse = {
     followingCount?: number;
     originThreadCount?: number;
     commentThreadCount?: number;
+    childThreadCount?: number;
+    mentionedThreadCount?: number;
+    editingThreadCount?: number;
+    pinCount?: number;
+    commentPinCount?: number;
+    postCount?: number | null;
+    commentPostCount?: number;
+    chatBotCount?: number;
     memberType?: string;
     createDateTime?: string;
     lastLoginDateTime?: string;
@@ -35,8 +43,16 @@ export const mapMemberProfileDto = (
   const stats: MemberStats = {
     followers: m.followerCount ?? 0,
     followings: m.followingCount ?? 0,
+    chatBots: m.chatBotCount ?? 0,
     threads: m.originThreadCount ?? 0,
+    childThreads: m.childThreadCount ?? 0,
     comments: m.commentThreadCount ?? 0,
+    mentions: m.mentionedThreadCount ?? 0,
+    editingThreads: m.editingThreadCount ?? 0,
+    pins: m.pinCount ?? 0,
+    commentPins: m.commentPinCount ?? 0,
+    posts: m.postCount ?? null,
+    commentPosts: m.commentPostCount ?? 0,
   };
 
   return {
@@ -63,6 +79,14 @@ export const mapMemberProfileDto = (
     followingCount: m.followingCount,
     originThreadCount: m.originThreadCount,
     commentThreadCount: m.commentThreadCount,
+    childThreadCount: m.childThreadCount,
+    mentionedThreadCount: m.mentionedThreadCount,
+    editingThreadCount: m.editingThreadCount,
+    pinCount: m.pinCount,
+    commentPinCount: m.commentPinCount,
+    postCount: m.postCount,
+    commentPostCount: m.commentPostCount,
+    chatBotCount: m.chatBotCount,
     createDateTime: m.createDateTime,
     lastLoginDateTime: m.lastLoginDateTime,
 

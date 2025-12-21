@@ -2,12 +2,13 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import {
   memberProfilePageThreads,
   MemberProfilePageThreadsResponse,
+  PageThreadType,
 } from '../api/memberProfilePageThreads';
 
 type UseMemberProfilePageThreadsArgs = {
   currentMemberId: string;
   targetMemberId: string;
-  pageThreadType?: 'THREAD' | string;
+  pageThreadType?: PageThreadType;
   enabled?: boolean;
   initialPagingState?: string | null;
 };

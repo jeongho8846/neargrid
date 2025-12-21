@@ -1,6 +1,6 @@
 // 📄 src/screens/member/MemberProfileScreen.tsx
 import React, { useEffect, useMemo, useState } from 'react';
-import { TouchableOpacity, View, StyleSheet } from 'react-native';
+import { TouchableOpacity, View, StyleSheet, ScrollView } from 'react-native';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated'; // ✅ 추가
 import AppFlashList from '@/common/components/AppFlashList/AppFlashList';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
@@ -19,10 +19,19 @@ import { useNavigation } from '@react-navigation/native';
 import { openProfileMenuSheet } from '@/features/member/sheets/openProfileMenuSheet';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
 import { MemberProfile } from '@/features/member/model/MemberProfileModel';
+import { PageThreadType } from '@/features/member/api/memberProfilePageThreads';
+
+const TAB_OPTIONS: { key: PageThreadType; labelKey: string }[] = [
+  { key: 'THREAD', labelKey: 'STR_TAB_THREAD' },
+  { key: 'MENTIONED_THREAD', labelKey: 'STR_TAB_MENTIONED_THREAD' },
+  { key: 'EDITING_THREAD', labelKey: 'STR_TAB_EDITING_THREAD' },
+];
 
 export default function MemberProfileScreen({ route }) {
   const { member: currentMember } = useCurrentMember();
   const targetUserId = route?.params?.memberId;
+  const [pageThreadType, setPageThreadType] =
+    useState<PageThreadType>('THREAD');
 
   // ✅ 헤더 스크롤 (Reanimated 기반)
   const { headerStyle, scrollHandler, direction } = useHeaderScroll(56);
@@ -40,11 +49,9 @@ export default function MemberProfileScreen({ route }) {
 
   /** 👤 프로필 정보 */
   const { data: profileData, isLoading: isProfileLoading } =
-    useFetchMemberProfile(
-      currentMember?.id ?? '',
-      targetUserId ?? '',
-      { enabled: !!targetUserId },
-    );
+    useFetchMemberProfile(currentMember?.id ?? '', targetUserId ?? '', {
+      enabled: !!targetUserId,
+    });
   const [profile, setProfile] = useState<MemberProfile | null>(null);
 
   useEffect(() => {
@@ -59,10 +66,7 @@ export default function MemberProfileScreen({ route }) {
         if (!prev) return prev;
         const nextFollowerCount =
           typeof prev.followerCount === 'number'
-            ? Math.max(
-                0,
-                prev.followerCount + (isFollowed ? 1 : -1),
-              )
+            ? Math.max(0, prev.followerCount + (isFollowed ? 1 : -1))
             : prev.followerCount;
 
         return {
@@ -92,13 +96,15 @@ export default function MemberProfileScreen({ route }) {
     currentMemberId: currentMember?.id ?? '',
     targetMemberId: targetUserId ?? '',
     enabled: !!targetUserId && !!currentMember?.id,
+    pageThreadType,
   });
 
   const threads = useMemo(
     () =>
-      (threadPages?.pages.flatMap(
-        page => page?.threadResponseDtoList ?? [],
-      ) ?? [])
+      (
+        threadPages?.pages.flatMap(page => page?.threadResponseDtoList ?? []) ??
+        []
+      )
         .filter((t: any) => t?.depth === 0)
         .sort(
           (a: any, b: any) =>
@@ -164,16 +170,48 @@ export default function MemberProfileScreen({ route }) {
         data={threads}
         keyExtractor={item => item.threadId.toString()}
         renderItem={({ item }) => <ThreadItemDetail item={item} />}
+        containerStyle={{ paddingBottom: 50 }}
         ListHeaderComponent={
-          <MemberProfileHeader
-            currentMemberId={currentMember?.id}
-            profile={profile}
-            isLoading={isProfileLoading}
-            followLoading={isFollowUpdating}
-            onToggleFollow={() =>
-              toggleFollow(!!profile?.followedByCurrentMember)
-            }
-          />
+          <View>
+            <MemberProfileHeader
+              currentMemberId={currentMember?.id}
+              profile={profile}
+              isLoading={isProfileLoading}
+              followLoading={isFollowUpdating}
+              onToggleFollow={() =>
+                toggleFollow(!!profile?.followedByCurrentMember)
+              }
+            />
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabScroll}
+              contentContainerStyle={styles.tabContainer}
+            >
+              {TAB_OPTIONS.map(tab => {
+                const isActive = tab.key === pageThreadType;
+                return (
+                  <TouchableOpacity
+                    key={tab.key}
+                    style={[
+                      styles.tabButton,
+                      isActive && styles.tabButtonActive,
+                    ]}
+                    onPress={() => setPageThreadType(tab.key)}
+                  >
+                    <AppText
+                      variant="body"
+                      style={[
+                        styles.tabLabel,
+                        isActive && styles.tabLabelActive,
+                      ]}
+                      i18nKey={tab.labelKey}
+                    />
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </View>
         }
         onScroll={scrollHandler}
         scrollEventThrottle={16}
@@ -181,7 +219,8 @@ export default function MemberProfileScreen({ route }) {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.4}
         ListEmptyComponent={
-          !isThreadsLoading && !isRefetching && (
+          !isThreadsLoading &&
+          !isRefetching && (
             <View style={styles.emptyContainer}>
               <AppText variant="body" i18nKey="STR_NO_DATA" />
             </View>
@@ -200,5 +239,32 @@ const styles = StyleSheet.create({
   emptyContainer: {
     padding: 24,
     alignItems: 'center',
+  },
+  tabScroll: {},
+  tabContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  tabButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 10,
+    backgroundColor: COLORS.input_background,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    marginRight: 8,
+  },
+  tabButtonActive: {
+    backgroundColor: COLORS.button_active,
+    borderColor: COLORS.button_active,
+  },
+  tabLabel: {
+    color: COLORS.caption,
+  },
+  tabLabelActive: {
+    color: COLORS.button_variant,
+    fontWeight: '700',
   },
 });

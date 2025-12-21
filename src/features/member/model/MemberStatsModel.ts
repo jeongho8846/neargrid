@@ -9,7 +9,15 @@ export type MemberStats = {
   chatBots: number; // 챗봇 수
 
   /** 🧵 활동 관련 */
-  threads: number; // 작성한 쓰레드 수
-  comments: number; // 작성한 댓글 수
+  threads: number; // 작성한 원본 쓰레드 수
+  childThreads: number; // 작성한 자식 쓰레드 수
+  comments: number; // 작성한 댓글/답글 수
   mentions: number; // 멘션된 횟수
+  editingThreads: number; // 편집 중인 쓰레드 수
+
+  /** 📌 기타 */
+  pins: number; // 핀 개수
+  commentPins: number; // 핀 댓글 개수
+  posts: number | null; // 포스트 개수 (nullable)
+  commentPosts: number; // 포스트 댓글 개수
 };

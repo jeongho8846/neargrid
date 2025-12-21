@@ -4,8 +4,10 @@ type MemberProfilePageThreadsParams = {
   currentMemberId: string; // 조회자 (viewer)
   targetMemberId: string; // 대상 프로필 사용자
   pagingState?: string | null;
-  pageThreadType?: 'THREAD' | string;
+  pageThreadType?: PageThreadType;
 };
+
+export type PageThreadType = 'THREAD' | 'MENTIONED_THREAD' | 'EDITING_THREAD';
 
 export type MemberProfilePageThreadsResponse = {
   threadResponseDtoList?: any[];
