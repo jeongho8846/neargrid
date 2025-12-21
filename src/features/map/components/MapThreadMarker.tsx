@@ -35,11 +35,18 @@ const MapThreadMarkerBase = ({
   }, []);
 
   React.useEffect(() => {
-    setTracks(true);
+    // 이미지/프로필이 바뀌면 다시 트래킹 시작, 없는 경우 바로 종료
+    const hasImage = !!imageUrl || !!profileImageUrl;
+    setTracks(hasImage);
+
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
-    timeoutRef.current = setTimeout(() => stopTracking(), 1000); // fallback to stop tracking
+    if (hasImage) {
+      // 안전장치: 로딩 실패/지연 시 최대 4초 후 트래킹 종료
+      timeoutRef.current = setTimeout(() => stopTracking(), 4000);
+    }
+
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
@@ -67,6 +74,7 @@ const MapThreadMarkerBase = ({
               source={{ uri: postImageUrl }}
               style={styles.image}
               onLoadEnd={stopTracking}
+              onError={stopTracking}
             />
           ) : profileImage ? (
             <View style={styles.profileWithBubble}>
@@ -74,6 +82,7 @@ const MapThreadMarkerBase = ({
                 source={{ uri: profileImage }}
                 style={[styles.image, styles.profileImage]}
                 onLoadEnd={stopTracking}
+                onError={stopTracking}
               />
               <Ionicons
                 name="chatbubble"
