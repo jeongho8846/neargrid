@@ -26,7 +26,7 @@ const MemberItemLabel: React.FC<{ item: MemberItem }> = ({ item }) => {
     >
       <AppProfileImage
         imageUrl={item.profileImageUrl}
-        canGoToProfileScreen={true}
+        canGoToProfileScreen={false}
         memberId={item.id}
       />
       <View style={styles.textBox}>
