@@ -43,9 +43,7 @@ export const openThreadShareSheet = ({ threadId }: Props) => {
     return (
       <View style={styles.linkRow}>
         <View style={styles.linkBox}>
-          <AppText numberOfLines={1} style={styles.linkText}>
-            {link}
-          </AppText>
+          <AppText numberOfLines={1}>{link}</AppText>
         </View>
 
         <TouchableOpacity
@@ -57,7 +55,7 @@ export const openThreadShareSheet = ({ threadId }: Props) => {
             type="ion"
             name={copied ? 'checkmark-circle-outline' : 'link-outline'}
             size={22}
-            color={copied ? COLORS.text : COLORS.text}
+            color={copied ? COLORS.body : COLORS.body}
           />
         </TouchableOpacity>
       </View>
