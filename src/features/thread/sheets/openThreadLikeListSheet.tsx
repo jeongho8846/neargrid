@@ -16,18 +16,35 @@ type ReactionMember = {
   profileImageUrl?: string | null;
 };
 
-export const openThreadLikeListSheet = ({ threadId }: { threadId: string }) => {
-  const { open } = useBottomSheetStore.getState();
-
-  open(<ThreadLikeListContent threadId={threadId} />, {
-    snapPoints: ['90%'],
-    initialIndex: 1,
-    enableHandlePanningGesture: true,
-    enableContentPanningGesture: true,
-  });
+type OpenSheetParams = {
+  threadId: string;
+  currentMemberId?: string | null;
 };
 
-const ThreadLikeListContent: React.FC<{ threadId: string }> = ({ threadId }) => {
+export const openThreadLikeListSheet = ({
+  threadId,
+  currentMemberId,
+}: OpenSheetParams) => {
+  const { open } = useBottomSheetStore.getState();
+
+  open(
+    <ThreadLikeListContent
+      threadId={threadId}
+      currentMemberId={currentMemberId ?? undefined}
+    />,
+    {
+      snapPoints: ['90%'],
+      initialIndex: 1,
+      enableHandlePanningGesture: true,
+      enableContentPanningGesture: true,
+    },
+  );
+};
+
+const ThreadLikeListContent: React.FC<OpenSheetParams> = ({
+  threadId,
+  currentMemberId,
+}) => {
   const [members, setMembers] = useState<ReactionMember[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -37,38 +54,51 @@ const ThreadLikeListContent: React.FC<{ threadId: string }> = ({ threadId }) => 
   useEffect(() => {
     fetchReactionMembers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threadId]);
+  }, [threadId, currentMemberId]);
 
   const fetchReactionMembers = async () => {
     try {
       setLoading(true);
 
       const res = await apiContents.get('/thread/readThreadReactionMember', {
-        params: { thread_id: threadId },
+        params: {
+          thread_id: threadId,
+          Blankable_current_member_id: currentMemberId ?? undefined,
+        },
       });
 
-      console.log('📌 readThreadReactionMember response sample:', res.data?.[0] ?? '(empty)');
+      console.log(
+        '📌 readThreadReactionMember response sample:',
+        res.data ?? '(empty)',
+      );
 
-      const data: any[] = Array.isArray(res.data) ? res.data : [];
+      const rawList = Array.isArray(res.data)
+        ? res.data
+        : Array.isArray(res.data?.data)
+          ? res.data.data
+          : res.data
+            ? [res.data]
+            : [];
 
-      // 디버그: 비정상 항목이 있으면 로그 남김
-      const badItems = data.filter((d) => !d || d.id === undefined || d.id === null);
-      if (badItems.length > 0) {
-        console.warn('[openThreadLikeListSheet] found items with missing id:', badItems);
-      }
-
-      // id가 있는 항목만 매핑해서 상태에 넣음 (방어적)
-      const mapped: ReactionMember[] = data
-      .filter((m) => m?.member?.id)
-      .map((m) => ({
-        id: String(m.member.id),
-        nickName: m.member.nickName ?? '',
-        profileImageUrl: m.member.profileImageUrl ?? null,
-      }));
+      const mapped: ReactionMember[] = rawList
+        .map((m) => {
+          const dto = m?.member ?? m?.reactionMember ?? m ?? null;
+          const id = dto?.id ?? m?.memberId ?? m?.id;
+          if (!id) return null;
+          return {
+            id: String(id),
+            nickName: dto?.nickName ?? dto?.nickname ?? '',
+            profileImageUrl: dto?.profileImageUrl ?? null,
+          };
+        })
+        .filter(Boolean) as ReactionMember[];
 
       setMembers(mapped);
     } catch (err: any) {
-      console.error('❌ [openThreadLikeListSheet] fetch error:', err?.message ?? err);
+      console.error(
+        '❌ [openThreadLikeListSheet] fetch error:',
+        err?.message ?? err,
+      );
     } finally {
       setLoading(false);
       console.log('🏁 [openThreadLikeListSheet] fetch complete');
@@ -109,7 +139,11 @@ const ThreadLikeListContent: React.FC<{ threadId: string }> = ({ threadId }) => 
         renderItem={renderItem}
         keyExtractor={(item, index) => {
           if (!item || item.id === undefined || item.id === null) {
-            console.warn('[openThreadLikeListSheet] missing id for item at index', index, item);
+            console.warn(
+              '[openThreadLikeListSheet] missing id for item at index',
+              index,
+              item,
+            );
             return String(index);
           }
           return String(item.id);

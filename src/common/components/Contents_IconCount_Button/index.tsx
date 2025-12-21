@@ -19,6 +19,7 @@ type Props = {
   isLoading?: boolean;
   disabled?: boolean;
   accessibilityLabel: string;
+  currentMemberId?: string; // ✅ 추가: 현재 멤버 ID
 };
 
 /**
@@ -33,6 +34,7 @@ const ContentsIconCountButton: React.FC<Props> = ({
   isLoading,
   disabled,
   accessibilityLabel,
+  currentMemberId,
 }) => {
   return (
     <TouchableOpacity

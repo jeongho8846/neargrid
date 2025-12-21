@@ -57,8 +57,8 @@ const ThreadActionBar: React.FC<Props> = ({
 
   /** ✅ 좋아요 수 버튼 */
   const onPressLikeCount = useCallback(() => {
-    openThreadLikeListSheet({ threadId });
-  }, [threadId]);
+    openThreadLikeListSheet({ threadId, currentMemberId: member?.id });
+  }, [threadId, member?.id]);
 
   /** ✅ 댓글 버튼 → DetailThreadScreen 이동 */
   const onPressComment = useCallback(() => {
