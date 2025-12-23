@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
-import SockJS from 'sockjs-client';
-import { Client, IMessage, StompSubscription } from '@stomp/stompjs';
+import { Client, IMessage, StompSubscription, Versions } from '@stomp/stompjs';
 import { CHAT_API_BASE_URL } from '@env';
 import { tokenStorage } from '@/features/member/utils/tokenStorage';
 import { decode as atob } from 'base-64';
@@ -23,26 +22,45 @@ function isTokenExpired(token: string) {
 
 /**
  * ✅ useChatWebSocket
- * - STOMP 기반 웹소켓 연결 훅
+ * - STOMP 기반 웹소켓 연결 훅 (Native WebSocket 사용)
  */
 export function useChatWebSocket(enabled: boolean = true) {
   const clientRef = useRef<Client | null>(null);
   const [connected, setConnected] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // 🔹 토큰 로드 (AsyncStorage에서 비동기로 가져오기)
+  /**
+   * 🔹 토큰 로드
+   */
   useEffect(() => {
+    let isMounted = true;
+
     const loadToken = async () => {
-      const { accessToken: token } = await tokenStorage.getTokens();
-      if (token) {
-        setAccessToken(token);
+      try {
+        const { accessToken: token } = await tokenStorage.getTokens();
+        if (isMounted && token && token !== accessToken) {
+          console.log('🔑 [WebSocket] New AccessToken loaded');
+          setAccessToken(token);
+        }
+      } catch (e) {
+        console.error('❌ [WebSocket] Token load error:', e);
       }
     };
-    if (enabled) {
-      loadToken();
-    }
-  }, [enabled]);
 
+    if (!enabled) return;
+
+    loadToken();
+    const interval = setInterval(loadToken, 2000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [enabled, accessToken]);
+
+  /**
+   * 🔹 WebSocket + STOMP 연결
+   */
   useEffect(() => {
     if (!enabled || !accessToken) return;
 
@@ -51,34 +69,47 @@ export function useChatWebSocket(enabled: boolean = true) {
       return;
     }
 
-    const endpoint = `${CHAT_API_BASE_URL}/chatConnect`;
+    const baseUrl = CHAT_API_BASE_URL
+      .replace(/^https:\/\//, 'wss://')
+      .replace(/^http:\/\//, 'ws://')
+      .replace(/\/$/, '');
+
+    console.log('🔌 [WebSocket] Base URL:', baseUrl);
+
+    const endpoint = `${baseUrl}/chatConnectApp`;
+    console.log('🔌 [WebSocket] Connecting to:', endpoint);
+
+
 
     const client = new Client({
-      // ✅ SockJS 사용 (React Native 환경에서 필요할 수 있는 폴백 및 프로토콜 지원)
-      webSocketFactory: () => new SockJS(endpoint),
 
-      reconnectDelay: 5000,
-      heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
+      brokerURL: endpoint, // (선택사항) 일부 버전에서는 이 설정을 같이 넣어주는 것이 안정적입니다.
 
-      // ✅ 연결 직전 헤더 주입 (토큰 갱신 등)
-      beforeConnect: () => {
-        if (!accessToken || isTokenExpired(accessToken)) {
-          console.warn('🔒 [WebSocket] 토큰 만료 or 없음 → 연결 취소');
-          client.deactivate();
-          return;
-        }
-        client.connectHeaders = {
-          ...(client.connectHeaders || {}),
-          Authorization: `Bearer ${accessToken}`,
-        };
+      forceBinaryWSFrames: true,    	   // 해당 코드를 추가해주기!
+      appendMissingNULLonIncoming: true,   // 해당 코드를 추가해주기!
+
+      webSocketFactory: () => {
+        console.log('🧪 [WebSocket] Creating Native WebSocket instance...');
+
+
+
+        const ws = new WebSocket(endpoint);
+
+        ws.addEventListener('open', () => console.log('🌐 WS open'));
+
+        ws.addEventListener('error', (e) => console.log('🔴 WS error', e));
+        ws.addEventListener('close', (e) => console.log('⚪ WS close', e));
+        ws.addEventListener('message', (e) => console.log('📩 WS msg', e.data));
+
+        return ws;
+
       },
 
-      debug: msg => {
-        if (__DEV__) {
-          // console.log('[STOMP DEBUG]', msg);
-        }
+      connectHeaders: {
+        Authorization: `Bearer ${accessToken}`,
       },
+
+      debug: (msg) => console.log('🪶 [STOMP]', msg),
 
       onConnect: () => {
         console.log('✅ [WebSocket] STOMP connected');
@@ -90,37 +121,55 @@ export function useChatWebSocket(enabled: boolean = true) {
         setConnected(false);
       },
 
-      onWebSocketClose: () => {
-        console.warn('⚡️ [WebSocket] Socket closed. 재연결 시도 중...');
-        setConnected(false);
-      },
-
-      onStompError: frame => {
-        console.error('❌ [WebSocket] STOMP error:', frame.headers.message, frame.body);
-      },
-
-      onWebSocketError: e => {
-        console.error('❌ [WebSocket] Socket error:', e);
+      onStompError: (frame) => {
+        console.error(
+          '❌ [WebSocket] STOMP error:',
+          frame.headers?.message,
+          frame.body,
+        );
       },
     });
+
+    client.onUnhandledFrame = (frame) =>
+      console.log('🧩 [STOMP] unhandled frame', frame);
+    client.onUnhandledMessage = (msg) =>
+      console.log('📩 [STOMP] unhandled message', msg);
+    client.onUnhandledReceipt = (r) =>
+      console.log('🧾 [STOMP] unhandled receipt', r);
+
+    client.onWebSocketError = (e) =>
+      console.log('🔴 [STOMP] WS error', e);
+    client.onWebSocketClose = (e) =>
+      console.log('⚪ [STOMP] WS close', e);
 
     client.activate();
     clientRef.current = client;
 
+    const checkInterval = setInterval(() => {
+      if (client.connected && !connected) {
+        console.log('🤝 [WebSocket] Connection verified');
+        setConnected(true);
+        clearInterval(checkInterval);
+      }
+    }, 1000);
+
     return () => {
       console.log('🔌 [WebSocket] Deactivating...');
+      clearInterval(checkInterval);
       client.deactivate();
       setConnected(false);
     };
   }, [enabled, accessToken]);
 
   /**
-   * 🔹 구독 (Subscribe)
+   * 🔹 Subscribe
    */
   const subscribe = useCallback(
     (
       destination: string,
-      callback: (data: ChatMessageResponseDto | ChatRoomResponseDto | AlarmModel) => void,
+      callback: (
+        data: ChatMessageResponseDto | ChatRoomResponseDto | AlarmModel,
+      ) => void,
     ): StompSubscription | null => {
       if (!clientRef.current || !clientRef.current.connected) {
         console.warn('⚠️ [WebSocket] 연결되지 않음. 구독 불가:', destination);
@@ -140,7 +189,7 @@ export function useChatWebSocket(enabled: boolean = true) {
   );
 
   /**
-   * 🔹 메시지 전송 (Publish)
+   * 🔹 Publish
    */
   const sendChatMessage = useCallback((destination: string, body: object) => {
     const c = clientRef.current;
@@ -159,7 +208,7 @@ export function useChatWebSocket(enabled: boolean = true) {
   }, []);
 
   /**
-   * 🔹 읽음 처리 전송 (Read Status)
+   * 🔹 Read 처리
    */
   const sendReadChatMessage = useCallback(
     (chatRoomId: string, memberId: string, lastReadChatMessageId: string) => {
@@ -169,22 +218,18 @@ export function useChatWebSocket(enabled: boolean = true) {
         return;
       }
 
-      try {
-        const payload = {
-          currentChatRoomId: chatRoomId,
-          currentMemberId: memberId,
-          lastReadChatMessageId: lastReadChatMessageId,
-        };
+      const payload = {
+        currentChatRoomId: chatRoomId,
+        currentMemberId: memberId,
+        lastReadChatMessageId,
+      };
 
-        c.publish({
-          destination: '/app/memberChatRoom/readChatMessage',
-          body: JSON.stringify(payload),
-        });
+      c.publish({
+        destination: '/app/memberChatRoom/readChatMessage',
+        body: JSON.stringify(payload),
+      });
 
-        console.log('✅ [WebSocket] 읽음 처리 전송:', chatRoomId);
-      } catch (e) {
-        console.error('❌ [WebSocket] 읽음 처리 중 오류:', e);
-      }
+      console.log('✅ [WebSocket] 읽음 처리 전송:', chatRoomId);
     },
     [connected],
   );

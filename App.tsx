@@ -19,6 +19,7 @@ import { initFCM } from '@/services/notification/fcmService';
 import { startWatchingLocation, stopWatchingLocation } from '@/services/device';
 import * as RNLocalize from 'react-native-localize';
 import i18n from '@/i18n';
+import 'fast-text-encoding';
 
 // 📌 개발용 로그
 const DEV_LOG = (...args: any[]) => __DEV__ && console.log(...args);
