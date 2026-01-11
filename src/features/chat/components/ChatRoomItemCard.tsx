@@ -30,8 +30,8 @@ const ChatRoomItemCard: React.FC<Props> = ({ item, onPress }) => {
   const lastMsg = item.lastMessage?.message || '(메시지 없음)';
   const unread = item.unreadCount || 0;
 
-  // ✅ 시간 유틸 사용
-  const time = formatChatTime(item.lastMessage?.createdAt);
+  const lastTime = item.updatedAt || item.lastMessage?.createdAt;
+  const time = formatChatTime(lastTime);
 
   return (
     <TouchableOpacity

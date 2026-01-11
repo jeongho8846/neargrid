@@ -12,8 +12,8 @@ const ChatRoomList: React.FC<Props> = ({ data, onPressItem }) => {
   // ✅ 최신 메시지 기준으로 정렬 (최근 메시지가 위로)
   const sortedData = React.useMemo(() => {
     return [...data].sort((a, b) => {
-      const aTime = new Date(a.lastMessage?.createdAt ?? 0).getTime();
-      const bTime = new Date(b.lastMessage?.createdAt ?? 0).getTime();
+      const aTime = new Date(a.updatedAt || a.lastMessage?.createdAt || 0).getTime();
+      const bTime = new Date(b.updatedAt || b.lastMessage?.createdAt || 0).getTime();
       return bTime - aTime;
     });
   }, [data]);

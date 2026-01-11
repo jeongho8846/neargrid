@@ -17,7 +17,6 @@ type MessagesPage = {
  */
 export const applyIncomingChatToRooms = (
   queryClient: QueryClient,
-  currentMemberId: string,
   dto: ChatMessageResponseDto,
 ) => {
   queryClient.setQueryData<ChatRoom[]>(chatKeys.rooms(), prev => {
@@ -33,19 +32,15 @@ export const applyIncomingChatToRooms = (
         createdAt: dto.createDateTime,
       };
 
-      const isMine = dto.memberId === currentMemberId;
-      const unreadFromServer = dto.unreadChatMessageCount;
-      const unreadCount = isMine
-        ? room.unreadCount // 내가 보낸 메시지는 미읽음 증가 없음
-        : typeof unreadFromServer === 'number'
-          ? unreadFromServer
-          : room.unreadCount + 1;
-
       return {
         ...room,
         lastMessage,
-        unreadCount,
-        updatedAt: lastMessage.createdAt,
+        // 서버가 내려준 미읽음 카운트를 그대로 반영
+        unreadCount:
+          typeof dto.unreadChatMessageCount === 'number'
+            ? dto.unreadChatMessageCount
+            : room.unreadCount ?? 0,
+        updatedAt: lastMessage.createdAt || room.updatedAt || null,
       };
     });
   });
@@ -88,16 +83,7 @@ export const appendIncomingChatToMessages = (
 export const applyLastReadInfoToRooms = (
   queryClient: QueryClient,
   chatRoomId: string,
-  unreadChatMessageCount?: number,
 ) => {
-  if (typeof unreadChatMessageCount !== 'number') return;
-
-  queryClient.setQueryData<ChatRoom[]>(chatKeys.rooms(), prev => {
-    if (!prev) return prev;
-    return prev.map(room =>
-      room.id === chatRoomId
-        ? { ...room, unreadCount: unreadChatMessageCount }
-        : room,
-    );
-  });
+  // unread 갱신을 현재는 수행하지 않음
+  queryClient.setQueryData<ChatRoom[]>(chatKeys.rooms(), prev => prev);
 };

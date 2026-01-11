@@ -29,16 +29,12 @@ export const createChatMessageRouter = ({
   currentMemberId: string;
 }) => {
   const handleChatMessage = (dto: ChatMessageResponseDto) => {
-    applyIncomingChatToRooms(queryClient, currentMemberId, dto);
+    applyIncomingChatToRooms(queryClient, dto);
     appendIncomingChatToMessages(queryClient, currentMemberId, dto);
   };
 
   const handleLastReadInfo = (dto: ChatLastReadInfoDto) => {
-    applyLastReadInfoToRooms(
-      queryClient,
-      dto.chatRoomId,
-      dto.unreadChatMessageCount,
-    );
+    applyLastReadInfoToRooms(queryClient, dto.chatRoomId);
   };
 
   const handlePrivateMessage = (raw: string) => {
