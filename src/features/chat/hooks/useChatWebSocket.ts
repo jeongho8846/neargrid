@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import { Client, IMessage, StompSubscription, Versions } from '@stomp/stompjs';
 import { CHAT_API_BASE_URL } from '@env';
 import { tokenStorage } from '@/features/member/utils/tokenStorage';
+import { memberStorage } from '@/features/member/utils/memberStorage';
 import { decode as atob } from 'base-64';
 import { ChatMessageResponseDto } from '../model/ChatMessageModel';
 import { ChatRoomResponseDto } from '../model/ChatRoomModel';
@@ -20,14 +21,26 @@ function isTokenExpired(token: string) {
   }
 }
 
+type UseChatWebSocketOptions = {
+  /**
+   * private(/private/{memberId}) 채널로 들어온 원본 메시지 문자열을 상위로 전달할 콜백
+   */
+  onPrivateMessage?: (raw: string) => void;
+};
+
 /**
  * ✅ useChatWebSocket
  * - STOMP 기반 웹소켓 연결 훅 (Native WebSocket 사용)
  */
-export function useChatWebSocket(enabled: boolean = true) {
+export function useChatWebSocket(
+  enabled: boolean = true,
+  options: UseChatWebSocketOptions = {},
+) {
   const clientRef = useRef<Client | null>(null);
+  const privateSubRef = useRef<StompSubscription | null>(null);
   const [connected, setConnected] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [memberId, setMemberId] = useState<string | null>(null);
 
   /**
    * 🔹 토큰 로드
@@ -59,6 +72,32 @@ export function useChatWebSocket(enabled: boolean = true) {
   }, [enabled, accessToken]);
 
   /**
+   * 🔹 멤버 정보 로드 (memberId)
+   */
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadMember = async () => {
+      try {
+        const member = await memberStorage.getMember();
+        if (isMounted && member?.id && member.id !== memberId) {
+          console.log(
+            '👤 [WebSocket] Loaded memberId for private channel:',
+            member.id,
+          );
+          setMemberId(member.id);
+        }
+      } catch (e) {
+        console.error('❌ [WebSocket] member load error:', e);
+      }
+    };
+
+    if (!enabled) return;
+
+    loadMember();
+  }, [enabled, memberId]);
+
+  /**
    * 🔹 WebSocket + STOMP 연결
    */
   useEffect(() => {
@@ -69,8 +108,7 @@ export function useChatWebSocket(enabled: boolean = true) {
       return;
     }
 
-    const baseUrl = CHAT_API_BASE_URL
-      .replace(/^https:\/\//, 'wss://')
+    const baseUrl = CHAT_API_BASE_URL.replace(/^https:\/\//, 'wss://')
       .replace(/^http:\/\//, 'ws://')
       .replace(/\/$/, '');
 
@@ -79,37 +117,28 @@ export function useChatWebSocket(enabled: boolean = true) {
     const endpoint = `${baseUrl}/chatConnectApp`;
     console.log('🔌 [WebSocket] Connecting to:', endpoint);
 
-
-
     const client = new Client({
-
       brokerURL: endpoint, // (선택사항) 일부 버전에서는 이 설정을 같이 넣어주는 것이 안정적입니다.
 
-      forceBinaryWSFrames: true,    	   // 해당 코드를 추가해주기!
-      appendMissingNULLonIncoming: true,   // 해당 코드를 추가해주기!
+      forceBinaryWSFrames: true, // 해당 코드를 추가해주기!
+      appendMissingNULLonIncoming: true, // 해당 코드를 추가해주기!
 
       webSocketFactory: () => {
         console.log('🧪 [WebSocket] Creating Native WebSocket instance...');
-
-
 
         const ws = new WebSocket(endpoint);
 
         ws.addEventListener('open', () => console.log('🌐 WS open'));
 
-        ws.addEventListener('error', (e) => console.log('🔴 WS error', e));
-        ws.addEventListener('close', (e) => console.log('⚪ WS close', e));
-        ws.addEventListener('message', (e) => console.log('📩 WS msg', e.data));
+        ws.addEventListener('error', e => console.log('🔴 WS error', e));
+        ws.addEventListener('close', e => console.log('⚪ WS close', e));
 
         return ws;
-
       },
 
       connectHeaders: {
         Authorization: `Bearer ${accessToken}`,
       },
-
-      debug: (msg) => console.log('🪶 [STOMP]', msg),
 
       onConnect: () => {
         console.log('✅ [WebSocket] STOMP connected');
@@ -121,7 +150,7 @@ export function useChatWebSocket(enabled: boolean = true) {
         setConnected(false);
       },
 
-      onStompError: (frame) => {
+      onStompError: frame => {
         console.error(
           '❌ [WebSocket] STOMP error:',
           frame.headers?.message,
@@ -130,17 +159,8 @@ export function useChatWebSocket(enabled: boolean = true) {
       },
     });
 
-    client.onUnhandledFrame = (frame) =>
-      console.log('🧩 [STOMP] unhandled frame', frame);
-    client.onUnhandledMessage = (msg) =>
-      console.log('📩 [STOMP] unhandled message', msg);
-    client.onUnhandledReceipt = (r) =>
-      console.log('🧾 [STOMP] unhandled receipt', r);
-
-    client.onWebSocketError = (e) =>
-      console.log('🔴 [STOMP] WS error', e);
-    client.onWebSocketClose = (e) =>
-      console.log('⚪ [STOMP] WS close', e);
+    client.onWebSocketError = e => console.log('🔴 [STOMP] WS error', e);
+    client.onWebSocketClose = e => console.log('⚪ [STOMP] WS close', e);
 
     client.activate();
     clientRef.current = client;
@@ -206,6 +226,27 @@ export function useChatWebSocket(enabled: boolean = true) {
       },
     });
   }, []);
+
+  /**
+   * 🔹 Private 채널 구독 (/private/{memberId})
+   */
+  useEffect(() => {
+    if (!connected || !memberId || !clientRef.current) return;
+
+    privateSubRef.current?.unsubscribe();
+    privateSubRef.current = clientRef.current.subscribe(
+      `/private/${memberId}`,
+      (message: IMessage) => {
+        console.log('📥 [WebSocket] private incoming', message.body);
+        options.onPrivateMessage?.(message.body);
+      },
+    );
+
+    return () => {
+      privateSubRef.current?.unsubscribe();
+      privateSubRef.current = null;
+    };
+  }, [connected, memberId]);
 
   /**
    * 🔹 Read 처리

@@ -21,7 +21,7 @@ export function resetCachedFcmToken() {
  * @returns 포그라운드 메시지 구독 해제 함수
  */
 export async function initFCM(
-  currentMemberId?: string
+  currentMemberId?: string,
 ): Promise<(() => void) | undefined> {
   console.log('🔥 initFCM 실행');
 
@@ -60,14 +60,14 @@ export async function initFCM(
     messaging().setBackgroundMessageHandler(
       async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
         console.log('📩 [백그라운드 메시지]:', remoteMessage);
-      }
+      },
     );
 
     // 5️⃣ 포그라운드 메시지 처리
     const unsubscribeOnMessage = messaging().onMessage(
       async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-        console.log('💬 [포그라운드 메시지]:', remoteMessage);
-      }
+        // console.log('💬 [포그라운드 메시지]:', remoteMessage);
+      },
     );
 
     // 6️⃣ 앱 활성화 시 토큰 갱신 체크
@@ -82,7 +82,7 @@ export async function initFCM(
 
               if (currentMemberId) {
                 await registerFcmToken(currentMemberId, refreshed).catch(
-                  console.error
+                  console.error,
                 );
               }
             }
