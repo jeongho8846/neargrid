@@ -22,6 +22,7 @@ export type ChatMessage = {
   isMine: boolean;
   reactions?: ChatReaction[];
   unreadChatMessageCount: number | null;
+  checkReceiveId?: string | null; // 서버/클라이언트 식별용
 };
 
 /* ======================================================
@@ -82,6 +83,7 @@ export const mapChatMessageDto = (
         count: r.count,
       })) ?? [],
     unreadChatMessageCount: dto.unreadChatMessageCount ?? null, // ✅ 추가
+    checkReceiveId: dto.checkReceiveId ?? null,
   };
 };
 

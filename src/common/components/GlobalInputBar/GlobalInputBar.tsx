@@ -7,7 +7,6 @@ import {
   StyleSheet,
   NativeSyntheticEvent,
   TextInputContentSizeChangeEventData,
-  Keyboard,
 } from 'react-native';
 import Animated, {
   useAnimatedKeyboard,
@@ -54,7 +53,6 @@ const GlobalInputBar = () => {
     if (!text.trim()) return;
     onSubmit?.(text.trim());
     setText('');
-    Keyboard.dismiss();
   };
 
   const handleContentSizeChange = (

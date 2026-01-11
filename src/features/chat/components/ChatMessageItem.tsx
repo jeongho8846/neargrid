@@ -166,6 +166,7 @@ const styles = StyleSheet.create({
   center: {
     flexShrink: 1,
     maxWidth: '70%',
+    alignItems: 'flex-start',
   },
   right: {
     justifyContent: 'flex-end',

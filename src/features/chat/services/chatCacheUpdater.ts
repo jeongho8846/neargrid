@@ -63,12 +63,25 @@ export const appendIncomingChatToMessages = (
       const [firstPage, ...rest] = prev.pages ?? [];
       if (!firstPage) return prev;
 
+      // 같은 checkReceiveId(또는 동일 id)를 가진 낙관 메시지가 있으면 교체
+      const filtered =
+        firstPage.messages?.filter(m => {
+          // 낙관 메시지 교체는 내가 보낸 메시지일 때만 수행
+          if (mapped.isMine) {
+            if (m.checkReceiveId && mapped.checkReceiveId) {
+              if (m.checkReceiveId === mapped.checkReceiveId) return false;
+            }
+            if (!mapped.checkReceiveId && m.id === mapped.id) return false;
+          }
+          return true;
+        }) ?? [];
+
       return {
         ...prev,
         pages: [
           {
             ...firstPage,
-            messages: [mapped, ...(firstPage.messages ?? [])],
+            messages: [mapped, ...filtered],
           },
           ...rest,
         ],

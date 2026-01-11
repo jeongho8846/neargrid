@@ -11,6 +11,7 @@ type Props = {
   onEndReached?: () => void;
   loadingMore?: boolean;
   topPadding?: number;
+  scrollToTopTrigger?: number;
 };
 
 const ChatMessageList: React.FC<Props> = ({
@@ -18,10 +19,23 @@ const ChatMessageList: React.FC<Props> = ({
   onEndReached,
   loadingMore,
   topPadding = 110,
+  scrollToTopTrigger,
 }) => {
+  const listRef = React.useRef<FlashList<ChatMessage>>(null);
+
+  React.useEffect(() => {
+    if (scrollToTopTrigger) {
+      const timer = setTimeout(() => {
+        listRef.current?.scrollToOffset({ offset: 0, animated: true });
+      }, 16); // 렌더 직후 한 프레임 뒤에 스크롤
+      return () => clearTimeout(timer);
+    }
+  }, [scrollToTopTrigger]);
+
   return (
     <View style={styles.wrapper}>
       <FlashList
+        ref={listRef}
         data={data}
         renderItem={({ item, index }) => {
           const next = data[index - 1]; // ✅ 리버스 리스트이므로 다음 인덱스가 이전 메시지
