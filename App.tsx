@@ -20,6 +20,7 @@ import { startWatchingLocation, stopWatchingLocation } from '@/services/device';
 import * as RNLocalize from 'react-native-localize';
 import i18n from '@/i18n';
 import 'fast-text-encoding';
+import { ChatProvider } from '@/features/chat/context/ChatContext';
 
 // 📌 개발용 로그
 const DEV_LOG = (...args: any[]) => __DEV__ && console.log(...args);
@@ -106,15 +107,17 @@ const App = () => {
     <GestureHandlerRootView style={styles.container}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <SafeAreaView style={styles.safeArea} edges={['top']}>
-            <NavigationContainer theme={MyTheme}>
-              <BottomSheetModalProvider>
-                <GlobalBottomSheet />
-                <RootNavigator />
-                <AppToastContainer />
-              </BottomSheetModalProvider>
-            </NavigationContainer>
-          </SafeAreaView>
+          <ChatProvider>
+            <SafeAreaView style={styles.safeArea} edges={['top']}>
+              <NavigationContainer theme={MyTheme}>
+                <BottomSheetModalProvider>
+                  <GlobalBottomSheet />
+                  <RootNavigator />
+                  <AppToastContainer />
+                </BottomSheetModalProvider>
+              </NavigationContainer>
+            </SafeAreaView>
+          </ChatProvider>
         </QueryClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
