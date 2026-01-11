@@ -90,5 +90,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-end',
     paddingTop: 110,
+    paddingBottom: 60,
   },
 });

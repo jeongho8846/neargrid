@@ -7,12 +7,9 @@ import {
   StyleSheet,
   NativeSyntheticEvent,
   TextInputContentSizeChangeEventData,
+  Keyboard,
+  KeyboardEvent,
 } from 'react-native';
-import Animated, {
-  useAnimatedKeyboard,
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
 import { COLORS } from '@/common/styles/colors';
@@ -29,16 +26,7 @@ const GlobalInputBar = () => {
   const inputRef = useRef<TextInput>(null);
   const insets = useSafeAreaInsets();
   const [inputHeight, setInputHeight] = useState(LINE_HEIGHT * 1);
-
-  const keyboard = useAnimatedKeyboard();
-
-  const animatedStyle = useAnimatedStyle(() => {
-    const keyboardHeight = keyboard.height.value;
-    const translateY = keyboardHeight > 0 ? -keyboardHeight : 0;
-    return {
-      transform: [{ translateY: withTiming(translateY, { duration: 100 }) }],
-    };
-  });
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   useEffect(() => {
     if (isVisible && isFocusing && inputRef.current) {
@@ -46,6 +34,20 @@ const GlobalInputBar = () => {
       return () => clearTimeout(t);
     }
   }, [isVisible, isFocusing]);
+
+  useEffect(() => {
+    const handleShow = (e: KeyboardEvent) =>
+      setKeyboardHeight(e.endCoordinates.height);
+    const handleHide = () => setKeyboardHeight(0);
+
+    const showSub = Keyboard.addListener('keyboardDidShow', handleShow);
+    const hideSub = Keyboard.addListener('keyboardDidHide', handleHide);
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   if (!isVisible) return null;
 
@@ -65,11 +67,10 @@ const GlobalInputBar = () => {
   };
 
   return (
-    <Animated.View
+    <View
       style={[
         styles.wrapper,
-        animatedStyle,
-        { paddingBottom: insets.bottom || 10 },
+        { paddingBottom: (insets.bottom || 10) + keyboardHeight },
       ]}
     >
       <View style={styles.container}>
@@ -100,7 +101,7 @@ const GlobalInputBar = () => {
           <AppIcon type="ion" name="send" size={22} variant="primary" />
         </TouchableOpacity>
       </View>
-    </Animated.View>
+    </View>
   );
 };
 
