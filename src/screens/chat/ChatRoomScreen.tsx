@@ -188,13 +188,23 @@ const ChatRoomScreen = () => {
   useEffect(() => {
     open({
       placeholder: '메시지를 입력하세요...',
-      isFocusing: true,
+      isFocusing: false,
       onSubmit: handleSend,
     });
     return () => {
       close();
     };
   }, [chatRoomId, open, close, handleSend]);
+
+  // 방 진입/새 메시지 수신 시 최신 메시지까지 읽음 전송 (중복 방지)
+  useEffect(() => {
+    if (!member?.id || !messages.length) return;
+    const latestId = messages[0]?.id;
+    if (!latestId || lastReadIdRef.current === latestId) return;
+    lastReadIdRef.current = latestId;
+    chatSocket?.sendReadChatMessage(chatRoomId, member.id, latestId);
+    markRoomAsRead();
+  }, [chatRoomId, chatSocket, markRoomAsRead, member?.id, messages]);
 
   if (isLoading)
     return (
@@ -211,16 +221,6 @@ const ChatRoomScreen = () => {
     );
 
   const topPadding = 80 + insets.bottom + keyboardHeight;
-
-  // 방 진입/새 메시지 수신 시 최신 메시지까지 읽음 전송 (중복 방지)
-  useEffect(() => {
-    if (!member?.id || !messages.length) return;
-    const latestId = messages[0]?.id;
-    if (!latestId || lastReadIdRef.current === latestId) return;
-    lastReadIdRef.current = latestId;
-    chatSocket?.sendReadChatMessage(chatRoomId, member.id, latestId);
-    markRoomAsRead();
-  }, [chatRoomId, chatSocket, markRoomAsRead, member?.id, messages]);
 
   return (
     <View style={styles.container}>
@@ -241,6 +241,7 @@ const ChatRoomScreen = () => {
       />
 
       <View style={styles.body}>
+        <GlobalInputBar />
         <ChatMessageList
           data={messages}
           onEndReached={() => {
@@ -252,7 +253,6 @@ const ChatRoomScreen = () => {
         />
       </View>
       <BottomBlurGradient height={120} />
-      <GlobalInputBar />
     </View>
   );
 };
