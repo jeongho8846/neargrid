@@ -10,12 +10,14 @@ type Props = {
   data: ChatMessage[];
   onEndReached?: () => void;
   loadingMore?: boolean;
+  topPadding?: number;
 };
 
 const ChatMessageList: React.FC<Props> = ({
   data,
   onEndReached,
   loadingMore,
+  topPadding = 110,
 }) => {
   return (
     <View style={styles.wrapper}>
@@ -51,7 +53,10 @@ const ChatMessageList: React.FC<Props> = ({
         ListFooterComponent={
           loadingMore ? <View style={{ height: 30 }} /> : null
         }
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: topPadding },
+        ]}
       />
     </View>
   );
@@ -63,7 +68,6 @@ const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
     transform: [{ scaleY: -1 }],
-    paddingBottom: 50,
   },
   itemWrap: {
     transform: [{ scaleY: -1 }],

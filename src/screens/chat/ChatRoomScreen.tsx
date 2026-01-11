@@ -5,15 +5,19 @@ import {
   StyleSheet,
   ActivityIndicator,
   TouchableOpacity,
+  Keyboard,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
 import ChatMessageList from '@/features/chat/lists/ChatMessageList';
+import GlobalInputBar from '@/common/components/GlobalInputBar/GlobalInputBar';
+import { useGlobalInputBarStore } from '@/common/state/globalInputBarStore';
 import AppText from '@/common/components/AppText';
 import { COLORS, SPACING } from '@/common/styles';
 import AppCollapsibleHeader from '@/common/components/AppCollapsibleHeader/AppCollapsibleHeader';
 import AppIcon from '@/common/components/AppIcon';
 import BottomBlurGradient from '@/common/components/BottomBlurGradient/BottomBlurGradient';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 /**
  * ✅ 채팅방 화면
@@ -24,6 +28,9 @@ const ChatRoomScreen = () => {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
   const { chatRoomId } = route.params;
+  const { open, close, isVisible } = useGlobalInputBarStore();
+  const insets = useSafeAreaInsets();
+  const [keyboardHeight, setKeyboardHeight] = React.useState(0);
 
   const {
     data,
@@ -42,6 +49,35 @@ const ChatRoomScreen = () => {
   const handleOpenMenu = () => {
     navigation.navigate('ChatRoomMenuScreen', { roomId: chatRoomId });
   };
+
+  // 🔹 글로벌 인풋 바 열기/닫기
+  React.useEffect(() => {
+    open({
+      placeholder: '메시지를 입력하세요...',
+      isFocusing: true,
+      onSubmit: text => {
+        // TODO: 서버 전송 로직 연동 (웹소켓/HTTP)
+        console.log('✉️ send chat', { chatRoomId, text });
+      },
+    });
+    return () => {
+      close();
+    };
+  }, [chatRoomId, open, close]);
+
+  // 🔹 리스트는 scaleY로 뒤집혀 있으므로, 키보드/인풋바 높이만큼 paddingTop을 추가해 겹침 방지
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', e => {
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardHeight(0);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   if (isLoading)
     return (
@@ -82,8 +118,10 @@ const ChatRoomScreen = () => {
             if (hasNextPage && !isFetchingNextPage) fetchNextPage();
           }}
           loadingMore={isFetchingNextPage}
+          topPadding={75 + insets.bottom + keyboardHeight}
         />
       </View>
+      <GlobalInputBar />
       <BottomBlurGradient height={120}></BottomBlurGradient>
     </View>
   );
