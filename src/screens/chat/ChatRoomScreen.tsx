@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Keyboard,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute, useNavigation, RouteProp } from '@react-navigation/native';
 import { useQueryClient, InfiniteData } from '@tanstack/react-query';
 import { useGetChatRoomMessageHistory } from '@/features/chat/hooks/useGetChatRoomMessageHistory';
 import ChatMessageList from '@/features/chat/lists/ChatMessageList';
@@ -23,6 +23,12 @@ import { useCurrentMember } from '@/features/member/hooks/useCurrentMember';
 import { useChatContext } from '@/features/chat/context/ChatContext';
 import { chatKeys } from '@/features/chat/keys/chatKeys';
 import type { ChatMessage } from '@/features/chat/model/ChatMessageModel';
+import { useRef } from 'react';
+
+type ChatRoomRoute = RouteProp<
+  { ChatRoomScreen: { chatRoomId: string } },
+  'ChatRoomScreen'
+>;
 
 type MessagesPage = {
   messages: ChatMessage[];
@@ -36,7 +42,7 @@ type MessagesPage = {
  * - 전송 시 낙관적 메시지 추가 후, 서버 응답(WebSocket)으로 교체
  */
 const ChatRoomScreen = () => {
-  const route = useRoute<any>();
+  const route = useRoute<ChatRoomRoute>();
   const navigation = useNavigation<any>();
   const { chatRoomId } = route.params;
   const { open, close, isVisible } = useGlobalInputBarStore();
@@ -46,6 +52,7 @@ const ChatRoomScreen = () => {
   const queryClient = useQueryClient();
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [scrollToTopSignal, setScrollToTopSignal] = useState(0);
+  const lastReadIdRef = useRef<string | null>(null);
 
   const {
     data,
@@ -144,6 +151,15 @@ const ChatRoomScreen = () => {
     [chatRoomId, member, queryClient],
   );
 
+  const markRoomAsRead = useCallback(() => {
+    queryClient.setQueryData(chatKeys.rooms(), (prev: any) => {
+      if (!prev) return prev;
+      return prev.map((room: any) =>
+        room.id === chatRoomId ? { ...room, unreadCount: 0 } : room,
+      );
+    });
+  }, [chatRoomId, queryClient]);
+
   const handleSend = useCallback(
     (text: string) => {
       if (!member?.id) return;
@@ -160,8 +176,12 @@ const ChatRoomScreen = () => {
         messageType: 'CHAT',
         checkReceiveId: tempId, // 수신 시 낙관 메시지 대체용
       });
+
+      // 내가 보낸 메시지는 바로 읽음 처리
+      chatSocket?.sendReadChatMessage(chatRoomId, member.id, tempId);
+      markRoomAsRead();
     },
-    [addOptimisticMessage, chatRoomId, chatSocket, member?.id],
+    [addOptimisticMessage, chatRoomId, chatSocket, markRoomAsRead, member?.id],
   );
 
   // 🔹 글로벌 인풋 바 열기/닫기
@@ -191,6 +211,16 @@ const ChatRoomScreen = () => {
     );
 
   const topPadding = 80 + insets.bottom + keyboardHeight;
+
+  // 방 진입/새 메시지 수신 시 최신 메시지까지 읽음 전송 (중복 방지)
+  useEffect(() => {
+    if (!member?.id || !messages.length) return;
+    const latestId = messages[0]?.id;
+    if (!latestId || lastReadIdRef.current === latestId) return;
+    lastReadIdRef.current = latestId;
+    chatSocket?.sendReadChatMessage(chatRoomId, member.id, latestId);
+    markRoomAsRead();
+  }, [chatRoomId, chatSocket, markRoomAsRead, member?.id, messages]);
 
   return (
     <View style={styles.container}>
