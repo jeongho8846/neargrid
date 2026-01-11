@@ -4,17 +4,10 @@ import {
   applyIncomingChatToRooms,
   appendIncomingChatToMessages,
   applyLastReadInfoToRooms,
+  ChatLastReadInfoDto,
 } from './chatCacheUpdater';
 
 type ChatAlarmType = 'CHAT_MESSAGE' | 'CHAT_MESSAGE_LAST_READ_INFO' | string;
-
-type ChatLastReadInfoDto = {
-  alarmType: 'CHAT_MESSAGE_LAST_READ_INFO';
-  chatRoomId: string;
-  unreadChatMessageCount?: number;
-  lastReadChatMessageId?: string;
-  memberId?: string;
-};
 
 type PrivateMessageDto = ChatMessageResponseDto | ChatLastReadInfoDto;
 
@@ -29,12 +22,12 @@ export const createChatMessageRouter = ({
   currentMemberId: string;
 }) => {
   const handleChatMessage = (dto: ChatMessageResponseDto) => {
-    applyIncomingChatToRooms(queryClient, dto);
+    applyIncomingChatToRooms(queryClient, dto, currentMemberId);
     appendIncomingChatToMessages(queryClient, currentMemberId, dto);
   };
 
   const handleLastReadInfo = (dto: ChatLastReadInfoDto) => {
-    applyLastReadInfoToRooms(queryClient, dto.chatRoomId);
+    applyLastReadInfoToRooms(queryClient, dto);
   };
 
   const handlePrivateMessage = (raw: string) => {

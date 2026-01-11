@@ -12,12 +12,23 @@ type MessagesPage = {
   nextPagingState: string | null;
 };
 
+export type ChatLastReadInfoDto = {
+  alarmType: 'CHAT_MESSAGE_LAST_READ_INFO';
+  chatRoomId: string;
+  unreadChatMessageCount?: number;
+  lastReadChatMessageId?: string;
+  memberId?: string;
+  lastReadDateTime?: string | null;
+  activeNow?: boolean;
+};
+
 /**
  * 방 목록 캐시에서 마지막 메시지/미읽음 갱신
  */
 export const applyIncomingChatToRooms = (
   queryClient: QueryClient,
   dto: ChatMessageResponseDto,
+  currentMemberId: string,
 ) => {
   queryClient.setQueryData<ChatRoom[]>(chatKeys.rooms(), prev => {
     if (!prev) return prev;
@@ -32,14 +43,15 @@ export const applyIncomingChatToRooms = (
         createdAt: dto.createDateTime,
       };
 
+      // 🔸 방 목록의 unreadCount는 "내가 읽지 않은 메시지 수"만 관리
+      const prevUnreadCount = room.unreadCount ?? 0;
+      const isFromMe = dto.memberId === currentMemberId;
+      const unreadCount = isFromMe ? prevUnreadCount : prevUnreadCount + 1;
+
       return {
         ...room,
         lastMessage,
-        // 서버가 내려준 미읽음 카운트를 그대로 반영
-        unreadCount:
-          typeof dto.unreadChatMessageCount === 'number'
-            ? dto.unreadChatMessageCount
-            : room.unreadCount ?? 0,
+        unreadCount,
         updatedAt: lastMessage.createdAt || room.updatedAt || null,
       };
     });
@@ -91,12 +103,11 @@ export const appendIncomingChatToMessages = (
 };
 
 /**
- * 읽음 정보 알림으로 방 목록 unread 갱신
+ * 읽음 정보 알림은 현재 별도 처리하지 않음 (메시지 unread는 API/메시지 DTO 기반 렌더)
  */
 export const applyLastReadInfoToRooms = (
   queryClient: QueryClient,
-  chatRoomId: string,
+  _dto: ChatLastReadInfoDto,
 ) => {
-  // unread 갱신을 현재는 수행하지 않음
   queryClient.setQueryData<ChatRoom[]>(chatKeys.rooms(), prev => prev);
 };

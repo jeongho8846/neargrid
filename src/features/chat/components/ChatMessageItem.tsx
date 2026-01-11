@@ -24,6 +24,7 @@ const ChatMessageItem: React.FC<Props> = ({ message, hideNick, hideTime }) => {
   const isMine = message.senderId === member?.id;
   const time = formatChatTime(message.createdAt);
 
+  console.log('unreadChatMessageCount', message.unreadChatMessageCount);
   // 🔹 시스템 메시지
   if (message.type === 'SYSTEM') {
     return (

@@ -21,7 +21,7 @@ export type ChatMessage = {
   createdAt: string;
   isMine: boolean;
   reactions?: ChatReaction[];
-  unreadChatMessageCount: number | null;
+  unreadChatMessageCount: number | null; // 이 메시지를 아직 읽지 않은 멤버 수
   checkReceiveId?: string | null; // 서버/클라이언트 식별용
 };
 
